@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "SmartPhone", "Embedded\SmartPhone.cproj", "{75C0D83C-7332-42DE-8522-9585F1DF6614}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.Debug|AVR.ActiveCfg = Debug|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.Debug|AVR.Build.0 = Debug|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.Release|AVR.ActiveCfg = Release|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

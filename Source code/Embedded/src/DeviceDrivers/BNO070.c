@@ -118,9 +118,17 @@ bool init_BNO070(void)
     // configure the reporting requirements
 
 #ifdef USE_GAME_ROTATION
-    const uint8_t rotation_vector_command[] = {0x3f,0x03/* turn on game rotation vector */ ,0x08 ,0x00 ,0x35 ,0x03 ,0x06 ,0x00 ,0x11 ,0x00 ,0x00 ,0x00 ,0x00 ,0x40 ,0x0D ,0x03 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
+    // option 1 from Roy: 
+	//const uint8_t rotation_vector_command[] = {0x3f,0x03/* turn on game rotation vector */ ,0x08 ,0x06 ,0x00 ,0x11 ,0x00 ,0x00 ,0x00 ,0x00 ,0x88 ,0x13 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
+		// option 2 from Roy:
+	const uint8_t rotation_vector_command[] = {0x3f,0x03/* turn on game  rotation vector */ ,0x08 ,0x06 ,0x00 ,0x0d,0x00 ,0x00 ,0x00 ,0x00 ,0x88 ,0x07 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
+	//{0x3f,0x03/* turn on game rotation vector */ ,0x08 ,0x00 ,0x35 ,0x03 ,0x06 ,0x00 ,0x11 ,0x00 ,0x00 ,0x00 ,0x00 ,0x40 ,0x0D ,0x03 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
 #else
-    const uint8_t rotation_vector_command[] = {0x3f,0x03/* turn on rotation vector */ ,0x05 ,0x00 ,0x35 ,0x03 ,0x06 ,0x00 ,0x11 ,0x00 ,0x00 ,0x00 ,0x00 ,0x40 ,0x0D ,0x03 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
+    // option 1 from Roy: 
+	//const uint8_t rotation_vector_command[] = {0x3f,0x03/* turn on game rotation vector */ ,0x05 ,0x06 ,0x00 ,0x11 ,0x00 ,0x00 ,0x00 ,0x00 ,0x88 ,0x13 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
+		// option 2 from Roy:
+	const uint8_t rotation_vector_command[] = {0x3f,0x03/* turn on game  rotation vector */ ,0x05 ,0x06 ,0x00 ,0x0d,0x00 ,0x00 ,0x00 ,0x00 ,0x88 ,0x07 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
+    //const uint8_t rotation_vector_command[] = {0x3f,0x03/* turn on rotation vector */ ,0x05 ,0x00 ,0x35 ,0x03 ,0x06 ,0x00 ,0x11 ,0x00 ,0x00 ,0x00 ,0x00 ,0x40 ,0x0D ,0x03 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
 #endif
 
     twi_package_t packet_write = {
@@ -134,10 +142,11 @@ bool init_BNO070(void)
     if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
         return false;
 
+
 #ifdef USE_GAME_ROTATION
-    const uint8_t set_accl_report[] = {0x3f,0x03,/* game orientation register */ 0x08, 0x06, 0x00, 0x0d,0x00,0x00,0x00,0x00,0x88,0x13,0x00,0x00,0x00,0x00,0x00,0x00}; // /set for 200 Hz read
+    const uint8_t set_accl_report[] = {0x3f,0x03,/* game orientation register */ 0x08, 0x06, 0x00, 0x0d,0x00,0x00,0x00,0x00,0x88,0x07,0x00,0x00,0x00,0x00,0x00,0x00}; // /set for 200 Hz read
 #else
-    const uint8_t set_accl_report[] = {0x3f,0x03,/* orientation register */ 0x05, 0x06, 0x00, 0x0d,0x00,0x00,0x00,0x00,0x88,0x13,0x00,0x00,0x00,0x00,0x00,0x00}; // /set for 200 Hz read
+    const uint8_t set_accl_report[] = {0x3f,0x03,/* orientation register */ 0x05, 0x06, 0x00, 0x0d,0x00,0x00,0x00,0x00,0x88,0x07,0x00,0x00,0x00,0x00,0x00,0x00}; // /set for 200 Hz read
 #endif
 
     packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
@@ -146,6 +155,7 @@ bool init_BNO070(void)
     packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
     packet_write.buffer       = (void *)set_accl_report; // transfer data source buffer
     packet_write.length       = sizeof(set_accl_report);  // transfer data size (bytes)
+
 
     if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
         return false;
@@ -156,6 +166,9 @@ bool init_BNO070(void)
 
     if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
         return false;
+
+
+
 
 	// add AR/VR smoothing
 	
@@ -171,6 +184,7 @@ bool init_BNO070(void)
 	packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
 	packet_write.buffer       = (void *)initiate_write_request; // transfer data source buffer
 	packet_write.length       = sizeof(initiate_write_request);  // transfer data size (bytes)
+
 
 	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
 		return false;
@@ -228,7 +242,8 @@ bool init_BNO070(void)
 	}
 
 	// write last two words
-	const uint8_t last_two_words[]={/*0x3f,0x03,0x05,0x00,*/0x2F,0x03,0x83,0x06,0x00,0x0D,0x00,0x5A,0x02,0x00,0x85,0xEB,0x51,0x08,0x0B,0x41,0x0E,0x00};
+	//const uint8_t last_two_words[]={/*0x3f,0x03,0x05,0x00,*/0x2F,0x03,0x83,0x06,0x00,0x0D,0x00,0x5A,0x02,0x00,0x85,0xEB,0x51,0x08,0x0B,0x41,0x0E,0x00};
+	const uint8_t last_two_words[]={/*0x3f,0x03,0x05,0x00,*/0x2F,0x03,0x83,0x06,0x00,0x0D,0x00,0x5A,0x02,0x00,0x85,0xEB,0x51,0x08,0x00,0x00,0x00,0x00};
 	packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
 	packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
 	packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
@@ -273,6 +288,94 @@ bool init_BNO070(void)
 	}
 
 
+
+
+	// Change max fusion period to 1 mSec
+	
+	// Issue an FRS Write Request – this initiates the protocol
+	const uint8_t initiate_write_request_max_fusion[]= {/*0x3f, 0x03, 0x05,0x00,*/0x2F,0x03,0x82,0x06,0x00,0x07,0x00,0x00,0x01,0x00,0xD7,0xD7};
+	packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
+	packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
+	packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
+	packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
+	packet_write.buffer       = (void *)initiate_write_request_max_fusion; // transfer data source buffer
+	packet_write.length       = sizeof(initiate_write_request_max_fusion);  // transfer data size (bytes)
+
+	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
+		return false;
+
+    while (ioport_get_value(Int_BNO070)==true) // wait for interrupt to go low
+    {
+        timeout++;
+        if (timeout>100)
+            return false; // exit with error if another 100 mSec passed without INT going low
+        delay_ms(1);
+    }
+
+
+	// read FRS write response
+    packet_received.addr_length=0; // do a read with length 0 which does not write any address bytes
+    packet_received.length       = 6;   // transfer data size (bytes)
+    if (twi_master_read(TWI_BNO070_PORT, &packet_received) != STATUS_OK)
+    {
+	    return false;
+    }
+	
+	// Write the first two words of the FRS record
+	/* Set report ID 0x83
+		Length = 0xd
+		Offset = 0
+		Max fusion period = 1000us */
+
+	const uint8_t first_two_words_max_fusion[]={/*0x3f, 0x03,0x05,0x00,*/0x2F,0x03,0x83,0x06,0x00,0x0D,0x00,0x5A,0x00,0x00,0xE8,0x03,0x00,0x00,0x00,0x00,0x00,0x00};
+	packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
+	packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
+	packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
+	packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
+	packet_write.buffer       = (void *)first_two_words_max_fusion; // transfer data source buffer
+	packet_write.length       = sizeof(first_two_words_max_fusion);  // transfer data size (bytes)
+
+	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
+	return false;
+
+    while (ioport_get_value(Int_BNO070)==true) // wait for interrupt to go low
+    {
+        timeout++;
+        if (timeout>100)
+            return false; // exit with error if another 100 mSec passed without INT going low
+        delay_ms(1);
+    }
+
+
+	// read FRS write response - acknowledges words received)
+    packet_received.addr_length=0; // do a read with length 0 which does not write any address bytes
+    packet_received.length       = 6;   // transfer data size (bytes)
+	if (twi_master_read(TWI_BNO070_PORT, &packet_received) != STATUS_OK)
+	{
+		return false;
+	}
+
+	
+	// read FRS write response (indicates record is good)
+    packet_received.addr_length=0; // do a read with length 0 which does not write any address bytes
+    packet_received.length       = 6;   // transfer data size (bytes)
+	if (twi_master_read(TWI_BNO070_PORT, &packet_received) != STATUS_OK)
+	{
+		return false;
+	}
+
+	// read write response will be provided (indicates record is written)
+    packet_received.addr_length=0; // do a read with length 0 which does not write any address bytes
+    packet_received.length       = 6;   // transfer data size (bytes)
+	if (twi_master_read(TWI_BNO070_PORT, &packet_received) != STATUS_OK)
+	{
+		return false;
+	}
+
+
+
+
+
     // setup report
     BNO070_Report[0]=1; // this indicates the version number of the report
     BNO070_Report[1]=0; // this indicates the sequence number
@@ -297,14 +400,23 @@ bool Check_BNO070(void)
     if (ioport_get_value(Int_BNO070)==false)
     {
         // data is available, so read it
+		
+		//ioport_set_pin_high(Side_by_side_B); // !!! for debug
+		
         packet_received.addr_length=0; // do a read with length 0 which does not write any address bytes
         packet_received.length=BNOOrientationMessageLength; // need to read just 16 total bytes for orientation report
         packet_received.buffer       = &BNO070_incoming;        // transfer data destination buffer
         twi_master_read(TWI_BNO070_PORT, &packet_received);
+
+		//ioport_set_pin_low(Side_by_side_B); // !!! for debug
+
         BNO070_Report[1]=BNO070_incoming[1+2]; // sequence number
         memcpy(&BNO070_Report[2],&BNO070_incoming[4+2],8); // copy quaternion data
-        while (ioport_get_value(Int_BNO070)==false); // wait for INTN to go back up after read
         udi_hid_generic_send_report_in(BNO070_Report);
+		
+
+        while (ioport_get_value(Int_BNO070)==false); // wait for INTN to go back up after read
+		
 
         return true;
     }

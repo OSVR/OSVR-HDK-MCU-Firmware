@@ -12,7 +12,7 @@
 #define OSVRHDK // if defined, HMD only has one screen, no TI HDMI switch and BNO070 tracker
 
 #define MajorVersion	1
-#define MinorVersion	62
+#define MinorVersion	65
 
 #define TMFL_TDA19971 // same reasons
 
@@ -37,7 +37,7 @@ extern char Msg[];
 #define NXP_TWI_SPEED	50000 //!< TWI data transfer rate
 
 #ifdef BNO070
-    #define BNO_TWI_SPEED	150000 //!< TWI data transfer rate
+	#define BNO_TWI_SPEED	400000 //!< TWI data transfer rate
 #endif
 
 #define USB_REPORT_SIZE		32

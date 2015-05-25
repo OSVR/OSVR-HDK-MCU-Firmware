@@ -135,4 +135,9 @@ void custom_board_init(void)
     //ioport_set_pin_low(PWM_A);
     //ioport_set_pin_low(PWM_B);
 
+	// init PF0 LED for debug purposes
+	#ifdef OSVRHDK
+	    ioport_configure_pin(Debug_LED,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+	#endif
+
 };

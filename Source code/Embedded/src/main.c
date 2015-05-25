@@ -99,9 +99,6 @@ int main(void)
 
     init_solomon();
 
-#ifdef BNO070
-    BNO070Active=init_BNO070();
-#endif
 
     // init the incoming serial state machine
     InitSerialState();
@@ -158,7 +155,13 @@ int main(void)
     //ProgramMTP0();
 
     HDMI_task=true;
+	
+#ifdef BNO070
+    BNO070Active=init_BNO070();
+#endif
 
+
+	uint8_t slower = 0;
 
     while (true) {
         //sleepmgr_enter_sleep(); // todo - probably remove this since the board has to work without USB
@@ -168,8 +171,8 @@ int main(void)
             CommandReady=false;
         }
 
+        delay_us(100); // Some delay is required to allow USB interrupt to process
 
-        delay_ms(1);
 
 #ifdef BNO070
         if (BNO070Active)
@@ -183,35 +186,38 @@ int main(void)
             TMDS_422_Task();
         }
 #endif
-        if (HDMI_task)
-        {
-            HDMITask();
+
+		slower++; // used to slow down the rate of checking HDMI
+		if ((HDMI_task) && (slower>100))
+		{
+			slower=0;
+			HDMITask();
 			if (NewVideoDetected)
 			{
 				NewVideoDetected=false;
-#ifdef Solomon1_SPI
-#ifndef H546DLT01				
+	#ifdef Solomon1_SPI
+	#ifndef H546DLT01				
 				init_solomon_device(Solomon1); // todo: add back after debug of board
-#endif
+	#endif
 				DisplayOn(Solomon1);
-#endif
-#ifdef Solomon2_SPI
+	#endif
+	#ifdef Solomon2_SPI
 				init_solomon_device(Solomon2);
-#endif
+	#endif
 			}
 			if (VideoLost)
 			{
 				
-#ifdef Solomon1_SPI
+	#ifdef Solomon1_SPI
 				DisplayOff(Solomon1);
-#endif
-#ifdef Solomon2_SPI
+	#endif
+	#ifdef Solomon2_SPI
 				DisplayOff(Solomon2);
-#endif
+	#endif
 				VideoLost=false;
 			}
-        }
-    }
+		}
+	}
 }
 
 void main_suspend_action(void)

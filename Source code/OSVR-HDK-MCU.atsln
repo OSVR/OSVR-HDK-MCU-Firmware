@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "OSVR-HDK-MCU-AUOOLED", "Embedded\OSVR-HDK-MCU-AUOOLED.cproj", "{75C0D83C-7332-42DE-8522-9585F1DF6614}"
+EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "OSVR-HDK-MCU-SharpLCD", "Embedded\OSVR-HDK-MCU-SharpLCD.cproj", "{6B766CC4-0752-4450-A763-227D7E64FDFF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.Debug|AVR.ActiveCfg = Debug|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.Debug|AVR.Build.0 = Debug|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.Release|AVR.ActiveCfg = Release|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.Release|AVR.Build.0 = Release|AVR
+		{6B766CC4-0752-4450-A763-227D7E64FDFF}.Debug|AVR.ActiveCfg = Debug|AVR
+		{6B766CC4-0752-4450-A763-227D7E64FDFF}.Debug|AVR.Build.0 = Debug|AVR
+		{6B766CC4-0752-4450-A763-227D7E64FDFF}.Release|AVR.ActiveCfg = Release|AVR
+		{6B766CC4-0752-4450-A763-227D7E64FDFF}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+EndGlobal

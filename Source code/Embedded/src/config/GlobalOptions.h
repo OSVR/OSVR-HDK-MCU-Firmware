@@ -9,7 +9,7 @@
 #ifndef GLOBALOPTIONS_H_
 #define GLOBALOPTIONS_H_
 
-#define OSVRHDK // if defined, HMD only has one screen, no TI HDMI switch and BNO070 tracker
+#include "VariantOptions.h"
 
 #define MajorVersion	1
 #define MinorVersion	65
@@ -20,11 +20,12 @@
 //#define BYPASS_FIRST_NXP
 
 #ifdef OSVRHDK
-    #define LS055T1SX01 // sharp 5.5"
-    //#define H546DLT01  // AUO OLED
     #define BNO070
-#else
+#endif
+
+#ifndef SENSICS_DISPLAY_CONFIGURED
     #define LS050T1SX01 // Sharp 5" LCD screen
+    #define SENSICS_DISPLAY_CONFIGURED
 #endif
 
 

@@ -550,7 +550,7 @@
     <Folder Include="src\DeviceDrivers" />
     <Folder Include="src\Variants" />
     <Folder Include="src\NXP" />
-    <Folder Include="src\Variants\HDK_Sharp_LCD\" />
+    <Folder Include="src\Variants\dSight_Sharp_LCD" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\ASF\common\services\usb\class\composite\device\udi_composite_conf.h">
@@ -610,7 +610,7 @@
     <Compile Include="src\DeviceDrivers\BNO070.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\Variants\HDK_Sharp_LCD\VariantOptions.h">
+    <Compile Include="src\Variants\dSight_Sharp_LCD\VariantOptions.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="_StackInstrument.c">

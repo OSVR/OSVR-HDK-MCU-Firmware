@@ -116,7 +116,7 @@ bool init_solomon_device(uint8_t deviceID)
     write_solomon(deviceID,0xB7,0x0302); // LP generic write
     write_solomon(deviceID,0xB8,0x0000); // VC
 
-#ifdef LS055T1SX01
+#ifdef LS055T1SX01 // sharp 5.5"
     write_solomon(deviceID,0xBC,0x0003); // no of bytes to send
     write_solomon_pair(deviceID,0xBF,0x0F51,0x00FF); // cmd=51, data1=0F
 
@@ -134,7 +134,7 @@ bool init_solomon_device(uint8_t deviceID)
     write_solomon(deviceID,0xBF,0x0011); // sleep out
 #endif
 
-#ifdef LS050T1SX01 // sharp 5.5"
+#ifdef LS050T1SX01 // sharp 5"
     // from LS050T1SX01 data sheet
     write_solomon(deviceID,0xBC,0x0002); // no of byte send
     write_solomon(deviceID,0xBF,0x04B0); // cmd=B0, data=04

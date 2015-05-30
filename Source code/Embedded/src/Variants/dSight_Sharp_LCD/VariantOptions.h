@@ -10,6 +10,6 @@
 #define VARIANTOPTIONS_H_
 
 #define SENSICS_DISPLAY_CONFIGURED
-#define LS055T1SX01 // sharp 5.5" LCD
+#define LS050T1SX01 // sharp 5" LCD
 
 #endif /* VARIANTOPTIONS_H_ */

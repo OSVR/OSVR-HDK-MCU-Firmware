@@ -200,9 +200,18 @@ int main(void)
 				init_solomon_device(Solomon1); // todo: add back after debug of board
 	#endif
 				DisplayOn(Solomon1);
+	#ifndef H546DLT01
+				init_solomon_device(Solomon1); // todo: add back after debug of board
+	#endif
 	#endif
 	#ifdef Solomon2_SPI
+	#ifndef H546DLT01
 				init_solomon_device(Solomon2);
+	#endif
+				DisplayOn(Solomon2); // added to make it same process as solomon 1
+	#ifndef H546DLT01
+				init_solomon_device(Solomon2);
+	#endif
 	#endif
 			}
 			if (VideoLost)

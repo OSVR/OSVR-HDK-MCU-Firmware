@@ -5,6 +5,8 @@ Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "OSVR-HDK-MCU-AUOOLED", "Emb
 EndProject
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "OSVR-HDK-MCU-SharpLCD", "Embedded\OSVR-HDK-MCU-SharpLCD.cproj", "{6B766CC4-0752-4450-A763-227D7E64FDFF}"
 EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "dSight-SharpLCD", "Embedded\dSight-SharpLCD.cproj", "{F00FEBBC-0E79-488D-8C45-55D2D3A1E9D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|AVR = Debug|AVR
@@ -19,6 +21,10 @@ Global
 		{6B766CC4-0752-4450-A763-227D7E64FDFF}.Debug|AVR.Build.0 = Debug|AVR
 		{6B766CC4-0752-4450-A763-227D7E64FDFF}.Release|AVR.ActiveCfg = Release|AVR
 		{6B766CC4-0752-4450-A763-227D7E64FDFF}.Release|AVR.Build.0 = Release|AVR
+		{F00FEBBC-0E79-488D-8C45-55D2D3A1E9D3}.Debug|AVR.ActiveCfg = Debug|AVR
+		{F00FEBBC-0E79-488D-8C45-55D2D3A1E9D3}.Debug|AVR.Build.0 = Debug|AVR
+		{F00FEBBC-0E79-488D-8C45-55D2D3A1E9D3}.Release|AVR.ActiveCfg = Release|AVR
+		{F00FEBBC-0E79-488D-8C45-55D2D3A1E9D3}.Release|AVR.Build.0 = Release|AVR
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

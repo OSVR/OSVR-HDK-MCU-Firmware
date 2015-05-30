@@ -213,7 +213,7 @@ static bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer)
         //WriteLn("+");
         if (nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i) != buffer[i]) {
             WriteLn("---");
-            sprintf("%d %d %d",nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i) ,buffer[i],i);
+            sprintf(Msg,"%d %d %d",nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i) ,buffer[i],i);
             WriteLn(Msg);
             return false;
         }

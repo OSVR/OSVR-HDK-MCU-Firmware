@@ -226,26 +226,27 @@ void DisplayOn(uint8_t deviceID)
 
 {
 #ifdef H546DLT01 // AUO 5.46" OLED
+		delay_ms(500);
 		WriteLn("Turing display on");
 		delay_ms(100);
 	    write_solomon(deviceID,0xBC,0x0001); //
-	    delay_ms(16);
+	    delay_ms(26);
 	    write_solomon(deviceID,0xBF,0x0011); // sleep out
 	    delay_ms(170); // delay > 10 frames
 	    write_solomon(deviceID,0xBF,0x0029); // display on
-	    delay_ms(20); // delay > 1 frames
+	    delay_ms(32); // delay > 1 frames
 
 	    write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
 
 	    write_solomon(deviceID,0xBF,0x07FE); // cmd=FE, data=BF
 	    delay_ms(100); // delay > 5 frames
 	    write_solomon(deviceID,0xBF,0xFAA9);
-	    delay_ms(16);
+	    delay_ms(32);
 	    write_solomon(deviceID,0xBF,0x00FE);
-	    delay_ms(16);
+	    delay_ms(32);
 
 	    write_solomon(deviceID,0xBC,0x0001); //
-	    delay_ms(16);
+	    delay_ms(32);
 		
 		write_solomon(deviceID,0xB7,0x034B); // video mode on
 #endif

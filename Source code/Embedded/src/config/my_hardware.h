@@ -43,6 +43,7 @@
     #define LCD_avdd_en_sw			IOPORT_CREATE_PIN(PORTC,3)
     #define BNO_070_Reset_Pin		IOPORT_CREATE_PIN(PORTA,5)
     #define Int_BNO070				IOPORT_CREATE_PIN(PORTD,3)
+    #define FPGA_Locked				IOPORT_CREATE_PIN(PORTF,2) // low:locked; high:not locked
 #else
 	#define PWM_A					IOPORT_CREATE_PIN(PORTE,3) // high:on; low:off
     #define PWM_B					IOPORT_CREATE_PIN(PORTF,2) // high:on; low:off

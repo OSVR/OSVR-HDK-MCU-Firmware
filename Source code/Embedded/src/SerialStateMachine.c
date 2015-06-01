@@ -808,6 +808,16 @@ void ProcessFPGACommand(void)
         FPGA_reset();
         break;
     }
+	case 'l':
+	case 'L':
+	{
+		if (ioport_get_pin_level(FPGA_Locked))
+			WriteLn("FPGA unlocked");
+		else
+			WriteLn("FPGA locked");
+		break;
+	}
+	
     }
 
 }

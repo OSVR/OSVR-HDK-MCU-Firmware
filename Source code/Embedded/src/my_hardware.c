@@ -72,8 +72,15 @@ void custom_board_init(void)
     ioport_configure_pin(Int_HDMI_A, IOPORT_DIR_INPUT);
 
 #ifdef OSVRHDK
-    //ioport_configure_pin(Side_by_side_A ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_LOW); 
+
+#ifdef H546DLT01
+    ioport_configure_pin(Side_by_side_A ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_LOW); 
     ioport_configure_pin(Side_by_side_B ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_LOW);
+#else // LCD
+	ioport_configure_pin(Side_by_side_A ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_LOW);
+	ioport_configure_pin(Side_by_side_B ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_LOW);
+#endif
+
 #else
     ioport_configure_pin(Side_by_side_A ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH); 
     ioport_configure_pin(Side_by_side_B ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
@@ -93,6 +100,7 @@ void custom_board_init(void)
 #ifdef OSVRHDK
     ioport_configure_pin(LCD_avdd_en ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
     ioport_configure_pin(LCD_avdd_en_sw ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
+    ioport_configure_pin(FPGA_Locked, IOPORT_DIR_INPUT|IOPORT_MODE_PULLUP);
 #endif
 
 #ifndef OSVRHDK

@@ -13,5 +13,6 @@
 
 #define SENSICS_DISPLAY_CONFIGURED
 #define H546DLT01  // AUO OLED
+#define LOW_PERSISTENCE // changes OLED configuration
 
 #endif /* VARIANTOPTIONS_H_ */

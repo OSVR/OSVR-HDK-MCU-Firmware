@@ -171,6 +171,19 @@ bool init_solomon_device(uint8_t deviceID)
 
     write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
 	delay_ms(16);
+
+#ifdef LOW_PERSISTENCE
+    write_solomon(deviceID,0xBF,0x08FE); // cmd=FE, data=08
+    delay_ms(16);
+    write_solomon(deviceID,0xBF,0x4003); // cmd=FE, data=08
+    delay_ms(16);
+    write_solomon(deviceID,0xBF,0x1A07); // cmd=FE, data=08
+    delay_ms(16);
+    write_solomon(deviceID,0xBF,0x00FE); // cmd=FE, data=08
+    delay_ms(16);
+    write_solomon(deviceID,0xBF,0xFF51); // cmd=FE, data=08
+    delay_ms(16);
+#else
     write_solomon(deviceID,0xBF,0x04FE); // cmd=FE, data=04
 	delay_ms(16);
     write_solomon(deviceID,0xBF,0x005E);
@@ -191,7 +204,7 @@ bool init_solomon_device(uint8_t deviceID)
 	delay_ms(16);
     write_solomon(deviceID,0xBF,0x0055);
 	delay_ms(16);
-
+#endif
 	/*
     write_solomon(deviceID,0xBC,0x0001); //
 	delay_ms(16);

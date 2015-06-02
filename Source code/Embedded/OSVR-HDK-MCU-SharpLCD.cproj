@@ -298,7 +298,6 @@
   <Value>../src/ASF/common/services/usb/class/hid/device</Value>
   <Value>../src/ASF/common/services/usb/class/hid/device/generic</Value>
   <Value>../src/Variants/HDK_Sharp_LCD</Value>
-  <Value>../src/HDK_Sharp_LCD</Value>
 </ListValues></avrgcc.compiler.directories.IncludePaths>
   <avrgcc.compiler.optimization.OtherFlags>-fdata-sections</avrgcc.compiler.optimization.OtherFlags>
   <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>

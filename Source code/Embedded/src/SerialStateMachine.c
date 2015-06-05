@@ -811,10 +811,12 @@ void ProcessFPGACommand(void)
 	case 'l':
 	case 'L':
 	{
+#ifdef OSVRHDK
 		if (ioport_get_pin_level(FPGA_Locked))
 			WriteLn("FPGA unlocked");
 		else
 			WriteLn("FPGA locked");
+#endif
 		break;
 	}
 	

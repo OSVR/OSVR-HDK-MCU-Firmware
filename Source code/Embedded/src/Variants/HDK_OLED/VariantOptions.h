@@ -10,6 +10,7 @@
 #define VARIANTOPTIONS_H_
 
 #define OSVRHDK
+#define BNO070
 
 #define SENSICS_DISPLAY_CONFIGURED
 #define H546DLT01  // AUO OLED

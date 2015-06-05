@@ -10,6 +10,7 @@
 #define VARIANTOPTIONS_H_
 
 #define OSVRHDK
+#define BNO070
 
 #define SENSICS_DISPLAY_CONFIGURED
 #define LS055T1SX01 // sharp 5.5" LCD

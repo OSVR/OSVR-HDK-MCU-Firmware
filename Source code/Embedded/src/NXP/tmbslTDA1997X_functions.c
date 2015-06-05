@@ -1,10 +1,7 @@
 /**
 
  * Copyright (C) 2006 NXP N.V., All Rights Reserved.
- * This source code and any compilation or derivative thereof is the proprietary
- * information of NXP N.V. and is confidential in nature. Under no circumstances
- * is this software to be  exposed to or placed under an Open Source License of
- * any type without the expressed written permission of NXP N.V.7866
+ * Exposed under Apache 2.0 Open Source License with permission of NXP N.V.
  *
  * \file          tmbslTDA1997X_functions.c
  *

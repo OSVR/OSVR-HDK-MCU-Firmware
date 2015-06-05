@@ -19,9 +19,6 @@
 //#define SkipNXP1 // ignore first NXP during HDMI task.
 //#define BYPASS_FIRST_NXP
 
-#ifdef OSVRHDK
-    #define BNO070
-#endif
 
 #ifndef SENSICS_DISPLAY_CONFIGURED
     #define LS050T1SX01 // Sharp 5" LCD screen

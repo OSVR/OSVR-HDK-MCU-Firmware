@@ -36,6 +36,23 @@ twi_package_t packet_received = {
     .length       = 30   // transfer data size (bytes)
 };
 
+bool BNO070_operation_done(bool StateToExitFrom)
+// waits for BNO to complete the operation, as signified by interrupt going high or low. Waits to interrupt to exit from "state to exit from" mode
+// returns TRUE if finished (normal mode), FALSE if error
+
+{
+	uint8_t timeout=0;
+
+	while (ioport_get_value(Int_BNO070)==StateToExitFrom) // wait for interrupt to go high
+	{
+		timeout++;
+		if (timeout>100)
+		return false; // exit with error if another 100 mSec passed without INT going high
+		delay_ms(1);
+	}
+	return true;
+};
+
 bool init_BNO070(void)
 {
 
@@ -73,15 +90,8 @@ bool init_BNO070(void)
     ioport_set_pin_high(BNO_070_Reset_Pin);
     delay_ms(100);
     
-    uint8_t timeout=0;
-
-    while (ioport_get_value(Int_BNO070)==true) // wait for interrupt to go low
-    {
-        timeout++;
-        if (timeout>100)
-            return false; // exit with error if another 100 mSec passed without INT going low
-        delay_ms(1);
-    }
+	if (!BNO070_operation_done(true))
+        return false; // exit with error if another 100 mSec passed without INT going low
 
     packet_received.addr_length=0; // do a read with length 0 which does not write any address bytes
     packet_received.length       = 2;   // transfer data size (bytes)
@@ -97,15 +107,8 @@ bool init_BNO070(void)
     packet_received.length       = 30;   // transfer data size (bytes)
 
 
-    timeout=0;
-
-    while (ioport_get_value(Int_BNO070)==false) // wait for interrupt to go high
-    {
-        timeout++;
-        if (timeout>100)
-            return false; // exit with error if another 100 mSec passed without INT going low
-        delay_ms(1);
-    }
+	if (!BNO070_operation_done(false))
+		return false; // exit with error if another 100 mSec passed without INT going high
 
     // read HID descriptor
     if (twi_master_read(TWI_BNO070_PORT, &packet_received) != STATUS_OK)
@@ -189,14 +192,8 @@ bool init_BNO070(void)
 	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
 		return false;
 
-    while (ioport_get_value(Int_BNO070)==true) // wait for interrupt to go low
-    {
-        timeout++;
-        if (timeout>100)
-            return false; // exit with error if another 100 mSec passed without INT going low
-        delay_ms(1);
-    }
-
+	if (!BNO070_operation_done(true))
+		return false; // exit with error if another 100 mSec passed without INT going low
 
 	// read FRS write response
     packet_received.addr_length=0; // do a read with length 0 which does not write any address bytes
@@ -224,13 +221,8 @@ bool init_BNO070(void)
 	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
 	return false;
 
-    while (ioport_get_value(Int_BNO070)==true) // wait for interrupt to go low
-    {
-        timeout++;
-        if (timeout>100)
-            return false; // exit with error if another 100 mSec passed without INT going low
-        delay_ms(1);
-    }
+	if (!BNO070_operation_done(true))
+		return false; // exit with error if another 100 mSec passed without INT going low
 
 
 	// read FRS write response - acknowledges words received)
@@ -254,13 +246,8 @@ bool init_BNO070(void)
 	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
 		return false;
 
-    while (ioport_get_value(Int_BNO070)==true) // wait for interrupt to go low
-    {
-        timeout++;
-        if (timeout>100)
-            return false; // exit with error if another 100 mSec passed without INT going low
-        delay_ms(1);
-    }
+	if (!BNO070_operation_done(true))
+		return false; // exit with error if another 100 mSec passed without INT going low
 
 
 	// read FRS write response - acknowledges words received
@@ -304,14 +291,8 @@ bool init_BNO070(void)
 	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
 		return false;
 
-    while (ioport_get_value(Int_BNO070)==true) // wait for interrupt to go low
-    {
-        timeout++;
-        if (timeout>100)
-            return false; // exit with error if another 100 mSec passed without INT going low
-        delay_ms(1);
-    }
-
+	if (!BNO070_operation_done(true))
+		return false; // exit with error if another 100 mSec passed without INT going low
 
 	// read FRS write response
     packet_received.addr_length=0; // do a read with length 0 which does not write any address bytes
@@ -338,13 +319,8 @@ bool init_BNO070(void)
 	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
 	return false;
 
-    while (ioport_get_value(Int_BNO070)==true) // wait for interrupt to go low
-    {
-        timeout++;
-        if (timeout>100)
-            return false; // exit with error if another 100 mSec passed without INT going low
-        delay_ms(1);
-    }
+	if (!BNO070_operation_done(true))
+		return false; // exit with error if another 100 mSec passed without INT going low
 
 
 	// read FRS write response - acknowledges words received)

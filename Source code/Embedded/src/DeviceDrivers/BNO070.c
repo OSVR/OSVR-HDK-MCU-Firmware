@@ -36,6 +36,9 @@ twi_package_t packet_received = {
     .length       = 30   // transfer data size (bytes)
 };
 
+bool BNO070_operation_done(bool StateToExitFrom);
+bool BNO070_packet_write(uint8_t Addr, void *DataToWrite, unsigned int Datalength);
+
 bool BNO070_operation_done(bool StateToExitFrom)
 // waits for BNO to complete the operation, as signified by interrupt going high or low. Waits to interrupt to exit from "state to exit from" mode
 // returns TRUE if finished (normal mode), FALSE if error
@@ -52,6 +55,25 @@ bool BNO070_operation_done(bool StateToExitFrom)
 	}
 	return true;
 };
+
+bool BNO070_packet_write(uint8_t Addr, void *DataToWrite, unsigned int Datalength)
+
+// writes packet to BNO
+
+{
+    twi_package_t packet_write = {
+	    .addr[0]      = Addr, //regNum,      // TWI slave memory address data
+	    .addr[1]      = 0, //regNum,      // TWI slave memory address data
+	    .addr_length  = sizeof (uint16_t),    // TWI slave memory address data size
+	    .chip         = BNO070_ADDR,      // TWI slave bus address
+	    .buffer       = DataToWrite, // transfer data source buffer
+	    .length       = Datalength  // transfer data size (bytes)
+    };
+    if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
+	    return false;
+	else
+		return true;
+}
 
 bool init_BNO070(void)
 {
@@ -134,40 +156,22 @@ bool init_BNO070(void)
     //const uint8_t rotation_vector_command[] = {0x3f,0x03/* turn on rotation vector */ ,0x05 ,0x00 ,0x35 ,0x03 ,0x06 ,0x00 ,0x11 ,0x00 ,0x00 ,0x00 ,0x00 ,0x40 ,0x0D ,0x03 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
 #endif
 
-    twi_package_t packet_write = {
-        .addr[0]      = 5, //regNum,      // TWI slave memory address data
-        .addr[1]      = 0, //regNum,      // TWI slave memory address data
-        .addr_length  = sizeof (uint16_t),    // TWI slave memory address data size
-        .chip         = BNO070_ADDR,      // TWI slave bus address
-        .buffer       = (void *)rotation_vector_command, // transfer data source buffer
-        .length       = sizeof(rotation_vector_command)  // transfer data size (bytes)
-    };
-    if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
-        return false;
+	if (!BNO070_packet_write(5,(void *)rotation_vector_command,sizeof(rotation_vector_command)))
+		return false;
 
-
+	
 #ifdef USE_GAME_ROTATION
     const uint8_t set_accl_report[] = {0x3f,0x03,/* game orientation register */ 0x08, 0x06, 0x00, 0x0d,0x00,0x00,0x00,0x00,0x88,0x07,0x00,0x00,0x00,0x00,0x00,0x00}; // /set for 200 Hz read
 #else
     const uint8_t set_accl_report[] = {0x3f,0x03,/* orientation register */ 0x05, 0x06, 0x00, 0x0d,0x00,0x00,0x00,0x00,0x88,0x07,0x00,0x00,0x00,0x00,0x00,0x00}; // /set for 200 Hz read
 #endif
 
-    packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
-    packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
-    packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
-    packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
-    packet_write.buffer       = (void *)set_accl_report; // transfer data source buffer
-    packet_write.length       = sizeof(set_accl_report);  // transfer data size (bytes)
-
-
-    if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
+    if (!BNO070_packet_write(5,(void *)set_accl_report, sizeof(set_accl_report)))
         return false;
 
     const uint8_t new_report[]= {0x3f, 0x02, 0x05, 0x06,0x00}; // overcome a bug. Normally, read back is not needed
-    packet_write.buffer=(void *)new_report;
-    packet_write.length=sizeof(new_report);
 
-    if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
+    if (!BNO070_packet_write(5,(void *)new_report, sizeof(new_report)))
         return false;
 
 
@@ -181,15 +185,8 @@ bool init_BNO070(void)
 #else
 	const uint8_t initiate_write_request[]= {/*0x3f, 0x03, 0x05,0x00,*/0x2F,0x03,0x82,0x06,0x00,0x07,0x00,0x00,0x04,0x00,0x2D,0x3E};
 #endif
-	packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
-	packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
-	packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
-	packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
-	packet_write.buffer       = (void *)initiate_write_request; // transfer data source buffer
-	packet_write.length       = sizeof(initiate_write_request);  // transfer data size (bytes)
 
-
-	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
+	if (!BNO070_packet_write(5,(void *)initiate_write_request,sizeof(initiate_write_request)))
 		return false;
 
 	if (!BNO070_operation_done(true))
@@ -211,15 +208,9 @@ bool init_BNO070(void)
 		Max rotation = 7.3 degrees */
 
 	const uint8_t first_two_words[]={/*0x3f, 0x03,0x05,0x00,*/0x2F,0x03,0x83,0x06,0x00,0x0D,0x00,0x5A,0x00,0x00,0x31,0x08,0xAC,0x0C,0x75,0x93,0x18,0x04};
-	packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
-	packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
-	packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
-	packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
-	packet_write.buffer       = (void *)first_two_words; // transfer data source buffer
-	packet_write.length       = sizeof(first_two_words);  // transfer data size (bytes)
 
-	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
-	return false;
+	if (!BNO070_packet_write(5,(void *)first_two_words,sizeof(first_two_words)))
+		return false;
 
 	if (!BNO070_operation_done(true))
 		return false; // exit with error if another 100 mSec passed without INT going low
@@ -236,14 +227,8 @@ bool init_BNO070(void)
 	// write last two words
 	//const uint8_t last_two_words[]={/*0x3f,0x03,0x05,0x00,*/0x2F,0x03,0x83,0x06,0x00,0x0D,0x00,0x5A,0x02,0x00,0x85,0xEB,0x51,0x08,0x0B,0x41,0x0E,0x00};
 	const uint8_t last_two_words[]={/*0x3f,0x03,0x05,0x00,*/0x2F,0x03,0x83,0x06,0x00,0x0D,0x00,0x5A,0x02,0x00,0x85,0xEB,0x51,0x08,0x00,0x00,0x00,0x00};
-	packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
-	packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
-	packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
-	packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
-	packet_write.buffer       = (void *)last_two_words; // transfer data source buffer
-	packet_write.length       = sizeof(last_two_words);  // transfer data size (bytes)
 
-	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
+	if  (!BNO070_packet_write(5,(void *)last_two_words,sizeof(last_two_words)))
 		return false;
 
 	if (!BNO070_operation_done(true))
@@ -281,14 +266,8 @@ bool init_BNO070(void)
 	
 	// Issue an FRS Write Request – this initiates the protocol
 	const uint8_t initiate_write_request_max_fusion[]= {/*0x3f, 0x03, 0x05,0x00,*/0x2F,0x03,0x82,0x06,0x00,0x07,0x00,0x00,0x01,0x00,0xD7,0xD7};
-	packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
-	packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
-	packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
-	packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
-	packet_write.buffer       = (void *)initiate_write_request_max_fusion; // transfer data source buffer
-	packet_write.length       = sizeof(initiate_write_request_max_fusion);  // transfer data size (bytes)
 
-	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
+	if (!BNO070_packet_write(5,(void *)initiate_write_request_max_fusion,sizeof(initiate_write_request_max_fusion)))
 		return false;
 
 	if (!BNO070_operation_done(true))
@@ -309,15 +288,9 @@ bool init_BNO070(void)
 		Max fusion period = 1000us */
 
 	const uint8_t first_two_words_max_fusion[]={/*0x3f, 0x03,0x05,0x00,*/0x2F,0x03,0x83,0x06,0x00,0x0D,0x00,0x5A,0x00,0x00,0xE8,0x03,0x00,0x00,0x00,0x00,0x00,0x00};
-	packet_write.addr[0]      = 5; //regNum,      // TWI slave memory address data
-	packet_write.addr[1]      = 0; //regNum,      // TWI slave memory address data
-	packet_write.addr_length  = sizeof (uint16_t);    // TWI slave memory address data size
-	packet_write.chip         = BNO070_ADDR;      // TWI slave bus address
-	packet_write.buffer       = (void *)first_two_words_max_fusion; // transfer data source buffer
-	packet_write.length       = sizeof(first_two_words_max_fusion);  // transfer data size (bytes)
 
-	if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK)
-	return false;
+	if (!BNO070_packet_write(5,(void *)first_two_words_max_fusion,sizeof(first_two_words_max_fusion)))
+		return false;
 
 	if (!BNO070_operation_done(true))
 		return false; // exit with error if another 100 mSec passed without INT going low

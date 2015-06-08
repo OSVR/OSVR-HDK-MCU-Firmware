@@ -17,4 +17,6 @@ bool init_BNO070(void);
 bool Check_BNO070(void);
 bool Tare_BNO070(void);
 
+bool dfu_BNO070(void);
+
 #endif /* BNO070_H_ */

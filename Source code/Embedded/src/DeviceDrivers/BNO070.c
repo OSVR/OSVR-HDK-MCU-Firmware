@@ -407,4 +407,67 @@ bool Tare_BNO070(void)
     WriteLn("Tare completed");
     return true;
 }
+
+
+#include "sensorhub.h"
+extern sensorhub_t sensorhub;
+
+#if 0
+#define DFU_MAJOR 1
+#define DFU_MINOR 7
+#define DFU_PATCH 0
+#include "bno-hostif/1000-3251_1.7.0.384.c"
+
+#else 
+#define DFU_MAJOR 1
+#define DFU_MINOR 2
+#define DFU_PATCH 5
+#include "bno-hostif/1000-3251_1.2.5.c"
+#endif
+
+static sensorhub_ProductID_t readProductId()
+{
+    sensorhub_ProductID_t id;
+    memset(&id, 0, sizeof(id));
+
+    sensorhub.debugPrintf("Requesting product ID...\r\n");
+    int rc = sensorhub_getProductID(&sensorhub, &id);
+    if (rc != SENSORHUB_STATUS_SUCCESS) {
+        debugPrintf("readProductId received error: %d\r\n", rc);
+        return id;
+    }
+
+    sensorhub.debugPrintf("  Version %d.%d.%d\r\n", id.swVersionMajor, id.swVersionMinor, id.swVersionPatch);
+    sensorhub.debugPrintf("  Part number: %d\r\n", id.swPartNumber);
+    sensorhub.debugPrintf("  Build number: %d\r\n", id.swBuildNumber);
+
+    return id;
+}
+
+bool dfu_BNO070(void) {
+    
+
+    sensorhub.debugPrintf("Performing DFU . . . \r\n");
+    sensorhub_ProductID_t id = readProductId();
+    if ((id.swVersionMajor != DFU_MAJOR) ||
+    (id.swVersionMinor != DFU_MINOR) ||
+    (id.swVersionPatch != DFU_PATCH)) {
+        sensorhub.debugPrintf("BNO is not at %d.%d.%d.  Performing DFU . . . \r\n", DFU_MAJOR, DFU_MINOR, DFU_PATCH);
+
+        int rc = sensorhub_dfu(&sensorhub, sensorhub_dfu_stream, sizeof(sensorhub_dfu_stream));
+        if (rc != SENSORHUB_STATUS_SUCCESS) {
+            sensorhub.debugPrintf("dfu received error: %d\r\n", rc);
+            return;
+        }
+        sensorhub.debugPrintf("DFU Completed Successfully\r\n");
+        // Re-probe:
+        sensorhub_probe(&sensorhub);
+
+        // Get the updated version number
+        readProductId();
+    }
+    
+}
+
+
 #endif

@@ -44,6 +44,8 @@
 #include "uart.h"
 #include "SerialStateMachine.h"
 #include "config/my_hardware.h"
+
+#ifndef DISABLE_NXP
 #include "nxp/AVRHDMI.h"
 #include "nxp/tmbslHdmiRx_types.h"
 #include "nxp/tmdlHdmiRx.h"
@@ -52,6 +54,9 @@
 #include "nxp/tmbslTDA1997X_local.h"
 #include "nxp/i2c.h"
 #include "nxp/my_bit.h"
+#endif
+
+#include "stdio.h"
 #include "DeviceDrivers/Solomon.h"
 #include "boot.h"
 #include "FPGA.h"
@@ -182,7 +187,12 @@ void ProcessInfoCommands(void);
 void ProcessSPICommand(void);
 void ProcessI2CCommand(void);
 void ProcessFPGACommand(void);
+
+#ifndef DISABLE_NXP
 void ProcessHDMICommand(void);
+#endif
+
+
 #ifdef TMDS422
     void ProcessTMDSCommand(void);
 #endif
@@ -326,12 +336,16 @@ void ProcessCommand(void)
 #endif
             break;
         }
+		#ifndef DISABLE_NXP
+
         case 'H': // HDMI commands
         case 'h':
         {
             ProcessHDMICommand();
             break;
         }
+		#endif
+		
         case 'P': // PWM settings
         case 'p':
         {
@@ -627,6 +641,9 @@ void ProcessI2CCommand(void)
         break;
 
     }
+	
+	#ifndef DISABLE_NXP
+
     case 'f':
     case 'F': // find available I2C addresses
     {
@@ -641,6 +658,8 @@ void ProcessI2CCommand(void)
         break;
     }
 
+	#endif
+	
 #ifdef BNO070
     case 'T':  // tare
     case 't':
@@ -648,6 +667,8 @@ void ProcessI2CCommand(void)
         Tare_BNO070();
     }
 #endif
+
+#ifndef DISABLE_NXP
 
     case 'N': // NXP commands
     case 'n':
@@ -748,6 +769,8 @@ void ProcessI2CCommand(void)
         };
         break;
     };
+
+#endif
     }
 
     WriteLn("");
@@ -823,6 +846,8 @@ void ProcessFPGACommand(void)
     }
 
 }
+
+#ifndef DISABLE_NXP
 
 void ProcessHDMICommand(void)
 
@@ -917,6 +942,7 @@ void ProcessHDMICommand(void)
     }
 }
 
+#endif
 
 #ifdef TMDS422
 void ProcessTMDSCommand(void)

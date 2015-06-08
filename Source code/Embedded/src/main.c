@@ -50,7 +50,11 @@
 #include "SerialStateMachine.h"
 #include "DeviceDrivers/Solomon.h"
 #include "my_hardware.h"
+
+#ifndef DISABLE_NXP
 #include "nxp/AVRHDMI.h"
+#endif
+
 #include "DeviceDrivers/TI-TMDS442.h"
 #include "DeviceDrivers/BNO070.h"
 
@@ -128,7 +132,7 @@ int main(void)
 #endif
 
 
-
+#ifndef DISABLE_NXP
     Init_HDMI(); // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has already been initizliaed
 	if (NewVideoDetected)
 	{
@@ -156,6 +160,8 @@ int main(void)
 
     HDMI_task=true;
 	
+#endif
+
 #ifdef BNO070
     BNO070Active=init_BNO070();
 #endif
@@ -187,6 +193,7 @@ int main(void)
         }
 #endif
 
+#ifndef DISABLE_NXP
 		slower++; // used to slow down the rate of checking HDMI
 		if ((HDMI_task) && (slower>100))
 		{
@@ -226,6 +233,7 @@ int main(void)
 				VideoLost=false;
 			}
 		}
+#endif
 	}
 }
 

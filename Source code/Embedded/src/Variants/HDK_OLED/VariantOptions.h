@@ -16,4 +16,6 @@
 #define H546DLT01  // AUO OLED
 #define LOW_PERSISTENCE // changes OLED configuration
 
+#define DISABLE_NXP
+
 #endif /* VARIANTOPTIONS_H_ */

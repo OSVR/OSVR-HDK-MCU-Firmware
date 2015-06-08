@@ -12,11 +12,12 @@
 
 #include "twi_master.h"
 
-#define BNO070_APP_I2C_8BIT_ADDR (0x48 << 1)
-#define BNO070_BOOTLOADER_I2C_8BIT_ADDR (0x28 << 1)
+#define BNO070_APP_I2C_8BIT_ADDR (0x48)
+#define BNO070_BOOTLOADER_I2C_8BIT_ADDR (0x28)
 
 static void debugPrintf(const char *format, ...)
 {
+#if 1    
   static char buffer[256];
 
   va_list ap;
@@ -24,6 +25,7 @@ static void debugPrintf(const char *format, ...)
   vsprintf(buffer, format, ap);
   WriteLn(buffer);
   va_end(ap);
+#endif
 }
 
 static void logError(const struct sensorhub_s *sh, int err)
@@ -32,6 +34,8 @@ static void logError(const struct sensorhub_s *sh, int err)
   //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Turn on red LED
 
   /* Send this to the debugger's Terminal I/O window */
+  static volatile int lastErr = 0;
+  lastErr = err;
   debugPrintf("BNO070 error: %d\r\n", err);
 }
 
@@ -43,6 +47,27 @@ static int i2cTransfer(const struct sensorhub_s *sh,
                        int receiveLength)
 {
     // TODO: Support case where sendLength > 0 && sendLength <= 3 && receiveLength > 0
+    if ((sendLength > 0) && (receiveLength > 0)) {
+        if (sendLength <= 3) {
+            twi_package_t packet_read = {
+                .addr[0]      = sendData[0], //regNum,      // TWI slave memory address data
+                .addr[1]      = (sendLength <= 2) ? sendData[1] : 0, //regNum,      // TWI slave memory address data
+                .addr[2]      = (sendLength <= 3) ? sendData[2] : 0, //regNum,      // TWI slave memory address data
+                .addr_length  = sendLength, // TWI slave memory address data size
+                .chip         = address,      // TWI slave bus address
+                .buffer       = receiveData, // transfer data source buffer
+                .length       = receiveLength  // transfer data size (bytes)
+            };
+            if (twi_master_read(TWI_BNO070_PORT, &packet_read)!=STATUS_OK) {
+                return SENSORHUB_STATUS_ERROR_I2C_IO;
+            } else {
+                return SENSORHUB_STATUS_SUCCESS;    
+            }
+        } else {
+            return SENSORHUB_STATUS_ERROR_I2C_IO;  // Don't support this yet!!!
+        }        
+    } 
+    
     if (sendLength > 0) {
         twi_package_t packet_write = {
             .addr[0]      = 0, //regNum,      // TWI slave memory address data
@@ -101,8 +126,11 @@ static void delay(const struct sensorhub_s *sh, int milliseconds)
 }
 
 static uint32_t getTick(const struct sensorhub_s *sh)
-{
-    return rtc_get_time();
+{   
+    static uint32_t currTick = 0;
+    currTick += 10;
+    delay_ms(10);  
+    return currTick;
 }
 
 

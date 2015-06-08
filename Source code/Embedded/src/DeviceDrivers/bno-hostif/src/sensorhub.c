@@ -66,6 +66,7 @@ static int sensorhub_i2c_handshake(const sensorhub_t * sh) {
     }
 
     if (sh->debugPrintf) {
+#if 0 // Full Print
       sh->debugPrintf(
             "I2C Hid Descriptor:\r\n"
             "    wHIDDescLength            = %04x\r\n"
@@ -94,7 +95,15 @@ static int sensorhub_i2c_handshake(const sensorhub_t * sh) {
             , (unsigned int) u.desc.wVendorID
             , (unsigned int) u.desc.wProductID
             , (unsigned int) u.desc.wVersionID
-        );
+#else // Reduced print
+       sh->debugPrintf(
+       "I2C Hid Descriptor:\r\n"
+       "    wHIDDescLength            = %04x\r\n"
+       "    bcdVersion                = %04x\r\n"
+       , (unsigned int) u.desc.wHIDDescLength
+       , (unsigned int) u.desc.bcdVersion
+              );
+#endif
     }
 
     if (u.desc.wHIDDescLength != BNO070_DESC_V1_LEN) {

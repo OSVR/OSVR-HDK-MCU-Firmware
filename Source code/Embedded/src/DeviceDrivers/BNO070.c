@@ -18,6 +18,9 @@
 
 #include "twi_master.h"
 
+#include "sensorhub.h"
+extern sensorhub_t sensorhub;
+
 bool BNO070Active=false;
 
 #ifdef BNO070
@@ -77,7 +80,6 @@ bool BNO070_packet_write(uint8_t Addr, void *DataToWrite, unsigned int Datalengt
 
 bool init_BNO070(void)
 {
-
     int result;
 
     uint8_t BNO070_Status[30];
@@ -107,6 +109,13 @@ bool init_BNO070(void)
 
     }
 
+    if (true) { 
+        //BNO hostif testing    
+        sensorhub_probe(&sensorhub);
+        return dfu_BNO070();
+    }        
+
+ 
     ioport_set_pin_low(BNO_070_Reset_Pin);
     delay_ms(3);
     ioport_set_pin_high(BNO_070_Reset_Pin);
@@ -409,8 +418,6 @@ bool Tare_BNO070(void)
 }
 
 
-#include "sensorhub.h"
-extern sensorhub_t sensorhub;
 
 #if 0
 #define DFU_MAJOR 1
@@ -422,8 +429,10 @@ extern sensorhub_t sensorhub;
 #define DFU_MAJOR 1
 #define DFU_MINOR 2
 #define DFU_PATCH 5
-#include "bno-hostif/1000-3251_1.2.5.c"
+//#include "bno-hostif/1000-3251_1.2.5.c"
 #endif
+
+static sensorhub_ProductID_t readProductId(void);
 
 static sensorhub_ProductID_t readProductId()
 {
@@ -433,7 +442,7 @@ static sensorhub_ProductID_t readProductId()
     sensorhub.debugPrintf("Requesting product ID...\r\n");
     int rc = sensorhub_getProductID(&sensorhub, &id);
     if (rc != SENSORHUB_STATUS_SUCCESS) {
-        debugPrintf("readProductId received error: %d\r\n", rc);
+        sensorhub.debugPrintf("readProductId received error: %d\r\n", rc);
         return id;
     }
 
@@ -442,6 +451,81 @@ static sensorhub_ProductID_t readProductId()
     sensorhub.debugPrintf("  Build number: %d\r\n", id.swBuildNumber);
 
     return id;
+}
+
+sensorhub_SensorFeature_t rotationVectorSetings_;
+
+#define DEG2RAD (3.1415926535897932384626433832795 / 180.0)
+
+static void startRotationVector(void) {
+  sensorhub.debugPrintf("Enabling Rotation Vector events...\r\n");
+  rotationVectorSetings_.changeSensitivityEnabled = true;
+  rotationVectorSetings_.wakeupEnabled = false;
+  rotationVectorSetings_.changeSensitivityRelative = true;
+  rotationVectorSetings_.changeSensitivity = (uint16_t)(5.0 * DEG2RAD * (1 << 13));
+  rotationVectorSetings_.reportInterval = 16000;
+  rotationVectorSetings_.batchInterval = 0;
+  rotationVectorSetings_.sensorSpecificConfiguration = 0;
+  sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_ROTATION_VECTOR,
+                              &rotationVectorSetings_);
+
+  //sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_ROTATION_VECTOR,
+  //                            &rotationVectorSetings_);
+  sensorhub.debugPrintf("Rotation Vector Enabled: %d.\r\n", rotationVectorSetings_.reportInterval);
+}
+
+
+static void printEvent(const sensorhub_Event_t * event)
+{
+    switch (event->sensor) {
+    case SENSORHUB_RAW_ACCELEROMETER:
+        sensorhub.debugPrintf("Raw acc: %d %d %d\r\n",
+               event->un.rawAccelerometer.x,
+               event->un.rawAccelerometer.y, event->un.rawAccelerometer.z);
+        break;
+
+    case SENSORHUB_ACCELEROMETER:
+        sensorhub.debugPrintf("Acc: 0x%04x 0x%04x 0x%04x\r\n",
+               event->un.accelerometer.x_16Q8,
+               event->un.accelerometer.y_16Q8,
+               event->un.accelerometer.z_16Q8);
+        break;
+
+    case SENSORHUB_ROTATION_VECTOR:
+      {
+        float scale = 1.0f / (float)(1 << 14);
+        float q[4] = {
+          event->un.rotationVector.i_16Q14 * scale,
+          event->un.rotationVector.j_16Q14 * scale,
+          event->un.rotationVector.k_16Q14 * scale,
+          event->un.rotationVector.real_16Q14 * scale
+        };
+        sensorhub.debugPrintf("RV [xyzw]: %5.3f %5.3f %5.3f %5.3f\r\n", q[0], q[1], q[2], q[3]);
+      }
+      break;
+    }
+}            
+
+
+static void waitAndPrintEvents(void) {
+    
+    for (;;) {
+        #define MAX_EVENTS_AT_A_TIME 5
+        sensorhub_Event_t shEvents[MAX_EVENTS_AT_A_TIME];
+        int numEvents = 0;
+        int i;
+
+        /* Wait for the BNO to signal that there's an event. */
+        //osSemaphoreWait(bnoNotificationSemaphore, 10000);
+        sensorhub.delay(&sensorhub, 1);
+
+        /* Get the shEvents - we may get 0 */
+        sensorhub_poll(&sensorhub, shEvents, MAX_EVENTS_AT_A_TIME, &numEvents);
+
+        for (i = 0; i < numEvents; i++) {
+            printEvent(&shEvents[i]);
+        }
+    }        
 }
 
 bool dfu_BNO070(void) {
@@ -454,10 +538,11 @@ bool dfu_BNO070(void) {
     (id.swVersionPatch != DFU_PATCH)) {
         sensorhub.debugPrintf("BNO is not at %d.%d.%d.  Performing DFU . . . \r\n", DFU_MAJOR, DFU_MINOR, DFU_PATCH);
 
-        int rc = sensorhub_dfu(&sensorhub, sensorhub_dfu_stream, sizeof(sensorhub_dfu_stream));
+        //int rc = sensorhub_dfu(&sensorhub, sensorhub_dfu_stream, sizeof(sensorhub_dfu_stream));
+        int rc = 0;
         if (rc != SENSORHUB_STATUS_SUCCESS) {
             sensorhub.debugPrintf("dfu received error: %d\r\n", rc);
-            return;
+            return false;
         }
         sensorhub.debugPrintf("DFU Completed Successfully\r\n");
         // Re-probe:
@@ -467,6 +552,11 @@ bool dfu_BNO070(void) {
         readProductId();
     }
     
+    // TEMP HACK
+    startRotationVector();
+    waitAndPrintEvents();
+    
+    return true;
 }
 
 

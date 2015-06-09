@@ -14,6 +14,9 @@
 extern "C" {
 #endif
 
+#include <inttypes.h>
+#include <stdint.h>
+
 #define SENSORHUB_LIBRARY_VERSION (0x0001)      /* 0.1 */
 
 /**
@@ -579,7 +582,7 @@ typedef struct avrDfuStream_s {
   unsigned long totalLength;
   unsigned long pageSize;
   unsigned long numPages;
-  const uint8_t * page[DFU_MAX_PAGES];
+  /* const int_farptr_t page[DFU_MAX_PAGES]; */
 } avrDfuStream_t;
 
 /**
@@ -738,6 +741,8 @@ int sensorhub_dfu(const sensorhub_t * sh,
  */
 int sensorhub_dfu_avr(const sensorhub_t * sh,
 		      const avrDfuStream_t * dfuStream);
+			  
+uint32_t dfuAddr(uint32_t index); 
 
 #ifdef __cplusplus
 }

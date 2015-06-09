@@ -1,5 +1,7 @@
 #include <avr/pgmspace.h>
 
+#include "sensorhub.h"
+
 const uint8_t dfuPage_0[30000] PROGMEM = {
 
     0x1,0x1,0x1,0x1,0x0,0x2,0xa6,0x34,0x2b,0xaf,0x1e,0x12,0xf,0xb0,0x58,0x0,
@@ -11608,6 +11610,7 @@ const avrDfuStream_t dfuStream = {
     .totalLength = 185209,
     .pageSize = 30000,
     .numPages = 7,
+	/*
     .page = {
         dfuPage_0,
         dfuPage_1,
@@ -11617,4 +11620,58 @@ const avrDfuStream_t dfuStream = {
         dfuPage_5,
         dfuPage_6,
     }
+	*/
 };
+
+#define GET_FAR_ADDRESS(var)                          \
+({                                                    \
+	uint_farptr_t tmp;                                \
+	\
+	__asm__ __volatile__(                             \
+	\
+	"ldi    %A0, lo8(%1)"           "\n\t"    \
+	"ldi    %B0, hi8(%1)"           "\n\t"    \
+	"ldi    %C0, hh8(%1)"           "\n\t"    \
+	"clr    %D0"                    "\n\t"    \
+	:                                             \
+	"=d" (tmp)                                \
+	:                                             \
+	"p"  (&(var))                             \
+	);                                                \
+	tmp;                                              \
+})
+
+
+uint32_t dfuAddr(uint32_t index) 
+{
+	uint32_t addr;
+	unsigned page = index / 30000;
+	unsigned offset = index % 30000;
+	
+	switch (page) {
+		case 0:
+			addr = GET_FAR_ADDRESS(dfuPage_0);
+			break;
+		case 1:
+			addr = GET_FAR_ADDRESS(dfuPage_1);
+			break;
+		case 2:
+			addr = GET_FAR_ADDRESS(dfuPage_2);
+			break;
+		case 3:
+			addr = GET_FAR_ADDRESS(dfuPage_3);
+			break;
+		case 4:
+			addr = GET_FAR_ADDRESS(dfuPage_4);
+			break;
+		case 5:
+			addr = GET_FAR_ADDRESS(dfuPage_5);
+			break;
+		case 6:
+			addr = GET_FAR_ADDRESS(dfuPage_6);
+			break;
+	}
+	addr += offset;
+	
+	return addr;
+}

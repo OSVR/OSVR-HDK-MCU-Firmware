@@ -922,19 +922,12 @@ int sensorhub_getProductID(const sensorhub_t * sh,
 uint32_t avr_read32(const avrDfuStream_t *dfuStream, unsigned long index)
 {
     int n = 0;
-    unsigned pageNum = index / dfuStream->pageSize;
-    unsigned pageOffset = index % dfuStream->pageSize;
     uint32_t retval = 0;
 
     for (n = 0; n < 4; n++) {
-        uint32_t byte = pgm_read_byte(dfuStream->page[pageNum] + pageOffset);
+        uint32_t byte = pgm_read_byte_far(dfuAddr(index));
 	    retval |= byte << (n*8);
-
-	    pageOffset += 1;
-	    if (pageOffset >= dfuStream->pageSize) {
-	      pageOffset = 0;
-	      pageNum += 1;
-	    }
+		index++;
     }
 
     return retval;
@@ -942,21 +935,14 @@ uint32_t avr_read32(const avrDfuStream_t *dfuStream, unsigned long index)
 
 uint32_t avr_read32be(const avrDfuStream_t *dfuStream, unsigned long index)
 {
-    unsigned pageNum = index / dfuStream->pageSize;
-    unsigned pageOffset = index % dfuStream->pageSize;
     uint32_t retval = 0;
     int n = 0;
 
     for (n = 0; n < 4; n++) {
-        uint32_t byte = pgm_read_byte(dfuStream->page[pageNum] + pageOffset);
-	retval <<= 8;
-	retval |= byte;
-
-	pageOffset += 1;
-	if (pageOffset >= dfuStream->pageSize) {
-	  pageOffset = 0;
-	  pageNum += 1;
-	}
+        uint32_t byte = pgm_read_byte_far(dfuAddr(index));
+	    retval <<= 8;
+	    retval |= byte;
+		index++;
     }
 
     return retval;
@@ -967,28 +953,29 @@ uint8_t avr_read8(const avrDfuStream_t *dfuStream, unsigned long index)
   unsigned pageNum = index / dfuStream->pageSize;
   unsigned pageOffset = index % dfuStream->pageSize;
 
-  return pgm_read_byte(dfuStream->page[pageNum] + pageOffset);;
+  return pgm_read_byte(dfuAddr(index));
 }
 
 void avr_readBuf(uint8_t *buf, unsigned long length,
 		 const avrDfuStream_t *dfuStream,
 		 unsigned long index)
 {
-    unsigned pageNum = index / dfuStream->pageSize;
-    unsigned pageOffset = index % dfuStream->pageSize;
     int n = 0;
+	static int trap = 0;
+	
+	if(index == 63949) {
+		trap = 1;
+	}
 
     for (n = 0; n < length; n++) {
-        uint8_t byte = pgm_read_byte(dfuStream->page[pageNum] + pageOffset);
+        uint8_t byte = pgm_read_byte_far(dfuAddr(index));
 	    buf[n] = byte;
-
-	    pageOffset += 1;
-	    if (pageOffset >= dfuStream->pageSize) {
-	      pageOffset = 0;
-	      pageNum += 1;
-	    }
+		index++;
     }
 }
+
+uint32_t dfu_index;
+uint8_t dfu_writeBuf[32];
 
 int sensorhub_dfu_avr(const sensorhub_t *sh,
                   const avrDfuStream_t *dfuStream)
@@ -1029,7 +1016,7 @@ int sensorhub_dfu_avr(const sensorhub_t *sh,
     sh->delay(sh, 10);
 
     /* Send each packet of the DFU */
-    int index = 4;
+    uint32_t index = 4;
     while (index < dfuStream->totalLength) {
         int rc;
         uint8_t response;
@@ -1042,10 +1029,9 @@ int sensorhub_dfu_avr(const sensorhub_t *sh,
         else if (index + lengthToWrite > dfuStream->totalLength)
             lengthToWrite = dfuStream->totalLength - index; // Last packet -> could be short
 
-	    uint8_t writeBuf[256];
-	    avr_readBuf(writeBuf, lengthToWrite, dfuStream, index);
+	    avr_readBuf(dfu_writeBuf, lengthToWrite, dfuStream, index);
 
-        rc = sensorhub_i2cTransferWithRetry(sh, sh->bootloaderAddress, writeBuf, lengthToWrite, 0, 0);
+        rc = sensorhub_i2cTransferWithRetry(sh, sh->bootloaderAddress, dfu_writeBuf, lengthToWrite, 0, 0);
         if (rc != SENSORHUB_STATUS_SUCCESS)
             return checkError(sh, rc);
 
@@ -1064,6 +1050,7 @@ int sensorhub_dfu_avr(const sensorhub_t *sh,
         //sh->delay(sh, 2);
 
         index += lengthToWrite;
+		dfu_index = index;
     }
 
     return sensorhub_probe_internal(sh, false);

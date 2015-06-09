@@ -211,7 +211,7 @@
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagicemk3</ToolType>
-      <ToolNumber>J30200001731</ToolNumber>
+      <ToolNumber>J30200003445</ToolNumber>
       <ToolName>JTAGICE3</ToolName>
     </com_atmel_avrdbg_tool_jtagicemk3>
     <com_atmel_avrdbg_tool_jtagice3plus>
@@ -224,7 +224,7 @@
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagice3plus</ToolType>
-      <ToolNumber>J30200001731</ToolNumber>
+      <ToolNumber>J30200003445</ToolNumber>
       <ToolName>JTAGICE3</ToolName>
     </com_atmel_avrdbg_tool_jtagice3plus>
     <com_atmel_avrdbg_tool_simulator>
@@ -627,12 +627,12 @@
     <Compile Include="src\DeviceDrivers\BNO070.h">
       <SubType>compile</SubType>
     </Compile>
-    <None Include="src\DeviceDrivers\BNO070.c">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\DeviceDrivers\BNO070_using_hostif.c">
+    <Compile Include="src\DeviceDrivers\BNO070.c">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\DeviceDrivers\BNO070_using_hostif.c">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\Variants\HDK_OLED\VariantOptions.h">
       <SubType>compile</SubType>
     </Compile>

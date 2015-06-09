@@ -574,6 +574,14 @@ typedef struct sensorhub_ProductID {
     uint16_t swVersionPatch;
 } sensorhub_ProductID_t;
 
+#define DFU_MAX_PAGES (16)
+typedef struct avrDfuStream_s {
+  unsigned long totalLength;
+  unsigned long pageSize;
+  unsigned long numPages;
+  const uint8_t * page[DFU_MAX_PAGES];
+} avrDfuStream_t;
+
 /**
  * Reset the sensor hub and initialize it over the I2C bus. This
  * function should be called on power up or if the sensor hub's
@@ -705,7 +713,7 @@ int sensorhub_i2cTransferWithRetry(const sensorhub_t * sh,
 
 /**
  * Update the firmware on the sensor hub. After this
- * completes, call sensorhub_probe() to reinitialize
+ * completes, call sensorhub_probe() to reinitialize;
  * the sensorhub and use it.
  *
  * This function takes a while! Expect to wait 35-40 seconds.
@@ -716,6 +724,20 @@ int sensorhub_i2cTransferWithRetry(const sensorhub_t * sh,
  */
 int sensorhub_dfu(const sensorhub_t * sh,
                   const uint8_t * dfuStream, int length);
+
+/**
+ * Update the firmware on the sensor hub. After this
+ * completes, call sensorhub_probe() to reinitialize
+ * the sensorhub and use it.
+ *
+ * This function takes a while! Expect to wait 35-40 seconds.
+ *
+ * @param dfuStream the firmware in AVR DFU stream format (see util/hex2dfu.py)
+ * @param length the length of the firmware
+ * @return 0 on success; negative on failure
+ */
+int sensorhub_dfu_avr(const sensorhub_t * sh,
+		      const avrDfuStream_t * dfuStream);
 
 #ifdef __cplusplus
 }

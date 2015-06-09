@@ -6,6 +6,7 @@
  * ============================================================================*/
 #include "sensorhub.h"
 #include "sensorhub_hid.h"
+#include <progmem.h>
 
 static int checkError(const sensorhub_t * sh, int rc)
 {
@@ -67,43 +68,43 @@ static int sensorhub_i2c_handshake(const sensorhub_t * sh) {
 
     if (sh->debugPrintf) {
 #if 0 // Full Print
-      sh->debugPrintf(
-            "I2C Hid Descriptor:\r\n"
-            "    wHIDDescLength            = %04x\r\n"
-            "    bcdVersion                = %04x\r\n"
-            "    wReportDescriptorLength   = %04x\r\n"
-            "    wReportDescriptorRegister = %04x\r\n"
-            "    wInputRegister            = %04x\r\n"
-            "    wMaxInputLength           = %04x\r\n"
-            "    wOutputRegister           = %04x\r\n"
-            "    wMaxOutputLength          = %04x\r\n"
-            "    wCommandRegister          = %04x\r\n"
-            "    wDataRegister             = %04x\r\n"
-            "    wVendorID                 = %04x\r\n"
-            "    wProductID                = %04x\r\n"
-            "    wVersionID                = %04x\r\n"
-            , (unsigned int) u.desc.wHIDDescLength
-            , (unsigned int) u.desc.bcdVersion
-            , (unsigned int) u.desc.wReportDescriptorLength
-            , (unsigned int) u.desc.wReportDescriptorRegister
-            , (unsigned int) u.desc.wInputRegister
-            , (unsigned int) u.desc.wMaxInputLength
-            , (unsigned int) u.desc.wOutputRegister
-            , (unsigned int) u.desc.wMaxOutputLength
-            , (unsigned int) u.desc.wCommandRegister
-            , (unsigned int) u.desc.wDataRegister
-            , (unsigned int) u.desc.wVendorID
-            , (unsigned int) u.desc.wProductID
-            , (unsigned int) u.desc.wVersionID
+       sh->debugPrintf(
+             "I2C Hid Descriptor:\r\n"
+             "    wHIDDescLength            = %04x\r\n"
+             "    bcdVersion                = %04x\r\n"
+             "    wReportDescriptorLength   = %04x\r\n"
+             "    wReportDescriptorRegister = %04x\r\n"
+             "    wInputRegister            = %04x\r\n"
+             "    wMaxInputLength           = %04x\r\n"
+             "    wOutputRegister           = %04x\r\n"
+             "    wMaxOutputLength          = %04x\r\n"
+             "    wCommandRegister          = %04x\r\n"
+             "    wDataRegister             = %04x\r\n"
+             "    wVendorID                 = %04x\r\n"
+             "    wProductID                = %04x\r\n"
+             "    wVersionID                = %04x\r\n"
+             , (unsigned int) u.desc.wHIDDescLength
+             , (unsigned int) u.desc.bcdVersion
+             , (unsigned int) u.desc.wReportDescriptorLength
+             , (unsigned int) u.desc.wReportDescriptorRegister
+             , (unsigned int) u.desc.wInputRegister
+             , (unsigned int) u.desc.wMaxInputLength
+             , (unsigned int) u.desc.wOutputRegister
+             , (unsigned int) u.desc.wMaxOutputLength
+             , (unsigned int) u.desc.wCommandRegister
+             , (unsigned int) u.desc.wDataRegister
+             , (unsigned int) u.desc.wVendorID
+             , (unsigned int) u.desc.wProductID
+             , (unsigned int) u.desc.wVersionID
 #else // Reduced print
        sh->debugPrintf(
-       "I2C Hid Descriptor:\r\n"
-       "    wHIDDescLength            = %04x\r\n"
-       "    bcdVersion                = %04x\r\n"
-       , (unsigned int) u.desc.wHIDDescLength
-       , (unsigned int) u.desc.bcdVersion
+           "I2C Hid Descriptor:\r\n"
+           "    wHIDDescLength            = %04x\r\n"
+           "    bcdVersion                = %04x\r\n"
+           , (unsigned int) u.desc.wHIDDescLength
+           , (unsigned int) u.desc.bcdVersion
               );
-#endif
+#endif        
     }
 
     if (u.desc.wHIDDescLength != BNO070_DESC_V1_LEN) {
@@ -915,6 +916,157 @@ int sensorhub_getProductID(const sensorhub_t * sh,
     sensorhub_getProductIDResponse(sh, &ignore, 100);
 
     return rc;
+}
+
+
+uint32_t avr_read32(const avrDfuStream_t *dfuStream, unsigned long index)
+{
+    int n = 0;
+    unsigned pageNum = index / dfuStream->pageSize;
+    unsigned pageOffset = index % dfuStream->pageSize;
+    uint32_t retval = 0;
+
+    for (n = 0; n < 4; n++) {
+        uint32_t byte = pgm_read_byte(dfuStream->page[pageNum] + pageOffset);
+	    retval |= byte << (n*8);
+
+	    pageOffset += 1;
+	    if (pageOffset >= dfuStream->pageSize) {
+	      pageOffset = 0;
+	      pageNum += 1;
+	    }
+    }
+
+    return retval;
+}
+
+uint32_t avr_read32be(const avrDfuStream_t *dfuStream, unsigned long index)
+{
+    unsigned pageNum = index / dfuStream->pageSize;
+    unsigned pageOffset = index % dfuStream->pageSize;
+    uint32_t retval = 0;
+    int n = 0;
+
+    for (n = 0; n < 4; n++) {
+        uint32_t byte = pgm_read_byte(dfuStream->page[pageNum] + pageOffset);
+	retval <<= 8;
+	retval |= byte;
+
+	pageOffset += 1;
+	if (pageOffset >= dfuStream->pageSize) {
+	  pageOffset = 0;
+	  pageNum += 1;
+	}
+    }
+
+    return retval;
+}
+
+uint8_t avr_read8(const avrDfuStream_t *dfuStream, unsigned long index)
+{
+  unsigned pageNum = index / dfuStream->pageSize;
+  unsigned pageOffset = index % dfuStream->pageSize;
+
+  return pgm_read_byte(dfuStream->page[pageNum] + pageOffset);;
+}
+
+void avr_readBuf(uint8_t *buf, unsigned long length,
+		 const avrDfuStream_t *dfuStream,
+		 unsigned long index)
+{
+    unsigned pageNum = index / dfuStream->pageSize;
+    unsigned pageOffset = index % dfuStream->pageSize;
+    int n = 0;
+
+    for (n = 0; n < length; n++) {
+        uint8_t byte = pgm_read_byte(dfuStream->page[pageNum] + pageOffset);
+	    buf[n] = byte;
+
+	    pageOffset += 1;
+	    if (pageOffset >= dfuStream->pageSize) {
+	      pageOffset = 0;
+	      pageNum += 1;
+	    }
+    }
+}
+
+int sensorhub_dfu_avr(const sensorhub_t *sh,
+                  const avrDfuStream_t *dfuStream)
+{
+    /* Check that the type of DFU stream is one that we can handle
+     * NOTE: We only support one format for the BNO070 and that's type 0x01010101
+     */
+    uint32_t dfuFormat = avr_read32(dfuStream, 0);
+    if (dfuFormat != 0x01010101)
+        return checkError(sh, SENSORHUB_STATUS_UNEXPECTED_DFU_STREAM_TYPE);
+
+    /* The DFU stream format is specified as big endian. Read the application
+     * size to double check the length.
+     */
+    uint32_t applicationSize = avr_read32be(dfuStream, 4);
+    int packetPayloadSize = avr_read8(dfuStream, 10);
+    int packetSize = packetPayloadSize + 2;
+
+    uint32_t expectedLength = 4 /* dfu format */ +
+                              6 /* application size + CRC */ +
+                              3 /* packet size + CRC */ +
+                             applicationSize + /* application bytes */
+                            ((applicationSize + packetPayloadSize - 1) / packetPayloadSize) * 2; /* CRC per packet */
+    if (expectedLength != dfuStream->totalLength)
+        return checkError(sh, SENSORHUB_STATUS_DFU_STREAM_SIZE_WRONG);
+
+    /* Put the BNO070 into reset */
+    sh->setRSTN(sh, 0);
+
+    /* BNO070 BOOTN low (bootloader mode) */
+    sh->setBOOTN(sh, 0);
+
+    sh->delay(sh, 10);
+
+    /* Take the BNO070 out of reset */
+    sh->setRSTN(sh, 1);
+
+    sh->delay(sh, 10);
+
+    /* Send each packet of the DFU */
+    int index = 4;
+    while (index < dfuStream->totalLength) {
+        int rc;
+        uint8_t response;
+
+        int lengthToWrite = packetSize;
+        if (index == 4)
+            lengthToWrite = 6; // First packet -> total length
+        else if (index == 10)
+            lengthToWrite = 3; // Second packet -> packet length
+        else if (index + lengthToWrite > dfuStream->totalLength)
+            lengthToWrite = dfuStream->totalLength - index; // Last packet -> could be short
+
+	    uint8_t writeBuf[256];
+	    avr_readBuf(writeBuf, lengthToWrite, dfuStream, index);
+
+        rc = sensorhub_i2cTransferWithRetry(sh, sh->bootloaderAddress, writeBuf, lengthToWrite, 0, 0);
+        if (rc != SENSORHUB_STATUS_SUCCESS)
+            return checkError(sh, rc);
+
+        rc = sensorhub_i2cTransferWithRetry(sh, sh->bootloaderAddress, 0, 0, &response, sizeof(response));
+        if (rc != SENSORHUB_STATUS_SUCCESS)
+            return checkError(sh, rc);
+
+        /* Check that we got a successful response. */
+        if (response != 's')
+            return checkError(sh, SENSORHUB_STATUS_DFU_RECEIVED_NAK);
+
+        /* The capture from the Bosch programmer had a 1-3 ms delay between packets.
+         * Testing confirms that if we don't delay that the programmed image doesn't
+         * work. 2 ms works. 1 ms doesn't.
+         */
+        //sh->delay(sh, 2);
+
+        index += lengthToWrite;
+    }
+
+    return sensorhub_probe_internal(sh, false);
 }
 
 int sensorhub_dfu(const sensorhub_t *sh,

@@ -89,6 +89,7 @@ bool init_BNO070(void)
     // do a dummy read to clear initial interrupt
 
     ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH); // reset is active low
+    ioport_configure_pin(Side_by_side_A,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH); 
     ioport_configure_pin(Int_BNO070, IOPORT_DIR_INPUT|IOPORT_MODE_PULLUP);
 
 
@@ -428,8 +429,8 @@ bool Tare_BNO070(void)
 #else 
 #define DFU_MAJOR 1
 #define DFU_MINOR 2
-#define DFU_PATCH 5
-//#include "bno-hostif/1000-3251_1.2.5.c"
+#define DFU_PATCH 50
+#include "bno-hostif/1000-3251_1.2.5_avr.c"
 #endif
 
 static sensorhub_ProductID_t readProductId(void);
@@ -534,12 +535,12 @@ bool dfu_BNO070(void) {
     sensorhub.debugPrintf("Performing DFU . . . \r\n");
     sensorhub_ProductID_t id = readProductId();
     if ((id.swVersionMajor != DFU_MAJOR) ||
-    (id.swVersionMinor != DFU_MINOR) ||
-    (id.swVersionPatch != DFU_PATCH)) {
+        (id.swVersionMinor != DFU_MINOR) ||
+        (id.swVersionPatch != DFU_PATCH)) {
         sensorhub.debugPrintf("BNO is not at %d.%d.%d.  Performing DFU . . . \r\n", DFU_MAJOR, DFU_MINOR, DFU_PATCH);
 
-        //int rc = sensorhub_dfu(&sensorhub, sensorhub_dfu_stream, sizeof(sensorhub_dfu_stream));
-        int rc = 0;
+        int rc = sensorhub_dfu_avr(&sensorhub, &dfuStream);
+        //int rc = 0;
         if (rc != SENSORHUB_STATUS_SUCCESS) {
             sensorhub.debugPrintf("dfu received error: %d\r\n", rc);
             return false;

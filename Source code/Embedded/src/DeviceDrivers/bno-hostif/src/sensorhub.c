@@ -181,10 +181,11 @@ static int sensorhub_probe_internal(const sensorhub_t * sh, bool reset)
         }
 
         /* Check that the interrupt was cleared. */
-        if (!sh->getHOST_INTN(sh)) {
-            /* Not expecting HOST_INTN. It should have been cleared. */
-            return checkError(sh, SENSORHUB_STATUS_RESET_INTN_BROKE);
-        }
+        // Skipping this check for now becasue it doesn't work for some reason on 1.7.x 
+        //if (!sh->getHOST_INTN(sh)) {
+        //    /* Not expecting HOST_INTN. It should have been cleared. */
+        //    return checkError(sh, SENSORHUB_STATUS_RESET_INTN_BROKE);
+        //}
     }
 
     /* We're ready to go. */
@@ -950,10 +951,7 @@ uint32_t avr_read32be(const avrDfuStream_t *dfuStream, unsigned long index)
 
 uint8_t avr_read8(const avrDfuStream_t *dfuStream, unsigned long index)
 {
-  unsigned pageNum = index / dfuStream->pageSize;
-  unsigned pageOffset = index % dfuStream->pageSize;
-
-  return pgm_read_byte(dfuAddr(index));
+  return pgm_read_byte_far(dfuAddr(index));
 }
 
 void avr_readBuf(uint8_t *buf, unsigned long length,

@@ -178,27 +178,21 @@ static void printEvent(const sensorhub_Event_t * event)
 
         case SENSORHUB_ROTATION_VECTOR:
         {
-            float scale = 1.0f / (float)(1 << 14);
-            float q[4] = {
-                event->un.rotationVector.i_16Q14 * scale,
-                event->un.rotationVector.j_16Q14 * scale,
-                event->un.rotationVector.k_16Q14 * scale,
-                event->un.rotationVector.real_16Q14 * scale
-            };
-            sensorhub.debugPrintf("RV [xyzw]: %5.3f %5.3f %5.3f %5.3f\r\n", q[0], q[1], q[2], q[3]);
+            sensorhub.debugPrintf("RV: %5d %5d %5d %5d\r\n",
+                event->un.rotationVector.i_16Q14,
+                event->un.rotationVector.j_16Q14,
+                event->un.rotationVector.k_16Q14,
+                event->un.rotationVector.real_16Q14);
         }
         break;
 
         case SENSORHUB_GAME_ROTATION_VECTOR:
         {
-            float scale = 1.0f / (float)(1 << 14);
-            float q[4] = {
-                event->un.gameRotationVector.i_16Q14 * scale,
-                event->un.gameRotationVector.j_16Q14 * scale,
-                event->un.gameRotationVector.k_16Q14 * scale,
-                event->un.gameRotationVector.real_16Q14 * scale
-            };
-            sensorhub.debugPrintf("RV [xyzw]: %5.3f %5.3f %5.3f %5.3f\r\n", q[0], q[1], q[2], q[3]);
+            sensorhub.debugPrintf("RV: %5d %5d %5d %5d\r\n",
+                event->un.gameRotationVector.i_16Q14,
+                event->un.gameRotationVector.j_16Q14,
+                event->un.gameRotationVector.k_16Q14,
+                event->un.gameRotationVector.real_16Q14);
         }
         break;
     }
@@ -278,7 +272,7 @@ bool Check_BNO070(void)
 
     for (i = 0; i < numEvents; i++) {
         dispatchEvent(&shEvents[i]);
-        printEvent(&shEvents[i]);
+        //printEvent(&shEvents[i]);
     }
     
     return numEvents > 0;

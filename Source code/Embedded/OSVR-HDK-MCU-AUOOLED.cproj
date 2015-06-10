@@ -630,12 +630,12 @@
     <Compile Include="src\DeviceDrivers\BNO070.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\DeviceDrivers\BNO070.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\DeviceDrivers\BNO070_using_hostif.c">
+    <None Include="src\DeviceDrivers\BNO070.c">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\DeviceDrivers\BNO070_using_hostif.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\Variants\HDK_OLED\VariantOptions.h">
       <SubType>compile</SubType>
     </Compile>

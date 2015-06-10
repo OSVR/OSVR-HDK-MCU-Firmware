@@ -13397,6 +13397,7 @@ const uint8_t dfuPage_7[3787] PROGMEM = {
 };
 
 const avrDfuStream_t dfuStream = {
+	.totalLength = 213787,
     .pageSize = 30000,
     .numPages = 8,
     /*

@@ -522,7 +522,8 @@ enum sensorhub_Status_e {
     SENSORHUB_STATUS_UNEXPECTED_DFU_STREAM_TYPE = -30,
     SENSORHUB_STATUS_DFU_STREAM_SIZE_WRONG = -31,
     SENSORHUB_STATUS_DFU_RECEIVED_NAK = -32,
-    SENSORHUB_STATUS_INVALID_HID_DESCRIPTOR = -33
+    SENSORHUB_STATUS_INVALID_HID_DESCRIPTOR = -33,
+    SENSORHUB_STATUS_OP_FAILED = -34,
 };
 
 enum sensorhub_FRS_ReadStatus_e {
@@ -567,6 +568,32 @@ typedef struct sensorhub_FRSWriteResponse {
     sensorhub_FRS_WriteStatus_t status;
     uint16_t offset;
 } sensorhub_FRSWriteResponse_t;
+
+enum sensorhub_Cmd_e {
+	CMD_TARE = 0x03,
+	CMD_CONFIG_ME_CAL = 0x07,
+};
+typedef uint8_t sensorhub_Cmd_t;
+
+enum sensorhub_Subcmd_e {
+	SUBCMD_TARE_NOW = 0x00,
+	SUBCMD_TARE_PERSIST = 0x01,
+	SUBCMD_TARE_SET_REORIENTATION = 0x02,
+};
+typedef uint8_t sensorhub_Subcmd_t;
+
+// for sensorhub_calEnable
+#define ACCEL_CAL_EN 1
+#define GYRO_CAL_EN 2
+#define MAG_CAL_EN 4
+
+#define TARE_AXIS_X 1
+#define TARE_AXIS_Y 2
+#define TARE_AXIS_Z 4
+
+#define TARE_BASIS_RV 0
+#define TARE_BASIS_GAME_RV 1
+#define TARE_BASIS_GEOMAG_RV 2
 
 typedef struct sensorhub_ProductID {
     uint8_t resetCause;
@@ -634,6 +661,21 @@ int sensorhub_getDynamicFeature(const sensorhub_t * sh,
  */
 int sensorhub_poll(const sensorhub_t * sh, sensorhub_Event_t * events,
                    int maxEvents, int *numEvents);
+
+/* TODO-DW Doc */	
+int sensorhub_tareNow(const sensorhub_t * sh, uint8_t axes, uint8_t basis);
+	
+/* TODO-DW Doc */	
+int sensorhub_tarePersist(const sensorhub_t * sh);
+	
+/**
+ * This function will issue the Configure ME Calibration command and
+ * wait for the response.  
+ * 
+ * @param flags are ACCEL_CAL_EN, GYRO_CAL_EN, MAG_CAL_EN
+ * @return 0 on success, -ERR on error
+ */	
+int sensorhub_calEnable(const sensorhub_t *sh, uint8_t flags);
 
 /**
  * This function will wait for an event. It only returns when it either
@@ -742,7 +784,9 @@ int sensorhub_dfu(const sensorhub_t * sh,
 int sensorhub_dfu_avr(const sensorhub_t * sh,
 		      const avrDfuStream_t * dfuStream);
 			  
-uint32_t dfuAddr(uint32_t index); 
+uint32_t dfuAddr(uint32_t index);
+
+	
 
 #ifdef __cplusplus
 }

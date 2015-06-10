@@ -7,6 +7,9 @@
 #include "sensorhub.h"
 #include "sensorhub_hid.h"
 #include <progmem.h>
+#include <string.h>
+
+#define SENSORHUB_CMD_LEN 12 // TODO-DW : Find a home for this.
 
 static int checkError(const sensorhub_t * sh, int rc)
 {
@@ -1131,3 +1134,70 @@ int sensorhub_dfu(const sensorhub_t *sh,
     return sensorhub_probe_internal(sh, false);
 }
 
+int sensorhub_tareNow(const sensorhub_t * sh, uint8_t axes, uint8_t basis)
+{
+	uint8_t buffer[32];  // TODO: symbol
+	int rc = 0;
+
+	// Send Tare Now
+	memset(buffer, 0, sizeof(buffer));
+	buffer[0] = 0;     // sequence
+	buffer[1] = CMD_TARE;
+	buffer[2] = SUBCMD_TARE_NOW;
+	buffer[3] = axes;
+	buffer[4] = basis;
+	
+	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
+	                buffer, SENSORHUB_CMD_LEN-1);
+
+	return rc;
+}
+
+int sensorhub_tarePersist(const sensorhub_t * sh)
+{
+	uint8_t buffer[32];  // TODO: symbol
+	int rc = 0;
+
+	// Send Tare Now
+	memset(buffer, 0, sizeof(buffer));
+	buffer[0] = 0;     // sequence
+	buffer[1] = CMD_TARE;
+	buffer[2] = SUBCMD_TARE_PERSIST;
+	
+	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
+	                buffer, SENSORHUB_CMD_LEN-1);
+
+	return rc;
+}
+
+int sensorhub_calEnable(const sensorhub_t * sh, uint8_t flags)
+{
+	uint8_t buffer[32];  // TODO: symbol
+	int rc = 0;
+
+	// Send Cal enable command
+	memset(buffer, 0, sizeof(buffer));
+	buffer[0] = 0;     // sequence
+	buffer[1] = CMD_CONFIG_ME_CAL;  // command: Configure ME Calibration
+	buffer[2] = (flags & ACCEL_CAL_EN) ? 1 : 0;
+	buffer[3] = (flags & GYRO_CAL_EN) ? 1 : 0;
+	buffer[4] = (flags & MAG_CAL_EN) ? 1 : 0;
+	
+	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
+	                buffer, SENSORHUB_CMD_LEN-1);
+
+	// Get Cal enable response
+	bool gotResp = false;
+	while (!gotResp) {
+		sensorhub_waitForReport(sh, buffer, 100);
+		if ((buffer[0] == SENSORHUB_CMD_RESP) &&
+		    (buffer[2] == CMD_CONFIG_ME_CAL)) {
+			gotResp = true;
+			if (buffer[5] != 0) {
+				rc = SENSORHUB_STATUS_OP_FAILED;
+			}
+		}
+	}
+
+	return rc;
+}

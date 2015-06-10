@@ -166,7 +166,6 @@ int main(void)
     BNO070Active=init_BNO070();
 #endif
 
-
 	uint8_t slower = 0;
 
     while (true) {
@@ -235,6 +234,8 @@ int main(void)
 		}
 #endif
 	}
+	
+
 }
 
 void main_suspend_action(void)

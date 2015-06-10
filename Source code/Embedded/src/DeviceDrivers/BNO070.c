@@ -428,9 +428,9 @@ bool Tare_BNO070(void)
 
 #else 
 #define DFU_MAJOR 1
-#define DFU_MINOR 2
-#define DFU_PATCH 50
-#include "bno-hostif/1000-3251_1.2.5_avr.c"
+#define DFU_MINOR 7
+#define DFU_PATCH 0
+#include "bno-hostif/1000-3251_1.7.0.390_avr.c"
 #endif
 
 static sensorhub_ProductID_t readProductId(void);

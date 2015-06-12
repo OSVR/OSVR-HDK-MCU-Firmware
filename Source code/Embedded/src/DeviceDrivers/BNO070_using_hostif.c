@@ -15,6 +15,7 @@
 #include <ioport.h>
 #include "BNO070.h"
 #include "util/delay.h"
+#include "Boot.h"
 
 #ifdef BNO070
 
@@ -25,20 +26,19 @@ bool BNO070Active=false;
 uint8_t BNO070_Report[USB_REPORT_SIZE];
 bool TWI_BNO070_PORT_initialized=false; // true if already initialized
 
-#if 0
-#define DFU_MAJOR 1
-#define DFU_MINOR 7
-#define DFU_PATCH 0
-#include "bno-hostif/1000-3251_1.7.0.384.c"
-
-#else
-#define DFU_MAJOR 1
-#define DFU_MINOR 2
-#define DFU_PATCH 50
-#include "bno-hostif/1000-3251_1.2.5_avr.c"
+#ifdef PERFORM_BNO_DFU
+    #if 1 // 1.7.0
+        #define DFU_MAJOR 1
+        #define DFU_MINOR 7
+        #define DFU_PATCH 0
+        #include "bno-hostif/1000-3251_1.7.0.390_avr.c"
+    #else // 1.2.5
+        #define DFU_MAJOR 1
+        #define DFU_MINOR 2
+        #define DFU_PATCH 5
+        #include "bno-hostif/1000-3251_1.2.5_avr.c"
+    #endif
 #endif
-
-//#define USE_GAME_ROTATION // if defined, uses game rotation vector, otherwise regular rotation vector
 
 #define DEG2RAD (3.1415926535897932384626433832795 / 180.0)
 
@@ -55,8 +55,7 @@ static int32_t degToRadQ28(float deg) {
 static sensorhub_SensorFeature_t rotationVectorSetings_;
 static sensorhub_SensorFeature_t accelerometerSetings_;
 
-static sensorhub_ProductID_t readProductId(void);
-static sensorhub_ProductID_t readProductId()
+static sensorhub_ProductID_t readProductId(void)
 {
     sensorhub_ProductID_t id;
     memset(&id, 0, sizeof(id));
@@ -75,9 +74,8 @@ static sensorhub_ProductID_t readProductId()
     return id;
 }
 
-static void checkDfu(void);
-static void checkDfu() {
-
+static void checkDfu(void) {
+#ifdef PERFORM_BNO_DFU
 #if 0 // Skip vesrion check and always DFU
     if (1) {
         sensorhub.debugPrintf("Performing DFU . . . \r\n");
@@ -100,6 +98,7 @@ static void checkDfu() {
         // Get the updated version number
         readProductId();
     }
+#endif // PERFORM_BNO_DFU
 }
 
 static void startRotationVector(void) {
@@ -108,18 +107,26 @@ static void startRotationVector(void) {
     rotationVectorSetings_.wakeupEnabled = false;
     rotationVectorSetings_.changeSensitivityRelative = true;
     rotationVectorSetings_.changeSensitivity = (uint16_t)(5.0 * DEG2RAD * (1 << 13));
-    rotationVectorSetings_.reportInterval = 10000;
+    rotationVectorSetings_.reportInterval = 5000;
     rotationVectorSetings_.batchInterval = 0;
     rotationVectorSetings_.sensorSpecificConfiguration = 0;
-#ifdef USE_GAME_ROTATION
-    sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &rotationVectorSetings_);
-    //sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &rotationVectorSetings_);
-#else
     sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_ROTATION_VECTOR, &rotationVectorSetings_);
     //sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_ROTATION_VECTOR, &rotationVectorSetings_);
-#endif
-
     sensorhub.debugPrintf("Rotation Vector Enabled: %d.\r\n", rotationVectorSetings_.reportInterval);
+}
+
+static void startGameRotationVector(void) {
+    sensorhub.debugPrintf("Enabling Game Rotation Vector events...\r\n");
+    rotationVectorSetings_.changeSensitivityEnabled = false;
+    rotationVectorSetings_.wakeupEnabled = false;
+    rotationVectorSetings_.changeSensitivityRelative = true;
+    rotationVectorSetings_.changeSensitivity = (uint16_t)(5.0 * DEG2RAD * (1 << 13));
+    rotationVectorSetings_.reportInterval = 5000;
+    rotationVectorSetings_.batchInterval = 0;
+    rotationVectorSetings_.sensorSpecificConfiguration = 0;
+    sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &rotationVectorSetings_);
+    //sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &rotationVectorSetings_);
+    sensorhub.debugPrintf("Game Rotation Vector Enabled: %d.\r\n", rotationVectorSetings_.reportInterval);
 }
 
 static void startAccelerometer(void) {
@@ -153,15 +160,54 @@ static void configureARVRStabilizationFRS(void) {
         sensorhub.debugPrintf("Write FRS failed: %d", status);
     }
 
-    sensorhub.debugPrintf("Configuring ARVR Stabilization.\r\n");
-    status = sensorhub_writeFRS(&sensorhub, SENSORHUB_FRS_ARVR_CONFIG,
+    sensorhub.debugPrintf("Configuring ARVR Game Stabilization.\r\n");
+    status = sensorhub_writeFRS(&sensorhub, SENSORHUB_FRS_ARVR_GAME_CONFIG,
                                 (uint32_t*)arvrConfig, 4);
     if (status != SENSORHUB_STATUS_SUCCESS) {
         sensorhub.debugPrintf("Write FRS failed: %d", status);
     }
 }
 
+uint8_t const scd[] = {
+    //#include "bno-hostif/SCD-Bosch-BNO070-8G-lowGyroNoise.c"
+    //#include "bno-hostif/SCD-Bosch-BNO070-8G.c"
+    #include "bno-hostif/SCD-Bosch-BNO070-sqtsNoise.c"
+};
 
+static void configureScdFrs(void) {
+    int status;
+    sensorhub.debugPrintf("Configuring SCD.\r\n");
+    status = sensorhub_writeFRS(&sensorhub, SENSORHUB_FRS_SCD_ACTIVE,
+        (uint32_t const*)scd, sizeof(scd)/sizeof(uint32_t));
+    if (status != SENSORHUB_STATUS_SUCCESS) {
+        sensorhub.debugPrintf("Write FRS of SCD failed: %d", status);
+    }
+}    
+
+static void clearScdFrs(void) {
+    int status;
+    sensorhub.debugPrintf("Clearing SCD.\r\n");
+    uint32_t const emptySCD[1] = {0};
+    status = sensorhub_writeFRS(&sensorhub, SENSORHUB_FRS_SCD_ACTIVE, NULL, 0);
+    if (status != SENSORHUB_STATUS_SUCCESS) {
+        sensorhub.debugPrintf("Clear of SCD failed: %d", status);
+    }
+}    
+
+
+static void setDynamicCalibration(bool enable) {
+    sensorhub.debugPrintf("Setting Dynamic Calibration Enable");
+    int status;
+    int flags;
+    flags = enable ? ACCEL_CAL_EN |  GYRO_CAL_EN | MAG_CAL_EN : 0x0;
+    
+    status = sensorhub_calEnable(&sensorhub, flags);
+    if (status != SENSORHUB_STATUS_SUCCESS) {
+        sensorhub.debugPrintf("Set of calEnable flags failed: %d", status);
+    } else {
+        sensorhub.debugPrintf("Set of calEnable flags: %d successful.", flags);
+    }
+}
 
 
 static void printEvent(const sensorhub_Event_t * event)
@@ -225,7 +271,7 @@ bool init_BNO070(void)
     int result;
 
     ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH); // reset is active low
-    ioport_configure_pin(Side_by_side_A,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH); 
+    ioport_configure_pin(Side_by_side_A,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // Actually the BootN pin
     ioport_configure_pin(Int_BNO070, IOPORT_DIR_INPUT|IOPORT_MODE_PULLUP);
 
     if (!TWI_BNO070_PORT_initialized)
@@ -243,15 +289,29 @@ bool init_BNO070(void)
         else
             return false;
     }
+    
+#ifdef PERFORM_BNO_DFU
+    return dfu_BNO070();
+#endif    
 
-    //BNO hostif testing    
     if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
         return false;
     }
+    sensorhub_ProductID_t id = readProductId();
 
     // restore normal setting
-    startRotationVector();
     configureARVRStabilizationFRS();
+    configureScdFrs();
+    //clearScdFrs();
+
+    // Probe again to reboot the hub
+    if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
+        return false;
+    }
+    
+    setDynamicCalibration(false);
+    //startRotationVector();
+    startGameRotationVector();
 
     // setup report
     BNO070_Report[0]=1; // this indicates the version number of the report
@@ -316,6 +376,7 @@ bool Tare_BNO070(void)
 
 bool dfu_BNO070(void) {
     checkDfu();
+    PrepareForSoftwareUpgrade();
     return true;
 }
 

@@ -11,6 +11,9 @@
 
 #define SENSORHUB_CMD_LEN 12 // TODO-DW : Find a home for this.
 
+static int sensorhub_pollForReport(const sensorhub_t * sh, uint8_t * report);
+
+
 static int checkError(const sensorhub_t * sh, int rc)
 {
     if (rc < 0 && sh->onError)
@@ -172,23 +175,20 @@ static int sensorhub_probe_internal(const sensorhub_t * sh, bool reset)
     }
 
     if (!sh->getHOST_INTN(sh)) {
-        /* Clear the interrupt by reading 2x */
-        for (i = 0; i < 2; i++) {
-            int rc =
-                sensorhub_i2cTransferWithRetry(sh, sh->sensorhubAddress, NULL, 0, data,
-                                               sizeof(data));
-            if (rc != SENSORHUB_STATUS_SUCCESS) {
-                /* Error trying to communicate with the BNO070 */
-                return checkError(sh, SENSORHUB_STATUS_RESET_FAIL_2);
+        /* Clear the interrupt by up to 10 pending reports */
+        for (i = 0; i < 10; i++) {
+            uint8_t report[BNO070_MAX_INPUT_REPORT_LEN];
+            int rc = sensorhub_pollForReport(sh, report);
+            if (rc == SENSORHUB_STATUS_NO_REPORT_PENDING) {
+                break;
             }
-        }
-
+        }            
+           
         /* Check that the interrupt was cleared. */
-        // Skipping this check for now becasue it doesn't work for some reason on 1.7.x 
-        //if (!sh->getHOST_INTN(sh)) {
-        //    /* Not expecting HOST_INTN. It should have been cleared. */
-        //    return checkError(sh, SENSORHUB_STATUS_RESET_INTN_BROKE);
-        //}
+        if (!sh->getHOST_INTN(sh)) {
+            /* Not expecting HOST_INTN. It should have been cleared. */
+            return checkError(sh, SENSORHUB_STATUS_RESET_INTN_BROKE);
+        }
     }
 
     /* We're ready to go. */
@@ -349,7 +349,7 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
 
         /* Reports that are 4 16-bit integers */
     case SENSORHUB_GAME_ROTATION_VECTOR:
-        if (length < 16)
+        if (length < 12)
             return checkError(sh, SENSORHUB_STATUS_REPORT_INVALID_LEN);
 
         event->un.field16[0] = read16(&report[6]);
@@ -408,6 +408,7 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
     case SENSORHUB_PRODUCT_ID_RESPONSE:
     case SENSORHUB_FRS_READ_RESPONSE:
     case SENSORHUB_FRS_WRITE_RESPONSE:
+    case SENSORHUB_CMD_RESP:
         /* Stale FRS read or write responses */
         /* NOTE: Don't run these through checkError, since they are such a
          *       minor annoyance that we don't want to alert the user. The
@@ -419,6 +420,7 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
     case SENSORHUB_SAR:
     case SENSORHUB_TAP_DETECTOR:
     case SENSORHUB_ACTIVITY_CLASSIFICATION:
+        break;
     default:
         return checkError(sh, SENSORHUB_STATUS_REPORT_UNKNOWN);
     }
@@ -1174,6 +1176,7 @@ int sensorhub_calEnable(const sensorhub_t * sh, uint8_t flags)
 {
 	uint8_t buffer[32];  // TODO: symbol
 	int rc = 0;
+    int i = 0;
 
 	// Send Cal enable command
 	memset(buffer, 0, sizeof(buffer));
@@ -1187,15 +1190,17 @@ int sensorhub_calEnable(const sensorhub_t * sh, uint8_t flags)
 	                buffer, SENSORHUB_CMD_LEN-1);
 
 	// Get Cal enable response
-	bool gotResp = false;
-	while (!gotResp) {
+    rc = SENSORHUB_STATUS_UNEXPECTED_REPORT;
+	for (i = 0; i < 10; ++i)  {
 		sensorhub_waitForReport(sh, buffer, 100);
-		if ((buffer[0] == SENSORHUB_CMD_RESP) &&
-		    (buffer[2] == CMD_CONFIG_ME_CAL)) {
-			gotResp = true;
-			if (buffer[5] != 0) {
+		if ((buffer[2] == SENSORHUB_CMD_RESP) &&
+		    (buffer[4] == CMD_CONFIG_ME_CAL)) {
+			if (buffer[7] != 0) {
 				rc = SENSORHUB_STATUS_OP_FAILED;
-			}
+			} else {
+                rc = SENSORHUB_STATUS_SUCCESS;
+            }                
+            break;
 		}
 	}
 

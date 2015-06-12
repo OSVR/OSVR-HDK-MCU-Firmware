@@ -1,3 +1,6 @@
 # Build product directories
 /Debug/
 /Release/
+/Debug - DFU/
+/Release - DFU/
+

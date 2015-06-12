@@ -23,7 +23,9 @@ static void debugPrintf(const char *format, ...)
   va_list ap;
   va_start(ap, format);
   vsprintf(buffer, format, ap);
-  WriteLn(buffer);
+  static volatile int test;
+  ++test;
+  //WriteLn(buffer);
   va_end(ap);
 #endif
 }

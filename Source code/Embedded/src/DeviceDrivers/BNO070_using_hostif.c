@@ -76,7 +76,7 @@ static sensorhub_ProductID_t readProductId(void)
 
 static void checkDfu(void) {
 #ifdef PERFORM_BNO_DFU
-#if 0 // Skip vesrion check and always DFU
+#if 1 // Skip vesrion check and always DFU
     if (1) {
         sensorhub.debugPrintf("Performing DFU . . . \r\n");
 #else

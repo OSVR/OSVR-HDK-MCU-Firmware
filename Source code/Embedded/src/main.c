@@ -120,8 +120,8 @@ int main(void)
     udc_start();
     //delay_ms(100);
 	
-	// to assist in debug
 	delay_s(1);
+	// to assist in debug
 	//WriteLn("Start");
 
 

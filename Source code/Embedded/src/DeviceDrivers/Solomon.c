@@ -170,7 +170,7 @@ bool init_solomon_device(uint8_t deviceID)
 	delay_ms(16);
 
     write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
-	delay_ms(16);
+	delay_ms(100);
 
 #ifdef LOW_PERSISTENCE
     write_solomon(deviceID,0xBF,0x08FE); // cmd=FE, data=08
@@ -229,7 +229,9 @@ bool init_solomon_device(uint8_t deviceID)
 
 #ifndef H546DLT01 // AUO 5.46" OLED
     // video mode on
+	delay_ms(250);
     write_solomon(deviceID,0xB7,0x034B); // video mode on
+	delay_ms(100);
 #endif
 	
     return true;
@@ -240,7 +242,7 @@ void DisplayOn(uint8_t deviceID)
 {
 #ifdef H546DLT01 // AUO 5.46" OLED
 		delay_ms(500);
-		WriteLn("Turing display on");
+		WriteLn("Turning display on");
 		delay_ms(100);
 	    write_solomon(deviceID,0xBC,0x0001); //
 	    delay_ms(26);

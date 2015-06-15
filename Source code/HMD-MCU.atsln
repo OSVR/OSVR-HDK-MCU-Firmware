@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "HMD-MCU", "Embedded\HMD-MCU.cproj", "{75C0D83C-7332-42DE-8522-9585F1DF6614}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		dSight_Sharp_LCD|AVR = dSight_Sharp_LCD|AVR
+		HDK_OLED|AVR = HDK_OLED|AVR
+		HDK_Sharp_LCD|AVR = HDK_Sharp_LCD|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.dSight_Sharp_LCD|AVR.ActiveCfg = dSight_Sharp_LCD|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.dSight_Sharp_LCD|AVR.Build.0 = dSight_Sharp_LCD|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.HDK_OLED|AVR.ActiveCfg = HDK_OLED|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.HDK_OLED|AVR.Build.0 = HDK_OLED|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.HDK_Sharp_LCD|AVR.ActiveCfg = HDK_Sharp_LCD|AVR
+		{75C0D83C-7332-42DE-8522-9585F1DF6614}.HDK_Sharp_LCD|AVR.Build.0 = HDK_Sharp_LCD|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

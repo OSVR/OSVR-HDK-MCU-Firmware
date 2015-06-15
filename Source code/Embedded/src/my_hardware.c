@@ -100,7 +100,7 @@ void custom_board_init(void)
 #ifdef OSVRHDK
     ioport_configure_pin(LCD_avdd_en ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
     ioport_configure_pin(LCD_avdd_en_sw ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
-    ioport_configure_pin(FPGA_Locked, IOPORT_DIR_INPUT|IOPORT_MODE_PULLUP);
+    ioport_configure_pin(FPGA_unlocked, IOPORT_DIR_INPUT|IOPORT_MODE_PULLUP);
 #endif
 
 #ifndef OSVRHDK

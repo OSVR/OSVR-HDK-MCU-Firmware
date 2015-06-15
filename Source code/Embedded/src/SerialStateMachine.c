@@ -292,6 +292,11 @@ void Display_software_version(void)
 #ifdef WITH_TRACKER
     Display_tracker_version();
 #endif
+#ifdef BNO070
+	Write("Tracker:");
+    sprintf(OutString,"%d.%d.%d.%d",BNO070id.swVersionMajor,BNO070id.swVersionMinor,BNO070id.swVersionPatch,BNO070id.swBuildNumber);
+    WriteLn(OutString);
+#endif
 }
 
 void ProcessCommand(void)
@@ -835,7 +840,7 @@ void ProcessFPGACommand(void)
 	case 'L':
 	{
 #ifdef OSVRHDK
-		if (ioport_get_pin_level(FPGA_Locked))
+		if (ioport_get_pin_level(FPGA_unlocked))
 			WriteLn("FPGA unlocked");
 		else
 			WriteLn("FPGA locked");

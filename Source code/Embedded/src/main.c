@@ -71,7 +71,9 @@ bool HDMI_task=false;
 bool HDMISwitch_task=true;
 bool NewVideoDetected=false;
 bool VideoLost=false;
+bool NXPEverLocked=false; // true if HDMI receiver was ever locked on incoming video signal
 
+void HandleHDMI(void);
 
 /*! \brief Main function. Execution starts here.
  */
@@ -117,6 +119,10 @@ int main(void)
     // Start USB stack to authorize VBus monitoring
     udc_start();
     //delay_ms(100);
+	
+	// to assist in debug
+	delay_s(1);
+	//WriteLn("Start");
 
 
     //sleepmgr_lock_mode(SLEEPMGR_IDLE); // allow timers
@@ -136,6 +142,7 @@ int main(void)
     Init_HDMI(); // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has already been initizliaed
 	if (NewVideoDetected)
 	{
+		WriteLn("Video at start");
 #ifdef Solomon1_SPI
 		DisplayOn(Solomon1);
 #endif
@@ -143,17 +150,20 @@ int main(void)
 		DisplayOn(Solomon2);
 #endif
 		NewVideoDetected=false;
+	
 	};
-	if (VideoLost)
-	{
-#ifdef Solomon1_SPI
-		DisplayOff(Solomon1);
-#endif
-#ifdef Solomon2_SPI
-		DisplayOff(Solomon2);
-#endif
-		VideoLost=false;
-	}
+	if (!(ioport_get_pin_level(FPGA_unlocked)))
+		NXPEverLocked=true;
+	//if (VideoLost)
+	//{
+//#ifdef Solomon1_SPI
+		//DisplayOff(Solomon1);
+//#endif
+//#ifdef Solomon2_SPI
+		//DisplayOff(Solomon2);
+//#endif
+		//VideoLost=false;
+	//}
 	
 		
     //ProgramMTP0();
@@ -197,46 +207,73 @@ int main(void)
 		if ((HDMI_task) && (slower>100))
 		{
 			slower=0;
-			HDMITask();
-			if (NewVideoDetected)
-			{
-				NewVideoDetected=false;
-	#ifdef Solomon1_SPI
-	#ifndef H546DLT01				
-				init_solomon_device(Solomon1); // todo: add back after debug of board
-	#endif
-				DisplayOn(Solomon1);
-	#ifndef H546DLT01
-				init_solomon_device(Solomon1); // todo: add back after debug of board
-	#endif
-	#endif
-	#ifdef Solomon2_SPI
-	#ifndef H546DLT01
-				init_solomon_device(Solomon2);
-	#endif
-				DisplayOn(Solomon2); // added to make it same process as solomon 1
-	#ifndef H546DLT01
-				init_solomon_device(Solomon2);
-	#endif
-	#endif
-			}
-			if (VideoLost)
+	#ifdef OSVRHDK
+			if (ioport_get_pin_level(FPGA_unlocked))
 			{
 				
-	#ifdef Solomon1_SPI
-				DisplayOff(Solomon1);
-	#endif
-	#ifdef Solomon2_SPI
-				DisplayOff(Solomon2);
-	#endif
-				VideoLost=false;
 			}
+			else // FPGA is locked
+			{
+				if (!NXPEverLocked)
+				{
+					WriteLn("First lock");
+					NXPEverLocked=true;
+					Init_HDMI();
+#ifdef Solomon1_SPI
+					DisplayOn(Solomon1);
+#endif
+#ifdef Solomon2_SPI
+					DisplayOn(Solomon2);
+#endif
+				}
+			}
+	#else // dSight
+			HandleHDMI();
+	#endif
 		}
 #endif
 	}
-	
-
 }
+
+void HandleHDMI()
+
+{
+	//HDMITask();
+	if (NewVideoDetected)
+	{
+		NewVideoDetected=false;
+#ifdef Solomon1_SPI
+	#ifndef H546DLT01
+		init_solomon_device(Solomon1); // todo: add back after debug of board
+	#endif
+		DisplayOn(Solomon1);
+	#ifndef H546DLT01
+		init_solomon_device(Solomon1); // todo: add back after debug of board
+	#endif
+#endif
+#ifdef Solomon2_SPI
+	#ifndef H546DLT01
+		init_solomon_device(Solomon2);
+	#endif
+		DisplayOn(Solomon2); // added to make it same process as solomon 1
+	#ifndef H546DLT01
+		init_solomon_device(Solomon2);
+	#endif
+#endif
+	}
+	if (VideoLost)
+	{
+				
+#ifdef Solomon1_SPI
+		DisplayOff(Solomon1);
+#endif
+#ifdef Solomon2_SPI
+		DisplayOff(Solomon2);
+#endif
+		VideoLost=false;
+	}
+}
+
 
 void main_suspend_action(void)
 {

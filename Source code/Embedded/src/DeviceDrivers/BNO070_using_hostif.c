@@ -266,6 +266,8 @@ static void dispatchEvent(const sensorhub_Event_t * event)
 }
 
 
+sensorhub_ProductID_t BNO070id;
+
 bool init_BNO070(void)
 {
     int result;
@@ -297,7 +299,7 @@ bool init_BNO070(void)
     if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
         return false;
     }
-    sensorhub_ProductID_t id = readProductId();
+    BNO070id = readProductId();
 
     // restore normal setting
     configureARVRStabilizationFRS();

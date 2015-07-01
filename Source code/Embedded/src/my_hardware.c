@@ -127,7 +127,11 @@ void custom_board_init(void)
         WriteLn("FPGA2 init err");
 #endif
 
+#ifdef OSVRHDK
+    ioport_configure_pin(FPGA_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW); // start FPGA in reset mode until there is video
+#else
     ioport_configure_pin(FPGA_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+#endif
 
 	
     // init PWM for display brightness and strobing

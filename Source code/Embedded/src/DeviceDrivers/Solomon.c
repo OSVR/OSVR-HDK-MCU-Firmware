@@ -265,6 +265,9 @@ void DisplayOn(uint8_t deviceID)
 		
 		write_solomon(deviceID,0xB7,0x034B); // video mode on
 #endif
+		delay_ms(50);
+		ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
+
 }
 
 void DisplayOff(uint8_t deviceID)

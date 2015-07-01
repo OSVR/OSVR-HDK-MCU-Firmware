@@ -1257,7 +1257,8 @@ static void storeResolution0(tmdlHdmiRxResolutionID_t resolutionID)
 void VideoOn(void)
 
 {
-    FPGA_reset();
+	
+    // FPGA_reset();
 
     //if (HDMIShadow)
 //			Lower_VideoB;

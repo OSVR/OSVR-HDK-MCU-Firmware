@@ -103,6 +103,10 @@ int main(void)
     ui_init();
     ui_powerdown();
 
+#ifdef OSVRHDK
+	//ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
+#endif
+
     init_solomon();
 
 
@@ -177,6 +181,10 @@ int main(void)
 #endif
 
 	uint8_t slower = 0;
+
+#ifdef OSVRHDK
+	//ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
+#endif
 
     while (true) {
         //sleepmgr_enter_sleep(); // todo - probably remove this since the board has to work without USB

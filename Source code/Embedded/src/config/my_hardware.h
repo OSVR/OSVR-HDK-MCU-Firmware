@@ -21,7 +21,7 @@
 
 #define Debug_LED			IOPORT_CREATE_PIN(PORTF,0)
 
-#define FPGA_Reset_Pin		IOPORT_CREATE_PIN(PORTB,0)
+#define FPGA_Reset_Pin		IOPORT_CREATE_PIN(PORTB,0) // low holds the FPGA in reset, high releases it
 
 #define NXP1_Reset_Pin		IOPORT_CREATE_PIN(PORTD,5)
 #ifndef OSVRHDK

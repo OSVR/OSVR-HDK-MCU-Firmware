@@ -72,6 +72,7 @@ bool HDMISwitch_task=true;
 bool NewVideoDetected=false;
 bool VideoLost=false;
 bool NXPEverLocked=false; // true if HDMI receiver was ever locked on incoming video signal
+bool LastFPGALockStatus=0; // last state of FPGA_unlocked pin
 
 void HandleHDMI(void);
 
@@ -122,9 +123,9 @@ int main(void)
 
     // Start USB stack to authorize VBus monitoring
     udc_start();
-    //delay_ms(100);
+    delay_ms(100);
 	
-	delay_s(1);
+	//delay_s(1);
 	// to assist in debug
 	//WriteLn("Start");
 
@@ -143,7 +144,9 @@ int main(void)
 
 
 #ifndef DISABLE_NXP
+
     Init_HDMI(); // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has already been initizliaed
+	
 	if (NewVideoDetected)
 	{
 		WriteLn("Video at start");
@@ -158,16 +161,17 @@ int main(void)
 	};
 	if (!(ioport_get_pin_level(FPGA_unlocked)))
 		NXPEverLocked=true;
-	//if (VideoLost)
-	//{
-//#ifdef Solomon1_SPI
-		//DisplayOff(Solomon1);
-//#endif
-//#ifdef Solomon2_SPI
-		//DisplayOff(Solomon2);
-//#endif
-		//VideoLost=false;
-	//}
+		
+	if (VideoLost)
+	{
+#ifdef Solomon1_SPI
+		DisplayOff(Solomon1);
+#endif
+#ifdef Solomon2_SPI
+		DisplayOff(Solomon2);
+#endif
+		VideoLost=false;
+	}
 	
 		
     //ProgramMTP0();
@@ -186,6 +190,9 @@ int main(void)
 	//ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
 #endif
 
+	LastFPGALockStatus=ioport_get_pin_level(FPGA_unlocked); // last state of FPGA_unlocked pin
+
+	
     while (true) {
         //sleepmgr_enter_sleep(); // todo - probably remove this since the board has to work without USB
         if (CommandReady)
@@ -216,17 +223,40 @@ int main(void)
 		{
 			slower=0;
 	#ifdef OSVRHDK
-			if (ioport_get_pin_level(FPGA_unlocked))
+			bool NewFPGALockStatus;
+			NewFPGALockStatus=ioport_get_pin_level(FPGA_unlocked);
+			if (NewFPGALockStatus)
 			{
-				
+				if (LastFPGALockStatus!=NewFPGALockStatus)
+				{
+					//WriteLn("Video signal lost");
+					LastFPGALockStatus=NewFPGALockStatus;
+#ifdef Solomon1_SPI
+					DisplayOff(Solomon1);
+#endif
+#ifdef Solomon2_SPI
+					DisplayOff(Solomon2);
+#endif
+				}
 			}
 			else // FPGA is locked
 			{
 				if (!NXPEverLocked)
 				{
-					WriteLn("First lock");
+					//WriteLn("First lock");
 					NXPEverLocked=true;
-					Init_HDMI();
+					//Init_HDMI();
+//#ifdef Solomon1_SPI
+					//DisplayOn(Solomon1);
+//#endif
+//#ifdef Solomon2_SPI
+					//DisplayOn(Solomon2);
+//#endif
+				}
+				if (LastFPGALockStatus!=NewFPGALockStatus)
+				{
+					//WriteLn("Video signal detected");
+					LastFPGALockStatus=NewFPGALockStatus;
 #ifdef Solomon1_SPI
 					DisplayOn(Solomon1);
 #endif
@@ -234,6 +264,7 @@ int main(void)
 					DisplayOn(Solomon2);
 #endif
 				}
+					
 			}
 	#else // dSight
 			HandleHDMI();
@@ -246,10 +277,11 @@ int main(void)
 void HandleHDMI()
 
 {
-	//HDMITask();
+	HDMITask();
 	if (NewVideoDetected)
 	{
 		NewVideoDetected=false;
+		//WriteLn("New video detected");
 #ifdef Solomon1_SPI
 	#ifndef H546DLT01
 		init_solomon_device(Solomon1); // todo: add back after debug of board
@@ -271,6 +303,9 @@ void HandleHDMI()
 	}
 	if (VideoLost)
 	{
+
+		VideoLost=false;
+		//WriteLn("Video lost");
 				
 #ifdef Solomon1_SPI
 		DisplayOff(Solomon1);
@@ -278,7 +313,6 @@ void HandleHDMI()
 #ifdef Solomon2_SPI
 		DisplayOff(Solomon2);
 #endif
-		VideoLost=false;
 	}
 }
 

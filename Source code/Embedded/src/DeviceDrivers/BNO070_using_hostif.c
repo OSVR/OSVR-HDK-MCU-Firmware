@@ -376,6 +376,13 @@ bool Tare_BNO070(void)
     return true;
 }
 
+bool SaveDcd_BNO070(void)
+{
+	int status = sensorhub_saveDcd(&sensorhub);
+
+	return (status == SENSORHUB_STATUS_SUCCESS);
+}
+
 bool dfu_BNO070(void) {
     checkDfu();
     PrepareForSoftwareUpgrade();

@@ -1206,3 +1206,35 @@ int sensorhub_calEnable(const sensorhub_t * sh, uint8_t flags)
 
 	return rc;
 }
+
+int sensorhub_saveDcd(const sensorhub_t *sh)
+{
+	uint8_t buffer[32];  // TODO: symbol
+	int rc = 0;
+    int i = 0;
+
+	// Send Cal enable command
+	memset(buffer, 0, sizeof(buffer));
+	buffer[0] = 0;     // sequence
+	buffer[1] = CMD_SAVE_DCD;  // command: Save DCD
+	
+	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
+	                buffer, SENSORHUB_CMD_LEN-1);
+
+	// Get Cal enable response
+    rc = SENSORHUB_STATUS_UNEXPECTED_REPORT;
+	for (i = 0; i < 10; ++i)  {
+		sensorhub_waitForReport(sh, buffer, 100);
+		if ((buffer[2] == SENSORHUB_CMD_RESP) &&
+		    (buffer[4] == CMD_SAVE_DCD)) {
+			if (buffer[7] != 0) {
+				rc = SENSORHUB_STATUS_OP_FAILED;
+			} else {
+                rc = SENSORHUB_STATUS_SUCCESS;
+            }                
+            break;
+		}
+	}
+
+	return rc;
+}

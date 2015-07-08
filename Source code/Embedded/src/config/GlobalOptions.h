@@ -38,7 +38,7 @@ extern char Msg[];
 	#define BNO_TWI_SPEED	400000 //!< TWI data transfer rate
 #endif
 
-#define USB_REPORT_SIZE		32
+#define USB_REPORT_SIZE		16
 
 #define	MaxCommandLength	20
 

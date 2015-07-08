@@ -15,10 +15,13 @@
 #define debugNXPLineMask 2
 #define debugSolomonMask 4
 
+extern bool CDCWriteInProgress; // true if USB is being used to write console messages
+
 void Write(char *const Data);
 void dWrite(char *const Data, uint8_t DebugMask);
 void WriteLn(char *const Data);
 void dWriteLn(char *const Data, uint8_t DebugMask);
 void SetDebugLevel(uint8_t NewLevel);
+void UpdateCDCBusyStatus(void);
 
 #endif /* CONSOLE_H_ */

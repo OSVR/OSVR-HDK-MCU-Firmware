@@ -121,7 +121,8 @@ static void startGameRotationVector(void) {
     rotationVectorSetings_.wakeupEnabled = false;
     rotationVectorSetings_.changeSensitivityRelative = true;
     rotationVectorSetings_.changeSensitivity = (uint16_t)(5.0 * DEG2RAD * (1 << 13));
-    rotationVectorSetings_.reportInterval = 5000;
+    //rotationVectorSetings_.reportInterval = 5000; //200 Hz
+	rotationVectorSetings_.reportInterval = 2500; // 400 Hz
     rotationVectorSetings_.batchInterval = 0;
     rotationVectorSetings_.sensorSpecificConfiguration = 0;
     sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &rotationVectorSetings_);
@@ -336,7 +337,8 @@ bool Check_BNO070(void)
         dispatchEvent(&shEvents[i]);
         //printEvent(&shEvents[i]);
     }
-    
+
+	
     return numEvents > 0;
 }    
 

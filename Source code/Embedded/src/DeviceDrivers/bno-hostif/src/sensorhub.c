@@ -470,7 +470,7 @@ int sensorhub_poll(const sensorhub_t * sh, sensorhub_Event_t * events,
         (*numEvents)++;
 
         /* Allow hub time to release host interrupt */
-        sh->delay(sh, 1);
+        //sh->delay(sh, 1); // !!! removed by YSB
     } while (*numEvents < maxEvents);
 
     /* We ran out of places to store events, so return. */

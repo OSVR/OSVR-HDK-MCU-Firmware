@@ -198,8 +198,13 @@ int main(void)
 
 
 #ifdef BNO070
-        if (BNO070Active)
-            Check_BNO070();
+		//if (CDCWriteInProgress)
+			//UpdateCDCBusyStatus();
+		//else // check tracker only if we can actually report its results
+		{
+	        if (BNO070Active)
+		        Check_BNO070();
+		}
 #endif
 
 #ifdef TMDS422

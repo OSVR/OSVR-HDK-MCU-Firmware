@@ -18,7 +18,7 @@
 #include "Boot.h"
 
 /* Define this to enable the calibrated gyro reports and stuff them in the USB reports at offset 10 */
-#define REPORT_GYRO
+#define REPORT_GYRO // note: this only works for trackers that support 400 Hz or more
 
 #ifdef BNO070
 
@@ -361,12 +361,16 @@ bool init_BNO070(void)
     startGameRotationVector();
 
 #ifdef REPORT_GYRO
-	startGyroCalibrated();
+	if (BNO_supports_400Hz)
+		startGyroCalibrated();
 #endif
 
     // setup report
 #ifdef REPORT_GYRO
-    BNO070_Report[0]=2; // this indicates the version number of the report
+	if (BNO_supports_400Hz)
+		BNO070_Report[0]=2; // this indicates the version number of the report
+	else
+		BNO070_Report[0]=1; // this indicates the version number of the report
 #else
     BNO070_Report[0]=1; // this indicates the version number of the report
 #endif

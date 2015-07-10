@@ -666,11 +666,23 @@ void ProcessI2CCommand(void)
 	#endif
 	
 #ifdef BNO070
-    case 'T':  // tare
-    case 't':
-    {
-        Tare_BNO070();
-    }
+	case 'B':
+	case 'b': // BNO commands
+	{
+        switch (CommandToExecute[2]) // sub-commands for NXP
+        {
+			// to read a 1-byte Hex value after the subcommand use something like param=HexToDecimal(3)
+			// to read a 2-byte Hex value after the subcommand use something like param=HexPairToDecimal(3)
+			case 'T':  // tare
+			case 't':
+			{
+				Tare_BNO070();
+			}
+			break;
+		}
+	}
+	break;
+	
 #endif
 
 #ifndef DISABLE_NXP

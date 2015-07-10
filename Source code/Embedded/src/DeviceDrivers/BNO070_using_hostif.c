@@ -17,6 +17,9 @@
 #include "util/delay.h"
 #include "Boot.h"
 
+/* Define this to enable the calibrated gyro reports and stuff them in the USB reports at offset 10 */
+#define REPORT_GYRO
+
 #ifdef BNO070
 
 #include "sensorhub.h"
@@ -54,6 +57,10 @@ static int32_t degToRadQ28(float deg) {
 
 static sensorhub_SensorFeature_t rotationVectorSetings_;
 static sensorhub_SensorFeature_t accelerometerSetings_;
+
+#ifdef REPORT_GYRO
+static sensorhub_SensorFeature_t gyroSettings_;
+#endif
 
 static sensorhub_ProductID_t readProductId(void)
 {
@@ -130,6 +137,23 @@ static void startGameRotationVector(void) {
     sensorhub.debugPrintf("Game Rotation Vector Enabled: %d.\r\n", rotationVectorSetings_.reportInterval);
 }
 
+
+#ifdef REPORT_GYRO
+static void startGyroCalibrated(void) {
+	sensorhub.debugPrintf("Enabling Calibrated Gyro events...\r\n");
+	gyroSettings_.changeSensitivityEnabled = false;
+	gyroSettings_.wakeupEnabled = false;
+	gyroSettings_.changeSensitivityRelative = false;
+	//gyroSettings_.reportInterval = 5000; //200 Hz
+	gyroSettings_.reportInterval = 2500; // 400 Hz
+	gyroSettings_.batchInterval = 0;
+	gyroSettings_.sensorSpecificConfiguration = 0;
+	sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_GYROSCOPE_CALIBRATED, &gyroSettings_);
+	//sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &gyroSettings_);
+	sensorhub.debugPrintf("Calibrated Gyroscope Enabled: %d.\r\n", gyroSettings_.reportInterval);
+}
+#endif
+
 static void startAccelerometer(void) {
     sensorhub.debugPrintf("Enabling Accelerometer events...\r\n");
     accelerometerSetings_.changeSensitivityEnabled = false;
@@ -200,7 +224,8 @@ static void setDynamicCalibration(bool enable) {
     sensorhub.debugPrintf("Setting Dynamic Calibration Enable");
     int status;
     int flags;
-    flags = enable ? ACCEL_CAL_EN |  GYRO_CAL_EN | MAG_CAL_EN : 0x0;
+	flags = enable ? ACCEL_CAL_EN |  GYRO_CAL_EN | MAG_CAL_EN : ACCEL_CAL_EN;
+   
     
     status = sensorhub_calEnable(&sensorhub, flags);
     if (status != SENSORHUB_STATUS_SUCCESS) {
@@ -250,6 +275,7 @@ static void dispatchEvent(const sensorhub_Event_t * event)
     switch (event->sensor) {
         case SENSORHUB_ROTATION_VECTOR:
         {
+
             BNO070_Report[1] = event->sequenceNumber;
             memcpy(&BNO070_Report[2], &event->un.rotationVector.i_16Q14, 8); // copy quaternion data
             udi_hid_generic_send_report_in(BNO070_Report);
@@ -263,6 +289,13 @@ static void dispatchEvent(const sensorhub_Event_t * event)
             udi_hid_generic_send_report_in(BNO070_Report);
         }
         break;
+		
+		case SENSORHUB_GYROSCOPE_CALIBRATED:
+		{
+			memcpy(&BNO070_Report[10], &event->un.gyroscope.x_16Q9, 6); // copy gyroscope values
+			while (ioport_get_value(Int_BNO070) == 0);  // wait for interrupt to deassert.
+		}
+		break;
     }
 }
 
@@ -272,6 +305,9 @@ sensorhub_ProductID_t BNO070id;
 bool init_BNO070(void)
 {
     int result;
+
+	// Clear BNO070_Report so we don't send garbage out the USB.
+	memset(BNO070_Report, 0, sizeof(BNO070_Report));
 
     ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH); // reset is active low
     ioport_configure_pin(Side_by_side_A,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // Actually the BootN pin
@@ -316,8 +352,16 @@ bool init_BNO070(void)
     //startRotationVector();
     startGameRotationVector();
 
+#ifdef REPORT_GYRO
+	startGyroCalibrated();
+#endif
+
     // setup report
+#ifdef REPORT_GYRO
+    BNO070_Report[0]=2; // this indicates the version number of the report
+#else
     BNO070_Report[0]=1; // this indicates the version number of the report
+#endif
     BNO070_Report[1]=0; // this indicates the sequence number
 
     return true;
@@ -325,7 +369,7 @@ bool init_BNO070(void)
 
 bool Check_BNO070(void)
 {
-#define MAX_EVENTS_AT_A_TIME 5
+#define MAX_EVENTS_AT_A_TIME 1
     sensorhub_Event_t shEvents[MAX_EVENTS_AT_A_TIME];
     int numEvents = 0;
     int i;
@@ -377,6 +421,13 @@ bool Tare_BNO070(void)
     WriteLn("Tare completed");
     return true;
 }
+
+//bool SaveDcd_BNO070(void)
+//{
+	//int status = sensorhub_saveDcd(&sensorhub);
+//
+	//return (status == SENSORHUB_STATUS_SUCCESS);
+//}
 
 bool dfu_BNO070(void) {
     checkDfu();

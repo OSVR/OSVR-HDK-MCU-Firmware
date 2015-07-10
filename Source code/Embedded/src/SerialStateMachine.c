@@ -561,6 +561,20 @@ void ProcessSPICommand(void)
             WriteLn("Wrong Solomon ID");
         break;
     }
+	case 'n':
+	case 'N':
+	{
+		WriteLn("Display on");
+		DisplayOn(Solomon1);
+		break;
+	}
+	case 'f':
+	case 'F':
+	{
+		WriteLn("Display off");
+		DisplayOff(Solomon1);
+		break;
+	}
     case 'd':
     case 'D':
     {

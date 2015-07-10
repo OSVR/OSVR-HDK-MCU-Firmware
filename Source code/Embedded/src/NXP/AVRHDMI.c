@@ -18,6 +18,7 @@
 
 #include "fpga.h"
 
+#include "DeviceDrivers/Solomon.h"
 
 #include "avrhdmi.h"
 #include <util/delay.h>
@@ -774,14 +775,21 @@ static void digitalActivityCallback0 (tmdlHdmiRxEvent_t event,
     switch (event) {
     case TMDL_HDMIRX_ACTIVITY_DETECTED: /* New activity has been detected */
 
-        HDMI_debug_progmem(cDigitalActivityDetected);
+        //HDMI_debug_progmem(cDigitalActivityDetected);
+		WriteLn_progmem(cDigitalActivityDetected);
         //WriteLn("AD0 1+");
         ActivityDetected0=true;
         KnownResolution0=false;
         ResolutionID0=-1;
+		#ifdef Solomon1_SPI
+			#ifdef H546DLT01
+				DisplayOn(Solomon1);
+			#endif
+		#endif
         break;
     case TMDL_HDMIRX_ACTIVITY_LOST: /* New activity has been detected */
-        HDMI_debug_progmem(cDigitalActivityLost);
+        //HDMI_debug_progmem(cDigitalActivityLost);
+		WriteLn_progmem(cDigitalActivityLost);
         ResolutionID0=-1;
 		VideoLost=true;
         //WriteLn("AD0 1");

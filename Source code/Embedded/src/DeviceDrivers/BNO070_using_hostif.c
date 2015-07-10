@@ -29,6 +29,10 @@ bool BNO070Active=false;
 uint8_t BNO070_Report[USB_REPORT_SIZE];
 bool TWI_BNO070_PORT_initialized=false; // true if already initialized
 
+sensorhub_ProductID_t BNO070id;
+Bool BNO_supports_400Hz=false; // true if firmware is new enough to support higher-rate reads
+
+
 #ifdef PERFORM_BNO_DFU
     #if 1 // 1.7.0
         #define DFU_MAJOR 1
@@ -128,8 +132,10 @@ static void startGameRotationVector(void) {
     rotationVectorSetings_.wakeupEnabled = false;
     rotationVectorSetings_.changeSensitivityRelative = true;
     rotationVectorSetings_.changeSensitivity = (uint16_t)(5.0 * DEG2RAD * (1 << 13));
-    //rotationVectorSetings_.reportInterval = 5000; //200 Hz
-	rotationVectorSetings_.reportInterval = 2500; // 400 Hz
+	if (BNO_supports_400Hz)
+		rotationVectorSetings_.reportInterval = 2500; // 400 Hz
+	else
+		rotationVectorSetings_.reportInterval = 5000; //200 Hz
     rotationVectorSetings_.batchInterval = 0;
     rotationVectorSetings_.sensorSpecificConfiguration = 0;
     sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &rotationVectorSetings_);
@@ -144,8 +150,10 @@ static void startGyroCalibrated(void) {
 	gyroSettings_.changeSensitivityEnabled = false;
 	gyroSettings_.wakeupEnabled = false;
 	gyroSettings_.changeSensitivityRelative = false;
-	//gyroSettings_.reportInterval = 5000; //200 Hz
-	gyroSettings_.reportInterval = 2500; // 400 Hz
+	if (BNO_supports_400Hz)
+		gyroSettings_.reportInterval = 2500; // 400 Hz
+	else
+		gyroSettings_.reportInterval = 5000; //200 Hz
 	gyroSettings_.batchInterval = 0;
 	gyroSettings_.sensorSpecificConfiguration = 0;
 	sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_GYROSCOPE_CALIBRATED, &gyroSettings_);
@@ -300,8 +308,6 @@ static void dispatchEvent(const sensorhub_Event_t * event)
 }
 
 
-sensorhub_ProductID_t BNO070id;
-
 bool init_BNO070(void)
 {
     int result;
@@ -337,6 +343,8 @@ bool init_BNO070(void)
         return false;
     }
     BNO070id = readProductId();
+	if ((BNO070id.swVersionMajor*10+BNO070id.swVersionMinor) >= 18) //version>1.8
+		BNO_supports_400Hz=true;
 
     // restore normal setting
     configureARVRStabilizationFRS();

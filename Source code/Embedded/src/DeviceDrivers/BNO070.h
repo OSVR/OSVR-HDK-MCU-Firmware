@@ -18,8 +18,8 @@ extern sensorhub_ProductID_t BNO070id;
 bool init_BNO070(void);
 bool Check_BNO070(void);
 bool Tare_BNO070(void);
+bool SaveDcd_BNO070(void);
 
 bool dfu_BNO070(void);
-
 
 #endif /* BNO070_H_ */

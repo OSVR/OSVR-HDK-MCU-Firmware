@@ -571,6 +571,7 @@ typedef struct sensorhub_FRSWriteResponse {
 
 enum sensorhub_Cmd_e {
 	CMD_TARE = 0x03,
+	CMD_SAVE_DCD = 0x06,
 	CMD_CONFIG_ME_CAL = 0x07,
 };
 typedef uint8_t sensorhub_Cmd_t;
@@ -662,10 +663,10 @@ int sensorhub_getDynamicFeature(const sensorhub_t * sh,
 int sensorhub_poll(const sensorhub_t * sh, sensorhub_Event_t * events,
                    int maxEvents, int *numEvents);
 
-/* TODO-DW Doc */	
+/* This function will establish the current device attitude as the reference orientation */	
 int sensorhub_tareNow(const sensorhub_t * sh, uint8_t axes, uint8_t basis);
 	
-/* TODO-DW Doc */	
+/* This function will save the current reference orientation in non-volatile storage */	
 int sensorhub_tarePersist(const sensorhub_t * sh);
 	
 /**
@@ -677,6 +678,9 @@ int sensorhub_tarePersist(const sensorhub_t * sh);
  */	
 int sensorhub_calEnable(const sensorhub_t *sh, uint8_t flags);
 
+/* Save the current dynamic calibration data in non-volatile storage. */	
+int sensorhub_saveDcd(const sensorhub_t * sh);
+	
 /**
  * This function will wait for an event. It only returns when it either
  * has an event or has encountered an error.

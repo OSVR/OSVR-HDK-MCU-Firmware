@@ -266,64 +266,19 @@ void DisplayOn(uint8_t deviceID)
 		//delay_ms(500);
 		WriteLn("Turning display on");
 				
-		//display power on
-		delay_ms(20);
-		//active display reset (pull RESX up)
-		//ioport_set_pin_high(LCD_avdd_en);
-		//delay_ms(20);
-				
+		//display power on	
+		delay_ms(20);				
 		
 		//initial setting
 		write_solomon(deviceID,0xBC,0x0002); // no of byte send
-		write_solomon(deviceID,0xBF,0x04B0); // cmd=B0, data=04
-		write_solomon(deviceID,0xBF,0x01D6); // cmd=D6, data=01
-		write_solomon(deviceID,0xB7,0x0341); // LP DCS write
-		write_solomon(deviceID,0xB8,0x0000); // VC
-		delay_ms(16);
 
-		//write_solomon(deviceID,0xBC,0x0035); //set TE output
 		write_solomon(deviceID,0xBF,0x0011); // sleep out
-		delay_ms(160);    //>10 frame
+		delay_ms(33);
+		write_solomon(deviceID,0xB7,0x034B); // video signal on
+		delay_ms(166);    //>10 frame
 		write_solomon(deviceID,0xBF,0x0029); // display on
-		delay_ms(16); //> 1 frame
-
-		
-		//EM signal on
-		write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
-		delay_ms(16);
-		write_solomon(deviceID,0xBF,0x07FE);
-		delay_ms(80); //> 5 frame
-		write_solomon(deviceID,0xBF,0xEAA9);
-		delay_ms(16);
-		write_solomon(deviceID,0xBF,0x00FE);
-
-		
-		write_solomon(deviceID,0xBF,0x0011); // sleep out
-		delay_ms(160);
-		write_solomon(deviceID,0xBF,0x0029); // display on
-		delay_ms(16); //> 1 frame
-		write_solomon(deviceID,0xBF,0x07FE);
-		delay_ms(80); //> 5 frame
-		write_solomon(deviceID,0xBF,0xFAA9);
-		delay_ms(16);
-
-		//auo setting
-		write_solomon(deviceID,0xBF,0x08FE);
-		write_solomon(deviceID,0xBF,0x4003);
-		write_solomon(deviceID,0xBF,0x1A07);
-		write_solomon(deviceID,0xBF,0x00FE);
-		write_solomon(deviceID,0xBF,0xFF51);
-		write_solomon(deviceID,0xBC,0x0001); //
-		delay_ms(16);
-
-	    write_solomon(deviceID,0xBC,0x0001); //
-	    delay_ms(32);
-		write_solomon(deviceID,0xB7,0x034B); // video mode on
 
 #endif
-
-		//ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
-
 
 }
 
@@ -354,31 +309,10 @@ void DisplayOff(uint8_t deviceID)
 
         write_solomon(deviceID,0xB7,0x0341); // video mode off
         delay_ms(16);
-        write_solomon(deviceID,0xBC,0x0001); //
-
-        delay_ms(16);
-
         write_solomon(deviceID,0xBF,0x0028); // display off
-        delay_ms(16); // delay > 10 frames
-
-		//EM signal off
-		write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
-		delay_ms(16);
-		write_solomon(deviceID,0xBF,0x07FE);
-		delay_ms(80); //> 5 frame
-		write_solomon(deviceID,0xBF,0x6AA9);
-		delay_ms(16);
-		write_solomon(deviceID,0xBF,0x00FE);
-
+        delay_ms(16);
         write_solomon(deviceID,0xBF,0x0010); // sleep in
-
         delay_ms(20); // delay > 1 frames
-		 
-		//Solomon_Reset(1);
-		//delay_ms(16);
- 		//init_solomon_device(Solomon1);
-		 
-		//ioport_set_pin_low(LCD_avdd_en);	//RESX need jump wired
       
 #endif
 }

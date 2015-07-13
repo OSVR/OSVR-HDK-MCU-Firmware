@@ -184,6 +184,7 @@ void ProcessIncomingChar(char CharReceived)
 
 
 void ProcessInfoCommands(void);
+void ProcessBNO070Commands(void);
 void ProcessSPICommand(void);
 void ProcessI2CCommand(void);
 void ProcessFPGACommand(void);
@@ -294,7 +295,7 @@ void Display_software_version(void)
 #endif
 #ifdef BNO070
 	Write("Tracker:");
-    sprintf(OutString,"%d.%d.%d.%d",BNO070id.swVersionMajor,BNO070id.swVersionMinor,BNO070id.swVersionPatch,BNO070id.swBuildNumber);
+    sprintf(OutString,"%u.%u.%u.%lu",BNO070id.swVersionMajor,BNO070id.swVersionMinor,BNO070id.swVersionPatch,BNO070id.swBuildNumber);
     WriteLn(OutString);
 #endif
 }
@@ -315,6 +316,12 @@ void ProcessCommand(void)
             ProcessInfoCommands();
             break;
         };
+		case 'B':
+		case 'b':
+		{
+			ProcessBNO070Commands();
+			break;
+		};
         case 'S':
         case 's':
         {
@@ -455,6 +462,91 @@ void ProcessInfoCommands(void)
         break;
     }
     }
+}
+
+// Perform operations and queries on Hillcrest BNO070 Sensor Hub.
+//   #BDExx - Set DCD Cal enable flags to hex xx.
+//   #BDQ   - Query the DCD Cal enable flags.
+//   #BDS   - Save the current DCD values in non-volatile storage.
+//   #BMxx  - Enable Mag sensor for xx samples (to facilitate mag cal.)
+//   #BMQ   - Query the Mag sensor status. (Format TBD)
+void ProcessBNO070Commands(void)
+{
+	char OutString[12];
+
+	switch (CommandToExecute[1])
+	{
+		case 'D':
+		case 'd':
+		{
+			switch (CommandToExecute[2])
+			{
+				case 'Q':
+				case 'q':
+				{
+					// #BDQ - BNO DCD Query, return DCD enable flags
+					uint8_t flags = GetDcdEn_BNO070();
+                    sprintf(OutString,"DCD Enable: %02x", flags);
+                    WriteLn(OutString);
+					break;
+				}
+				case 'E':
+				case 'e':
+				{
+					// #BDExx - BNO DCD Enable, set DCD enable flags
+					if (SetDcdEn_BNO070(HexPairToDecimal(3))) {
+						WriteLn("DCD Enable set.");
+					}
+					else {
+						WriteLn("Failed.");
+					}
+					break;
+				}
+				case 'S':
+				case 's':
+				{
+					// #BDS - BNO DCD Save
+					if (SaveDcd_BNO070()) {
+						WriteLn("DCD Saved.");
+					}
+					else {
+						WriteLn("Failed.");
+					}
+					break;
+				}
+			}
+			break;
+		}
+		case 'M':
+		case 'm':
+		{
+			switch (CommandToExecute[2])
+			{
+				case 'E':
+				case 'e':
+				{
+					// #BMExx - BNO Mag Enable for xx samples
+					if (MagOn_BNO070(HexPairToDecimal(3))) {
+						WriteLn("Mag Enabled.");
+					}
+					else {
+						WriteLn("Failed.");
+					}
+					break;
+				}
+				case 'S':
+				case 's':
+				{
+					// #BMS - BNO Mag Status
+					uint8_t status = MagStatus_BNO070();  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
+                    sprintf(OutString,"Mag Accuracy: %d", status);
+                    WriteLn(OutString);
+					break;
+				}
+			}
+			break;
+		}
+	}
 }
 
 
@@ -632,7 +724,7 @@ void ProcessI2CCommand(void)
 
 {
     uint8_t TxByte, RxByte, Num, Page;
-    bool Result;
+    bool Result = false;
 
     char OutString[14];
 

@@ -316,12 +316,14 @@ void ProcessCommand(void)
             ProcessInfoCommands();
             break;
         };
+#ifdef BNO070
 		case 'B':
 		case 'b':
 		{
 			ProcessBNO070Commands();
 			break;
 		};
+#endif
         case 'S':
         case 's':
         {
@@ -464,15 +466,17 @@ void ProcessInfoCommands(void)
     }
 }
 
+#ifdef BNO070
 // Perform operations and queries on Hillcrest BNO070 Sensor Hub.
 //   #BDExx - Set DCD Cal enable flags to hex xx.
 //   #BDQ   - Query the DCD Cal enable flags.
 //   #BDS   - Save the current DCD values in non-volatile storage.
 //   #BMxx  - Enable Mag sensor for xx samples (to facilitate mag cal.)
 //   #BMQ   - Query the Mag sensor status. (Format TBD)
+//   #BSQ   - Query status.
 void ProcessBNO070Commands(void)
 {
-	char OutString[12];
+	char OutString[40];
 
 	switch (CommandToExecute[1])
 	{
@@ -546,8 +550,31 @@ void ProcessBNO070Commands(void)
 			}
 			break;
 		}
+		case 'S':
+		case 's':
+		{
+			switch (CommandToExecute[2])
+			{
+				case 'Q':
+				case 'q':
+				{
+					// #BSQ - BNO Stats Query
+					BNO070_Stats_t stats;
+					GetStats_BNO070(&stats);  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
+					sprintf(OutString,"Resets: %u", stats.resets);
+					WriteLn(OutString);
+					sprintf(OutString,"I2C Events: %u", stats.events);
+					WriteLn(OutString);
+					sprintf(OutString,"Empty events:%u", stats.empty_events);
+					WriteLn(OutString);
+					break;
+				}
+			}
+			break;
+		}
 	}
 }
+#endif
 
 
 // send one or more bytes to the SPI interface and prints the received bytes

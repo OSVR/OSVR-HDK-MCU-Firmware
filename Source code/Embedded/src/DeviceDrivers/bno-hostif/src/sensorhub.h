@@ -613,6 +613,11 @@ typedef struct avrDfuStream_s {
   /* const int_farptr_t page[DFU_MAX_PAGES]; */
 } avrDfuStream_t;
 
+extern bool sensorhub_needs_init;
+extern uint32_t sensorhub_resets;
+extern uint32_t sensorhub_events;
+extern uint32_t sensorhub_empty_events;
+
 /**
  * Reset the sensor hub and initialize it over the I2C bus. This
  * function should be called on power up or if the sensor hub's

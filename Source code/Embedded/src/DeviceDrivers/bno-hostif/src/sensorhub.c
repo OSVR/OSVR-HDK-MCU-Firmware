@@ -11,6 +11,11 @@
 
 #define SENSORHUB_CMD_LEN 12 // TODO-DW : Find a home for this.
 
+bool sensorhub_needs_init = true;
+uint32_t sensorhub_resets = 0;
+uint32_t sensorhub_events = 0;
+uint32_t sensorhub_empty_events = 0;
+
 static int sensorhub_pollForReport(const sensorhub_t * sh, uint8_t * report);
 
 
@@ -287,6 +292,14 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
     if (length > BNO070_MAX_INPUT_REPORT_LEN || report[1] != 0)
         return checkError(sh, SENSORHUB_STATUS_REPORT_LEN_TOO_LONG);
 
+    // Look for reset indications
+    if ((report[2] == SENSORHUB_CMD_RESP) &&
+        ((report[4] & 0x7F) == 0x04)) {
+	    // The sensorhub says it was reset
+	    sensorhub_resets++;
+	    sensorhub_needs_init = true;
+    }
+    
     /* Fill out common fields */
     event->sensor = report[2];
     event->sequenceNumber = report[3];
@@ -456,9 +469,13 @@ int sensorhub_poll(const sensorhub_t * sh, sensorhub_Event_t * events,
         else if (rc != SENSORHUB_STATUS_SUCCESS)
             return checkError(sh, rc);
 
+        sensorhub_events++;
+
         /* Null length reports also indicate no more events */
-        if (report[0] == 0)
+        if (report[0] == 0) {
+	        sensorhub_empty_events++;
             return SENSORHUB_STATUS_SUCCESS;
+        }
 
         /* Decode the event. Ignore reports that aren't events. */
         rc = sensorhub_decodeEvent(sh, report, &events[*numEvents]);

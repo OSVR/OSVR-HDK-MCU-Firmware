@@ -12,6 +12,13 @@
 #include "GlobalOptions.h"
 #include "DeviceDrivers/bno-hostif/src/sensorhub.h"
 
+struct BNO070_Stats_s {
+	uint32_t resets;
+	uint32_t events;
+	uint32_t empty_events;
+};
+typedef struct BNO070_Stats_s BNO070_Stats_t;
+
 extern bool BNO070Active;
 extern sensorhub_ProductID_t BNO070id;
 
@@ -23,6 +30,7 @@ uint8_t GetDcdEn_BNO070(void);
 bool SaveDcd_BNO070(void);
 bool MagOn_BNO070(uint8_t samples);
 uint8_t MagStatus_BNO070(void);  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
+void GetStats_BNO070(BNO070_Stats_t *stats);
 
 bool dfu_BNO070(void);
 

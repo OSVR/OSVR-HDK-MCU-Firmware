@@ -434,12 +434,42 @@ bool Tare_BNO070(void)
     return true;
 }
 
-//bool SaveDcd_BNO070(void)
-//{
-	//int status = sensorhub_saveDcd(&sensorhub);
-//
-	//return (status == SENSORHUB_STATUS_SUCCESS);
-//}
+bool SetDcdEn_BNO070(uint8_t flags)
+{
+	// TODO
+	return false;
+}
+
+uint8_t GetDcdEn_BNO070(void)
+{
+	// TODO
+	return 0;
+}
+
+bool SaveDcd_BNO070(void)
+{
+	int status = sensorhub_saveDcd(&sensorhub);
+	return (status == SENSORHUB_STATUS_SUCCESS);
+}
+
+bool MagOn_BNO070(uint8_t samples)
+{
+	// TODO
+	return false;
+}
+
+uint8_t MagStatus_BNO070(void)  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
+{
+	// TODO
+	return 99;
+}
+
+void GetStats_BNO070(BNO070_Stats_t *stats)
+{
+	stats->resets = sensorhub_resets;
+	stats->events = sensorhub_events;
+	stats->empty_events = sensorhub_empty_events;
+}
 
 bool dfu_BNO070(void) {
     checkDfu();

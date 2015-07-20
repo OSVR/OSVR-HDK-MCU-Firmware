@@ -470,7 +470,7 @@ void ProcessInfoCommands(void)
 // Perform operations and queries on Hillcrest BNO070 Sensor Hub.
 //   #BDExx - Set DCD Cal enable flags to hex xx.
 //   #BDS   - Save the current DCD values in non-volatile storage.
-//   #BMxx  - Enable Mag sensor for xx samples (to facilitate mag cal.)
+//   #BMExx  - Enable Mag sensor for xx samples (to facilitate mag cal.)
 //   #BMQ   - Query the Mag sensor status. (Format TBD)
 //   #BSQ   - Query status.
 void ProcessBNO070Commands(void)
@@ -528,8 +528,8 @@ void ProcessBNO070Commands(void)
 					}
 					break;
 				}
-				case 'S':
-				case 's':
+				case 'Q':
+				case 'q':
 				{
 					// #BMS - BNO Mag Status
 					uint8_t status = MagStatus_BNO070();  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.

@@ -469,7 +469,6 @@ void ProcessInfoCommands(void)
 #ifdef BNO070
 // Perform operations and queries on Hillcrest BNO070 Sensor Hub.
 //   #BDExx - Set DCD Cal enable flags to hex xx.
-//   #BDQ   - Query the DCD Cal enable flags.
 //   #BDS   - Save the current DCD values in non-volatile storage.
 //   #BMxx  - Enable Mag sensor for xx samples (to facilitate mag cal.)
 //   #BMQ   - Query the Mag sensor status. (Format TBD)
@@ -485,15 +484,6 @@ void ProcessBNO070Commands(void)
 		{
 			switch (CommandToExecute[2])
 			{
-				case 'Q':
-				case 'q':
-				{
-					// #BDQ - BNO DCD Query, return DCD enable flags
-					uint8_t flags = GetDcdEn_BNO070();
-                    sprintf(OutString,"DCD Enable: %02x", flags);
-                    WriteLn(OutString);
-					break;
-				}
 				case 'E':
 				case 'e':
 				{

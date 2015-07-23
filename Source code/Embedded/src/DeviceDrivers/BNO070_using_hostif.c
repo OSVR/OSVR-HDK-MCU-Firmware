@@ -17,8 +17,12 @@
 #include "util/delay.h"
 #include "Boot.h"
 
+/* Set this to 1 to report GRV instead of standard RV */
+#define SELECT_GRV 1
 /* Define this to enable the calibrated gyro reports and stuff them in the USB reports at offset 10 */
-#define REPORT_GYRO // note: this only works for trackers that support 400 Hz or more
+#define REPORT_GYRO 1
+#define REPORT_ACC 0
+#define REPORT_MAG 0
 
 #ifdef BNO070
 
@@ -32,6 +36,24 @@ bool TWI_BNO070_PORT_initialized=false; // true if already initialized
 sensorhub_ProductID_t BNO070id;
 Bool BNO_supports_400Hz=false; // true if firmware is new enough to support higher-rate reads
 
+struct BNO070_Config {
+    /* per-sensor configs */
+    struct {
+        sensorhub_SensorFeature_t rv;
+        sensorhub_SensorFeature_t grv;
+        sensorhub_SensorFeature_t acc;
+        sensorhub_SensorFeature_t gyro;
+        sensorhub_SensorFeature_t mag;
+    } sensors;
+
+    /* calibration flags */
+    int cal_flags;
+
+    /* mag events to watch for before turning off, -1 = unlimited, 0 = off */
+    int mag_events_left;
+};
+
+static struct BNO070_Config config_;
 
 #ifdef PERFORM_BNO_DFU
     #if 1 // 1.7.0
@@ -58,13 +80,6 @@ static int32_t degToRadQ28(float deg) {
 }
 
 #define toFixed32(x, Q) round32(x * (float)(1ul << Q))
-
-static sensorhub_SensorFeature_t rotationVectorSetings_;
-static sensorhub_SensorFeature_t accelerometerSetings_;
-
-#ifdef REPORT_GYRO
-static sensorhub_SensorFeature_t gyroSettings_;
-#endif
 
 static sensorhub_ProductID_t readProductId(void)
 {
@@ -112,71 +127,7 @@ static void checkDfu(void) {
 #endif // PERFORM_BNO_DFU
 }
 
-static void startRotationVector(void) {
-    sensorhub.debugPrintf("Enabling Rotation Vector events...\r\n");
-    rotationVectorSetings_.changeSensitivityEnabled = false;
-    rotationVectorSetings_.wakeupEnabled = false;
-    rotationVectorSetings_.changeSensitivityRelative = true;
-    rotationVectorSetings_.changeSensitivity = (uint16_t)(5.0 * DEG2RAD * (1 << 13));
-    rotationVectorSetings_.reportInterval = 5000;
-    rotationVectorSetings_.batchInterval = 0;
-    rotationVectorSetings_.sensorSpecificConfiguration = 0;
-    sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_ROTATION_VECTOR, &rotationVectorSetings_);
-    //sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_ROTATION_VECTOR, &rotationVectorSetings_);
-    sensorhub.debugPrintf("Rotation Vector Enabled: %d.\r\n", rotationVectorSetings_.reportInterval);
-}
-
-static void startGameRotationVector(void) {
-    sensorhub.debugPrintf("Enabling Game Rotation Vector events...\r\n");
-    rotationVectorSetings_.changeSensitivityEnabled = false;
-    rotationVectorSetings_.wakeupEnabled = false;
-    rotationVectorSetings_.changeSensitivityRelative = true;
-    rotationVectorSetings_.changeSensitivity = (uint16_t)(5.0 * DEG2RAD * (1 << 13));
-	if (BNO_supports_400Hz)
-		rotationVectorSetings_.reportInterval = 2500; // 400 Hz
-	else
-		rotationVectorSetings_.reportInterval = 5000; //200 Hz
-    rotationVectorSetings_.batchInterval = 0;
-    rotationVectorSetings_.sensorSpecificConfiguration = 0;
-    sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &rotationVectorSetings_);
-    //sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &rotationVectorSetings_);
-    sensorhub.debugPrintf("Game Rotation Vector Enabled: %d.\r\n", rotationVectorSetings_.reportInterval);
-}
-
-
-#ifdef REPORT_GYRO
-static void startGyroCalibrated(void) {
-	sensorhub.debugPrintf("Enabling Calibrated Gyro events...\r\n");
-	gyroSettings_.changeSensitivityEnabled = false;
-	gyroSettings_.wakeupEnabled = false;
-	gyroSettings_.changeSensitivityRelative = false;
-	if (BNO_supports_400Hz)
-		gyroSettings_.reportInterval = 2500; // 400 Hz
-	else
-		gyroSettings_.reportInterval = 5000; //200 Hz
-	gyroSettings_.batchInterval = 0;
-	gyroSettings_.sensorSpecificConfiguration = 0;
-	sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_GYROSCOPE_CALIBRATED, &gyroSettings_);
-	//sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_GAME_ROTATION_VECTOR, &gyroSettings_);
-	sensorhub.debugPrintf("Calibrated Gyroscope Enabled: %d.\r\n", gyroSettings_.reportInterval);
-}
-#endif
-
-static void startAccelerometer(void) {
-    sensorhub.debugPrintf("Enabling Accelerometer events...\r\n");
-    accelerometerSetings_.changeSensitivityEnabled = false;
-    accelerometerSetings_.wakeupEnabled = false;
-    accelerometerSetings_.changeSensitivityRelative = false;
-    accelerometerSetings_.changeSensitivity = (uint16_t)(5.0 * DEG2RAD * (1 << 13));
-    accelerometerSetings_.reportInterval = 10000;
-    accelerometerSetings_.batchInterval = 0;
-    accelerometerSetings_.sensorSpecificConfiguration = 0;
-    sensorhub_setDynamicFeature(&sensorhub, SENSORHUB_ACCELEROMETER, &accelerometerSetings_);
-    //sensorhub_getDynamicFeature(&sensorhub, SENSORHUB_ACCELEROMETER, &accelerometerSetings_);
-
-    sensorhub.debugPrintf("Accelerometer Enabled: %d.\r\n", accelerometerSetings_.reportInterval);
-}
-
+// TODO - skip the write FRS if the FRS on the device does not differ
 static void configureARVRStabilizationFRS(void) {
     int status;
     int32_t arvrConfig[4] = {
@@ -207,6 +158,7 @@ uint8_t const scd[] = {
     #include "bno-hostif/SCD-Bosch-BNO070-sqtsNoise.c"
 };
 
+// TODO - skip the write FRS if the FRS on the device does not differ
 static void configureScdFrs(void) {
     int status;
     sensorhub.debugPrintf("Configuring SCD.\r\n");
@@ -215,34 +167,45 @@ static void configureScdFrs(void) {
     if (status != SENSORHUB_STATUS_SUCCESS) {
         sensorhub.debugPrintf("Write FRS of SCD failed: %d", status);
     }
-}    
+}
 
 static void clearScdFrs(void) {
     int status;
     sensorhub.debugPrintf("Clearing SCD.\r\n");
-    uint32_t const emptySCD[1] = {0};
     status = sensorhub_writeFRS(&sensorhub, SENSORHUB_FRS_SCD_ACTIVE, NULL, 0);
     if (status != SENSORHUB_STATUS_SUCCESS) {
         sensorhub.debugPrintf("Clear of SCD failed: %d", status);
     }
-}    
-
-
-static void setDynamicCalibration(bool enable) {
-    sensorhub.debugPrintf("Setting Dynamic Calibration Enable");
-    int status;
-    int flags;
-	flags = enable ? ACCEL_CAL_EN |  GYRO_CAL_EN | MAG_CAL_EN : ACCEL_CAL_EN;
-   
-    
-    status = sensorhub_calEnable(&sensorhub, flags);
-    if (status != SENSORHUB_STATUS_SUCCESS) {
-        sensorhub.debugPrintf("Set of calEnable flags failed: %d", status);
-    } else {
-        sensorhub.debugPrintf("Set of calEnable flags: %d successful.", flags);
-    }
 }
 
+static inline int32_t hz2us(int hz) {
+    if (hz == 0) {
+        return 0;
+    }
+    return 1000000 / hz;
+}
+
+static void loadDefaultConfig(struct BNO070_Config * cfg) {
+
+    int32_t common_period;
+    memset(cfg, 0x00, sizeof(*cfg));
+
+    if (BNO_supports_400Hz) {
+        common_period = hz2us(400);
+    } else {
+        common_period = hz2us(200);
+    }
+
+    /* rv and grv are mutually exclusive */
+    cfg->sensors.rv.reportInterval = !SELECT_GRV ? common_period : 0;
+    cfg->sensors.grv.reportInterval = SELECT_GRV ? common_period : 0;
+    /* enable the other reports as needed */
+    cfg->sensors.gyro.reportInterval = REPORT_GYRO ? common_period : 0;
+    cfg->sensors.acc.reportInterval = REPORT_ACC ? common_period : 0;
+    cfg->sensors.mag.reportInterval = REPORT_MAG ? common_period : 0;
+
+    cfg->cal_flags = 0;
+}
 
 static void printEvent(const sensorhub_Event_t * event)
 {
@@ -297,23 +260,73 @@ static void dispatchEvent(const sensorhub_Event_t * event)
             udi_hid_generic_send_report_in(BNO070_Report);
         }
         break;
-		
-		case SENSORHUB_GYROSCOPE_CALIBRATED:
-		{
-			memcpy(&BNO070_Report[10], &event->un.gyroscope.x_16Q9, 6); // copy gyroscope values
-			while (ioport_get_value(Int_BNO070) == 0);  // wait for interrupt to deassert.
-		}
-		break;
+
+        case SENSORHUB_GYROSCOPE_CALIBRATED:
+        {
+            memcpy(&BNO070_Report[10], &event->un.gyroscope.x_16Q9, 6); // copy gyroscope values
+            while (ioport_get_value(Int_BNO070) == 0);  // wait for interrupt to deassert.
+        }
+        break;
     }
 }
 
+
+static inline int checkError(int status, const char * msg) {
+    if (status < 0) {
+        sensorhub.debugPrintf("Err %d: %s", status, msg);
+    }
+    return status;
+}
+
+/**
+ * Apply settings in activeConfig_ to BNO
+ */
+static void applyConfig(struct BNO070_Config * cfg) {
+
+    int status;
+
+    status = sensorhub_calEnable(&sensorhub, cfg->cal_flags);
+    if (checkError(status, "error setting cal enable flags") < 0) {
+        return;
+    }
+
+    status = sensorhub_setDynamicFeature(&sensorhub,
+        SENSORHUB_ROTATION_VECTOR, &cfg->sensors.rv);
+    if (checkError(status, "error setting RV FRS") < 0) {
+        return;
+    }
+
+    status = sensorhub_setDynamicFeature(&sensorhub,
+        SENSORHUB_GAME_ROTATION_VECTOR, &cfg->sensors.grv);
+    if (checkError(status, "error setting GRV FRS") < 0) {
+        return;
+    }
+
+    status = sensorhub_setDynamicFeature(&sensorhub,
+        SENSORHUB_ACCELEROMETER, &cfg->sensors.gyro);
+    if (checkError(status, "error setting GYRO FRS") < 0) {
+        return;
+    }
+
+    status = sensorhub_setDynamicFeature(&sensorhub,
+        SENSORHUB_GYROSCOPE_CALIBRATED, &cfg->sensors.gyro);
+    if (checkError(status, "error setting GYRO FRS") < 0) {
+        return;
+    }
+
+    status = sensorhub_setDynamicFeature(&sensorhub,
+        SENSORHUB_MAGNETIC_FIELD_CALIBRATED, &cfg->sensors.mag);
+    if (checkError(status, "error setting MAG FRS") < 0) {
+        return;
+    }
+}
 
 bool init_BNO070(void)
 {
     int result;
 
-	// Clear BNO070_Report so we don't send garbage out the USB.
-	memset(BNO070_Report, 0, sizeof(BNO070_Report));
+    // Clear BNO070_Report so we don't send garbage out the USB.
+    memset(BNO070_Report, 0, sizeof(BNO070_Report));
 
     ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH); // reset is active low
     ioport_configure_pin(Side_by_side_A,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // Actually the BootN pin
@@ -334,43 +347,38 @@ bool init_BNO070(void)
         else
             return false;
     }
-    
+
 #ifdef PERFORM_BNO_DFU
     return dfu_BNO070();
-#endif    
+#endif
 
     if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
         return false;
     }
+
     BNO070id = readProductId();
-	if ((BNO070id.swVersionMajor*10+BNO070id.swVersionMinor) >= 18) //version>1.8
-		BNO_supports_400Hz=true;
+    if ((BNO070id.swVersionMajor*10+BNO070id.swVersionMinor) >= 18) //version>1.8
+        BNO_supports_400Hz=true;
 
     // restore normal setting
     configureARVRStabilizationFRS();
     configureScdFrs();
-    //clearScdFrs();
 
+    // WTF? why
     // Probe again to reboot the hub
     if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
         return false;
     }
-    
-    setDynamicCalibration(false);
-    //startRotationVector();
-    startGameRotationVector();
 
-#ifdef REPORT_GYRO
-	if (BNO_supports_400Hz)
-		startGyroCalibrated();
-#endif
+    loadDefaultConfig(&config_);
+    applyConfig(&config_);
 
     // setup report
 #ifdef REPORT_GYRO
-	if (BNO_supports_400Hz)
-		BNO070_Report[0]=2; // this indicates the version number of the report
-	else
-		BNO070_Report[0]=1; // this indicates the version number of the report
+    if (BNO_supports_400Hz)
+        BNO070_Report[0]=2; // this indicates the version number of the report
+    else
+        BNO070_Report[0]=1; // this indicates the version number of the report
 #else
     BNO070_Report[0]=1; // this indicates the version number of the report
 #endif
@@ -379,24 +387,35 @@ bool init_BNO070(void)
     return true;
 }
 
+void SimReset_BNO070(void)
+{
+   // TODO: sensorhub_simReset(&sensorhub);
+}
+
 bool Check_BNO070(void)
 {
 #define MAX_EVENTS_AT_A_TIME 1
     sensorhub_Event_t shEvents[MAX_EVENTS_AT_A_TIME];
     int numEvents = 0;
     int i;
+    int rc;
 
     /* Get the shEvents - we may get 0 */
-    sensorhub_poll(&sensorhub, shEvents, MAX_EVENTS_AT_A_TIME, &numEvents);
+    rc = sensorhub_poll(&sensorhub, shEvents, MAX_EVENTS_AT_A_TIME, &numEvents);
+
+    if (rc == SENSORHUB_STATUS_HUB_RESET) {
+        /* reset event received */
+        sensorhub.debugPrintf("Hub reset event received\r\n");
+        applyConfig(&config_);
+    }
 
     for (i = 0; i < numEvents; i++) {
         dispatchEvent(&shEvents[i]);
         //printEvent(&shEvents[i]);
     }
 
-	
     return numEvents > 0;
-}    
+}
 
 bool Tare_BNO070(void)
 {
@@ -436,39 +455,33 @@ bool Tare_BNO070(void)
 
 bool SetDcdEn_BNO070(uint8_t flags)
 {
-	// TODO
-	return false;
-}
-
-uint8_t GetDcdEn_BNO070(void)
-{
-	// TODO
-	return 0;
+    // TODO
+    return false;
 }
 
 bool SaveDcd_BNO070(void)
 {
-	int status = sensorhub_saveDcd(&sensorhub);
-	return (status == SENSORHUB_STATUS_SUCCESS);
+    int status = sensorhub_saveDcd(&sensorhub);
+    return (status == SENSORHUB_STATUS_SUCCESS);
 }
 
 bool MagOn_BNO070(uint8_t samples)
 {
-	// TODO
-	return false;
+    // TODO
+    return false;
 }
 
 uint8_t MagStatus_BNO070(void)  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
 {
-	// TODO
-	return 99;
+    // TODO
+    return 99;
 }
 
 void GetStats_BNO070(BNO070_Stats_t *stats)
 {
-	stats->resets = sensorhub_resets;
-	stats->events = sensorhub_events;
-	stats->empty_events = sensorhub_empty_events;
+    stats->resets = sensorhub_resets;
+    stats->events = sensorhub_events;
+    stats->empty_events = sensorhub_empty_events;
 }
 
 bool dfu_BNO070(void) {

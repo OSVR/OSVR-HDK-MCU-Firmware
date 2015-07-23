@@ -483,8 +483,9 @@ typedef struct sensorhub_SensorFeature {
  */
 enum sensorhub_Status_e {
     /* Warnings (>0) */
-    SENSORHUB_STATUS_MORE_EVENTS_PENDING = 1,
+	SENSORHUB_STATUS_MORE_EVENTS_PENDING = 1,
     SENSORHUB_STATUS_NO_REPORT_PENDING = 2,
+	SENSORHUB_STATUS_HUB_RESET = 3,
 
     /* Success */
     SENSORHUB_STATUS_SUCCESS = 0,         /**< The operation was successful */

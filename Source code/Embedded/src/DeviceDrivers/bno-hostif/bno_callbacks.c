@@ -38,7 +38,7 @@ static void logError(const struct sensorhub_s *sh, int err)
   /* Send this to the debugger's Terminal I/O window */
   static volatile int lastErr = 0;
   lastErr = err;
-  debugPrintf("BNO070 error: %d\r\n", err);
+  debugPrintf("BNO070 error: %d\r\n", lastErr);
 }
 
 static int i2cTransfer(const struct sensorhub_s *sh,

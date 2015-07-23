@@ -23,10 +23,10 @@ extern bool BNO070Active;
 extern sensorhub_ProductID_t BNO070id;
 
 bool init_BNO070(void);
+void SimReset_BNO070(void);
 bool Check_BNO070(void);
 bool Tare_BNO070(void);
 bool SetDcdEn_BNO070(uint8_t flags);
-uint8_t GetDcdEn_BNO070(void);
 bool SaveDcd_BNO070(void);
 bool MagOn_BNO070(uint8_t samples);
 uint8_t MagStatus_BNO070(void);  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.

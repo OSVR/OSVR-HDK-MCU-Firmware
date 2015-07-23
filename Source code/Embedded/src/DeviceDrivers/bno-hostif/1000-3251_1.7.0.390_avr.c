@@ -13465,6 +13465,8 @@ uint32_t dfuAddr(uint32_t index)
 		case 7:
 			addr = GET_FAR_ADDRESS(dfuPage_7);
 			break;
+		default:
+			return 0;
 	}
 	addr += offset;
 	

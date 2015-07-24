@@ -17,7 +17,7 @@
 
 static void debugPrintf(const char *format, ...)
 {
-#if 1    
+#if 1
   static char buffer[256];
 
   va_list ap;
@@ -25,7 +25,7 @@ static void debugPrintf(const char *format, ...)
   vsprintf(buffer, format, ap);
   static volatile int test;
   ++test;
-  //WriteLn(buffer);
+  WriteLn(buffer);
   va_end(ap);
 #endif
 }
@@ -63,13 +63,13 @@ static int i2cTransfer(const struct sensorhub_s *sh,
             if (twi_master_read(TWI_BNO070_PORT, &packet_read)!=STATUS_OK) {
                 return SENSORHUB_STATUS_ERROR_I2C_IO;
             } else {
-                return SENSORHUB_STATUS_SUCCESS;    
+                return SENSORHUB_STATUS_SUCCESS;
             }
         } else {
             return SENSORHUB_STATUS_ERROR_I2C_IO;  // Don't support this yet!!!
-        }        
-    } 
-    
+        }
+    }
+
     if (sendLength > 0) {
         twi_package_t packet_write = {
             .addr[0]      = 0, //regNum,      // TWI slave memory address data
@@ -81,8 +81,8 @@ static int i2cTransfer(const struct sensorhub_s *sh,
         };
         if (twi_master_write(TWI_BNO070_PORT, &packet_write)!=STATUS_OK) {
             return SENSORHUB_STATUS_ERROR_I2C_IO;
-        }            
-    }            
+        }
+    }
     if (receiveLength > 0) {
         twi_package_t packet_read = {
             .addr[0]      = 0, //regNum,      // TWI slave memory address data
@@ -94,9 +94,9 @@ static int i2cTransfer(const struct sensorhub_s *sh,
         };
         if (twi_master_read(TWI_BNO070_PORT, &packet_read)!=STATUS_OK) {
             return SENSORHUB_STATUS_ERROR_I2C_IO;
-        } 
+        }
     }
-    return SENSORHUB_STATUS_SUCCESS;    
+    return SENSORHUB_STATUS_SUCCESS;
 }
 
 static void gpioSetRSTN(const struct sensorhub_s *sh, int value)
@@ -128,10 +128,10 @@ static void delay(const struct sensorhub_s *sh, int milliseconds)
 }
 
 static uint32_t getTick(const struct sensorhub_s *sh)
-{   
+{
     static uint32_t currTick = 0;
     currTick += 10;
-    delay_ms(10);  
+    delay_ms(10);
     return currTick;
 }
 

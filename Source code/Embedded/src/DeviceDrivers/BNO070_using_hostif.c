@@ -407,8 +407,10 @@ bool init_BNO070(void)
     configureARVRStabilizationFRS();
     configureScdFrs();
 
-    // reset the hub after applying FRS settings
-    Reset_BNO070();
+    // reset + probe again after applying FRS settings
+    if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
+        return false;
+    }
 
 	// configure BNO with our default settings and sensor rate
     ReInit_BNO070();

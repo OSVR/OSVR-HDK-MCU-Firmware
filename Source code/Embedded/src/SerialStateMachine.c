@@ -359,7 +359,7 @@ void ProcessCommand(void)
             break;
         }
 		#endif
-		
+
         case 'P': // PWM settings
         case 'p':
         {
@@ -467,12 +467,6 @@ void ProcessInfoCommands(void)
 }
 
 #ifdef BNO070
-// Perform operations and queries on Hillcrest BNO070 Sensor Hub.
-//   #BDExx - Set DCD Cal enable flags to hex xx.
-//   #BDS   - Save the current DCD values in non-volatile storage.
-//   #BMExx  - Enable Mag sensor for xx samples (to facilitate mag cal.)
-//   #BMQ   - Query the Mag sensor status. (Format TBD)
-//   #BSQ   - Query status.
 void ProcessBNO070Commands(void)
 {
 	char OutString[40];
@@ -488,8 +482,10 @@ void ProcessBNO070Commands(void)
 				case 'e':
 				{
 					// #BDExx - BNO DCD Enable, set DCD enable flags
-					if (SetDcdEn_BNO070(HexPairToDecimal(3))) {
-						WriteLn("DCD Enable set.");
+                    int flags = HexPairToDecimal(3);
+					if (SetDcdEn_BNO070(flags)) {
+                        sprintf(OutString, "Calibration flags set (%02x)", flags);
+						WriteLn(OutString);
 					}
 					else {
 						WriteLn("Failed.");
@@ -519,9 +515,10 @@ void ProcessBNO070Commands(void)
 				case 'E':
 				case 'e':
 				{
-					// #BMExx - BNO Mag Enable for xx samples
-					if (MagOn_BNO070(HexPairToDecimal(3))) {
-						WriteLn("Mag Enabled.");
+					// #BMExx - BNO Mag Enable
+					bool enabled = HexPairToDecimal(3) > 0;
+                    if (MagSetEnable_BNO070(enabled)) {
+						WriteLn(enabled ? "Mag Enabled." : "Mag Disabled.");
 					}
 					else {
 						WriteLn("Failed.");
@@ -562,6 +559,51 @@ void ProcessBNO070Commands(void)
 			}
 			break;
 		}
+        case 'V':
+        case 'v':
+        {
+            switch (CommandToExecute[2])
+            {
+                case 'V':
+                case 'v':
+                {
+                    // #BVVxx log events to serial xx=0 turn off, all else = on
+                    bool enabled = HexPairToDecimal(3) > 0;
+                    SetDebugPrintEvents_BNO070(enabled);
+                    WriteLn(enabled ? "enabled\n" : "disabled\n");
+                    break;
+                }
+            }
+        }
+        case 'R':
+        case 'r':
+        {
+            switch (CommandToExecute[2])
+            {
+                case 'I':
+                case 'i':
+                {
+                    // #BRI
+                    if (ReInit_BNO070()) {
+                        WriteLn("Reinitialized");
+                    } else {
+                        WriteLn("Failed");
+                    }
+                    break;
+                }
+                case 'H':
+                case 'h':
+                {
+                    // #BRH
+                    if (Reset_BNO070())  {
+                        WriteLn("Reset");
+                    } else {
+                        WriteLn("Failed");
+                    }
+                    break;
+                }
+            }
+        }
 	}
 }
 #endif
@@ -769,7 +811,7 @@ void ProcessI2CCommand(void)
         break;
 
     }
-	
+
 	#ifndef DISABLE_NXP
 
     case 'f':
@@ -787,7 +829,7 @@ void ProcessI2CCommand(void)
     }
 
 	#endif
-	
+
 #ifdef BNO070
 	case 'B':
 	case 'b': // BNO commands
@@ -805,7 +847,7 @@ void ProcessI2CCommand(void)
 		}
 	}
 	break;
-	
+
 #endif
 
 #ifndef DISABLE_NXP
@@ -982,7 +1024,7 @@ void ProcessFPGACommand(void)
 #endif
 		break;
 	}
-	
+
     }
 
 }

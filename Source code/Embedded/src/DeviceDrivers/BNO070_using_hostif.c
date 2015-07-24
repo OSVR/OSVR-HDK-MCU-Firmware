@@ -24,6 +24,9 @@
 #define REPORT_ACC 0
 #define REPORT_MAG 0
 
+// Skip version check and always DFU
+#define FORCE_DFU 1
+
 #ifdef BNO070
 
 #include "sensorhub.h"
@@ -48,12 +51,11 @@ struct BNO070_Config {
 
     /* calibration flags */
     int cal_flags;
-
-    /* mag events to watch for before turning off, -1 = unlimited, 0 = off */
-    int mag_events_left;
 };
 
 static struct BNO070_Config config_;
+static int magneticFieldStatus_ = 0xff;
+static bool printEvents_ = false;
 
 #ifdef PERFORM_BNO_DFU
     #if 1 // 1.7.0
@@ -79,6 +81,13 @@ static int32_t degToRadQ28(float deg) {
     return (int32_t) (deg * DEG2RAD * (1ul << 28));
 }
 
+static inline int32_t hz2us(int hz) {
+    if (hz == 0) {
+        return 0;
+    }
+    return 1000000 / hz;
+}
+
 #define toFixed32(x, Q) round32(x * (float)(1ul << Q))
 
 static sensorhub_ProductID_t readProductId(void)
@@ -102,16 +111,15 @@ static sensorhub_ProductID_t readProductId(void)
 
 static void checkDfu(void) {
 #ifdef PERFORM_BNO_DFU
-#if 1 // Skip vesrion check and always DFU
-    if (1) {
-        sensorhub.debugPrintf("Performing DFU . . . \r\n");
-#else
     sensorhub_ProductID_t id = readProductId();
-    if ((id.swVersionMajor != DFU_MAJOR) ||
+    if (FORCE_DFU ||
+        (id.swVersionMajor != DFU_MAJOR) ||
         (id.swVersionMinor != DFU_MINOR) ||
         (id.swVersionPatch != DFU_PATCH)) {
-        sensorhub.debugPrintf("BNO is not at %d.%d.%d.  Performing DFU . . . \r\n", DFU_MAJOR, DFU_MINOR, DFU_PATCH);
-#endif
+        sensorhub.debugPrintf(
+            "BNO is not at %d.%d.%d.  Performing DFU . . . \r\n",
+            DFU_MAJOR, DFU_MINOR, DFU_PATCH);
+
         int rc = sensorhub_dfu_avr(&sensorhub, &dfuStream);
         if (rc != SENSORHUB_STATUS_SUCCESS) {
             sensorhub.debugPrintf("dfu received error: %d\r\n", rc);
@@ -178,31 +186,27 @@ static void clearScdFrs(void) {
     }
 }
 
-static inline int32_t hz2us(int hz) {
-    if (hz == 0) {
-        return 0;
-    }
-    return 1000000 / hz;
-}
-
 static void loadDefaultConfig(struct BNO070_Config * cfg) {
 
     int32_t common_period;
+    int32_t gyro_period;
     memset(cfg, 0x00, sizeof(*cfg));
 
     if (BNO_supports_400Hz) {
         common_period = hz2us(400);
+        gyro_period = hz2us(400);
     } else {
         common_period = hz2us(200);
+        gyro_period = 0;
     }
 
     /* rv and grv are mutually exclusive */
     cfg->sensors.rv.reportInterval = !SELECT_GRV ? common_period : 0;
     cfg->sensors.grv.reportInterval = SELECT_GRV ? common_period : 0;
     /* enable the other reports as needed */
-    cfg->sensors.gyro.reportInterval = REPORT_GYRO ? common_period : 0;
+    cfg->sensors.gyro.reportInterval = REPORT_GYRO ? gyro_period : 0;
     cfg->sensors.acc.reportInterval = REPORT_ACC ? common_period : 0;
-    cfg->sensors.mag.reportInterval = REPORT_MAG ? common_period : 0;
+    cfg->sensors.mag.reportInterval = REPORT_MAG ? hz2us(100) : 0;
 
     cfg->cal_flags = 0;
 }
@@ -212,16 +216,38 @@ static void printEvent(const sensorhub_Event_t * event)
     switch (event->sensor) {
         case SENSORHUB_ACCELEROMETER:
         {
-            sensorhub.debugPrintf("Acc: 0x%04x 0x%04x 0x%04x\r\n",
+            sensorhub.debugPrintf("Acc:%02x  0x%04x 0x%04x 0x%04x\r\n",
+                (int) event->sequenceNumber,
                 event->un.accelerometer.x_16Q8,
                 event->un.accelerometer.y_16Q8,
                 event->un.accelerometer.z_16Q8);
         }
         break;
 
+        case SENSORHUB_GYROSCOPE_CALIBRATED:
+        {
+            sensorhub.debugPrintf("Rot:%02x  0x%04x 0x%04x 0x%04x\r\n",
+                (int) event->sequenceNumber,
+                event->un.gyroscope.x_16Q9,
+                event->un.gyroscope.y_16Q9,
+                event->un.gyroscope.z_16Q9);
+        }
+        break;
+
+        case SENSORHUB_MAGNETIC_FIELD_CALIBRATED:
+        {
+            sensorhub.debugPrintf("Mag:%02x  0x%04x 0x%04x 0x%04x\r\n",
+                (int) event->sequenceNumber,
+                event->un.magneticField.x_16Q4,
+                event->un.magneticField.y_16Q4,
+                event->un.magneticField.z_16Q4);
+        }
+        break;
+
         case SENSORHUB_ROTATION_VECTOR:
         {
-            sensorhub.debugPrintf("RV: %5d %5d %5d %5d\r\n",
+            sensorhub.debugPrintf("RV: %02x %5d %5d %5d %5d\r\n",
+                (int) event->sequenceNumber,
                 event->un.rotationVector.i_16Q14,
                 event->un.rotationVector.j_16Q14,
                 event->un.rotationVector.k_16Q14,
@@ -231,7 +257,8 @@ static void printEvent(const sensorhub_Event_t * event)
 
         case SENSORHUB_GAME_ROTATION_VECTOR:
         {
-            sensorhub.debugPrintf("RV: %5d %5d %5d %5d\r\n",
+            sensorhub.debugPrintf("RV: %02x %5d %5d %5d %5d\r\n",
+                (int) event->sequenceNumber,
                 event->un.gameRotationVector.i_16Q14,
                 event->un.gameRotationVector.j_16Q14,
                 event->un.gameRotationVector.k_16Q14,
@@ -241,7 +268,7 @@ static void printEvent(const sensorhub_Event_t * event)
     }
 }
 
-static void dispatchEvent(const sensorhub_Event_t * event)
+static void handleEvent(const sensorhub_Event_t * event)
 {
     switch (event->sensor) {
         case SENSORHUB_ROTATION_VECTOR:
@@ -267,6 +294,20 @@ static void dispatchEvent(const sensorhub_Event_t * event)
             while (ioport_get_value(Int_BNO070) == 0);  // wait for interrupt to deassert.
         }
         break;
+
+        case SENSORHUB_MAGNETIC_FIELD_CALIBRATED:
+        {
+            // store the mag status field only if the mag is enabled
+            if (config_.sensors.mag.reportInterval) {
+                magneticFieldStatus_ = event->status & 0x3;
+            }
+            // we don't send it to the host (yet?)
+        }
+        break;
+    }
+
+    if (printEvents_) {
+        printEvent(event);
     }
 }
 
@@ -281,44 +322,46 @@ static inline int checkError(int status, const char * msg) {
 /**
  * Apply settings in activeConfig_ to BNO
  */
-static void applyConfig(struct BNO070_Config * cfg) {
+static bool applyConfig(struct BNO070_Config * cfg) {
 
     int status;
 
     status = sensorhub_calEnable(&sensorhub, cfg->cal_flags);
     if (checkError(status, "error setting cal enable flags") < 0) {
-        return;
+        return false;
     }
 
     status = sensorhub_setDynamicFeature(&sensorhub,
         SENSORHUB_ROTATION_VECTOR, &cfg->sensors.rv);
-    if (checkError(status, "error setting RV FRS") < 0) {
-        return;
-    }
+    if (checkError(status, "error setting RV") < 0) {
+        return false;
+        }
 
     status = sensorhub_setDynamicFeature(&sensorhub,
         SENSORHUB_GAME_ROTATION_VECTOR, &cfg->sensors.grv);
-    if (checkError(status, "error setting GRV FRS") < 0) {
-        return;
+    if (checkError(status, "error setting GRV") < 0) {
+        return false;
     }
 
     status = sensorhub_setDynamicFeature(&sensorhub,
         SENSORHUB_ACCELEROMETER, &cfg->sensors.gyro);
-    if (checkError(status, "error setting GYRO FRS") < 0) {
-        return;
+    if (checkError(status, "error setting GYRO") < 0) {
+        return false;
     }
 
     status = sensorhub_setDynamicFeature(&sensorhub,
         SENSORHUB_GYROSCOPE_CALIBRATED, &cfg->sensors.gyro);
-    if (checkError(status, "error setting GYRO FRS") < 0) {
-        return;
+    if (checkError(status, "error setting GYRO") < 0) {
+        return false;
     }
 
     status = sensorhub_setDynamicFeature(&sensorhub,
         SENSORHUB_MAGNETIC_FIELD_CALIBRATED, &cfg->sensors.mag);
-    if (checkError(status, "error setting MAG FRS") < 0) {
-        return;
+    if (checkError(status, "error setting MAG") < 0) {
+        return false;
     }
+
+    return true;
 }
 
 bool init_BNO070(void)
@@ -364,16 +407,13 @@ bool init_BNO070(void)
     configureARVRStabilizationFRS();
     configureScdFrs();
 
-    // WTF? why
-    // Probe again to reboot the hub
-    if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
-        return false;
-    }
+    // reset the hub after applying FRS settings
+    Reset_BNO070();
 
-    loadDefaultConfig(&config_);
-    applyConfig(&config_);
+	// configure BNO with our default settings and sensor rate
+    ReInit_BNO070();
 
-    // setup report
+    // setup USB output report
 #ifdef REPORT_GYRO
     if (BNO_supports_400Hz)
         BNO070_Report[0]=2; // this indicates the version number of the report
@@ -385,11 +425,6 @@ bool init_BNO070(void)
     BNO070_Report[1]=0; // this indicates the sequence number
 
     return true;
-}
-
-void SimReset_BNO070(void)
-{
-   // TODO: sensorhub_simReset(&sensorhub);
 }
 
 bool Check_BNO070(void)
@@ -410,8 +445,7 @@ bool Check_BNO070(void)
     }
 
     for (i = 0; i < numEvents; i++) {
-        dispatchEvent(&shEvents[i]);
-        //printEvent(&shEvents[i]);
+        handleEvent(&shEvents[i]);
     }
 
     return numEvents > 0;
@@ -455,8 +489,8 @@ bool Tare_BNO070(void)
 
 bool SetDcdEn_BNO070(uint8_t flags)
 {
-    // TODO
-    return false;
+    config_.cal_flags = flags;
+    return applyConfig(&config_);
 }
 
 bool SaveDcd_BNO070(void)
@@ -465,16 +499,18 @@ bool SaveDcd_BNO070(void)
     return (status == SENSORHUB_STATUS_SUCCESS);
 }
 
-bool MagOn_BNO070(uint8_t samples)
+bool MagSetEnable_BNO070(bool enabled)
 {
-    // TODO
-    return false;
+    config_.sensors.mag.reportInterval = enabled ? hz2us(25) : 0;
+	if (!enabled) {
+		magneticFieldStatus_ = 0xff;
+	}
+    return applyConfig(&config_);
 }
 
-uint8_t MagStatus_BNO070(void)  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
+uint8_t MagStatus_BNO070(void)
 {
-    // TODO
-    return 99;
+    return magneticFieldStatus_;
 }
 
 void GetStats_BNO070(BNO070_Stats_t *stats)
@@ -484,11 +520,25 @@ void GetStats_BNO070(BNO070_Stats_t *stats)
     stats->empty_events = sensorhub_empty_events;
 }
 
+void SetDebugPrintEvents_BNO070(bool enabled) {
+    printEvents_ = enabled;
+}
+
+bool ReInit_BNO070(void) {
+    loadDefaultConfig(&config_);
+    return applyConfig(&config_);
+}
+
+bool Reset_BNO070(void) {
+    sensorhub.setRSTN(&sensorhub, 0);
+    sensorhub.delay(&sensorhub, 10);
+    sensorhub.setRSTN(&sensorhub, 1);
+    return true;
+}
+
 bool dfu_BNO070(void) {
     checkDfu();
     PrepareForSoftwareUpgrade();
     return true;
 }
-
-
 #endif

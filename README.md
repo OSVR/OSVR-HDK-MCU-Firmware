@@ -20,11 +20,15 @@ xx, yy, zz, ww - two character hex value.
 ## BNO070 Commands
 
 ```
-#BDExx - BNO070 DCD Enable, set flags as xx
-#BDS   - BNO070 DCD Save Now
-#BMExx - Enable Mag sensor for xx samples (to facilitate mag cal.)
-#BMQ   - Query the Mag sensor status. (Format TBD)
+#BDExx - Set DCD Cal enable flags to hex xx.
+#BDS   - Save the current DCD values in non-volatile storage.
+#BMExx - Enable/disable Mag sensor (xx=00 disable, anything else = enable)
+#BMQ   - Query the Mag sensor status
 #BSQ   - Query status.
+#BVVxx - Pretty print events on the serial port (xx=00 disable,
+         anything else = enable)
+#BRI   - Re-init BNO with the default settings
+#BRH   - Hard reset the BNO
 ```
 
 ## SPI Commands

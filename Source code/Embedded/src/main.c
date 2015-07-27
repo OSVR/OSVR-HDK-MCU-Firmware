@@ -57,9 +57,9 @@
 
 #include "DeviceDrivers/TI-TMDS442.h"
 #include "DeviceDrivers/BNO070.h"
+#include "Console.h"
 
 #ifdef OSVRHDK
-    #include "Console.h"
     #include "nxp\i2c.h"
 #endif
 
@@ -72,7 +72,10 @@ bool HDMISwitch_task=true;
 bool NewVideoDetected=false;
 bool VideoLost=false;
 bool NXPEverLocked=false; // true if HDMI receiver was ever locked on incoming video signal
+
+#ifdef OSVRHDK
 bool LastFPGALockStatus=0; // last state of FPGA_unlocked pin
+#endif
 
 void HandleHDMI(void);
 
@@ -160,9 +163,12 @@ int main(void)
 		NewVideoDetected=false;
 	
 	};
+#ifdef OSVRHDK
+
 	if (!(ioport_get_pin_level(FPGA_unlocked)))
 		NXPEverLocked=true;
-		
+#endif
+			
 	if (VideoLost)
 	{
 #ifdef Solomon1_SPI
@@ -192,7 +198,9 @@ int main(void)
 	//ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
 #endif
 
+#ifdef OSVRHDK
 	LastFPGALockStatus=ioport_get_pin_level(FPGA_unlocked); // last state of FPGA_unlocked pin
+#endif
 
 	
     while (true) {
@@ -237,7 +245,10 @@ int main(void)
 				if (LastFPGALockStatus!=NewFPGALockStatus)
 				{
 					//WriteLn("Video signal lost");
+#ifdef OSVRHDK
 					LastFPGALockStatus=NewFPGALockStatus;
+#endif
+
 #ifdef Solomon1_SPI
 					DisplayOff(Solomon1);
 #endif

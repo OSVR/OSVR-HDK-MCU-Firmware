@@ -12,6 +12,8 @@
 
 #include "twi_master.h"
 
+#ifdef BNO070
+
 #define BNO070_APP_I2C_8BIT_ADDR (0x48)
 #define BNO070_BOOTLOADER_I2C_8BIT_ADDR (0x28)
 
@@ -153,3 +155,5 @@ sensorhub_t sensorhub = {
     5,                          /* I2C retries */
     NULL                        /* cookie */
 };
+
+#endif // BNO

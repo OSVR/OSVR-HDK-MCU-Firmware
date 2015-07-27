@@ -82,20 +82,21 @@ bool init_solomon_device(uint8_t deviceID)
     }
 
     // ssd 2828 initialize
-
-    write_solomon(deviceID,0xB1,0x0216); // VSA=2, HSA=22
-
 #ifndef H546DLT01
+    write_solomon(deviceID,0xB1,0x0216); // VSA=2, HSA=22
     write_solomon(deviceID,0xB2,0x0630); // VBP=4, HBP=26
     //write_solomon(deviceID,0xB2,0x0100); // VBP=4, HBP=26
 
     write_solomon(deviceID,0xB3,0x288C); // VFP=40, HFP=140
     //write_solomon(deviceID,0xB3,0x0100); // VFP=40, HFP=140
 #else
-    write_solomon(deviceID,0xB2,0x069c); // VBP=4, HBP=156
+    write_solomon(deviceID,0xB1,0x0505); // VSA=2, HSA=22
+	write_solomon(deviceID,0xB2,0x0760); // VBP=7, HBP=11
+    //write_solomon(deviceID,0xB2,0x0C5A); // VBP=7, HBP=11
     //write_solomon(deviceID,0xB2,0x0100); // VBP=4, HBP=26
 
-    write_solomon(deviceID,0xB3,0x2820); // VFP=40, HFP=32
+	write_solomon(deviceID,0xB3,0x0C20); // VFP=24, HFP=32
+    //write_solomon(deviceID,0xB3,0x0C20); // VFP=40, HFP=32
     //write_solomon(deviceID,0xB3,0x0100); // VFP=40, HFP=140
 #endif
 
@@ -107,10 +108,11 @@ bool init_solomon_device(uint8_t deviceID)
     write_solomon(deviceID,0xC9,0x140A); // HS prepare delay
     write_solomon(deviceID,0xDE,0x0003); // no of lane
     write_solomon(deviceID,0xD6,0x0004); // packet number in blanking period
-    write_solomon(deviceID,0xBA,0xC030); // lane speed=960Mbps
+    //write_solomon(deviceID,0xBA,0xC030); // lane speed=960Mbps
+	write_solomon(deviceID,0xBA,0xC02D); // lane speed=900Mbps
     write_solomon(deviceID,0xBB,0x0008); // LP clock
     write_solomon(deviceID,0xB9,0x0001); // enable PLL
-    write_solomon(deviceID,0xC4,0x0001); // auto BTA
+    //write_solomon(deviceID,0xC4,0x0001); // auto BTA
 
     delay_ms(50);
     // module panel initialization
@@ -160,30 +162,27 @@ bool init_solomon_device(uint8_t deviceID)
 #ifdef H546DLT01 // AUO 5.46" OLED
     // from LS050T1SX01 data sheet
     write_solomon(deviceID,0xBC,0x0002); // no of byte send
-	delay_ms(16);
-    write_solomon(deviceID,0xBF,0x04B0); // cmd=B0, data=04
-	delay_ms(16);
-    write_solomon(deviceID,0xBF,0x01D6); // cmd=D6, data=01
-	delay_ms(16);
-    write_solomon(deviceID,0xB7,0x0341); // LP DCS write
-	delay_ms(16);
+	//delay_ms(16);
+    write_solomon(deviceID,0xB7,0x0321); // LP DCS write
+	//delay_ms(16);
     write_solomon(deviceID,0xB8,0x0000); // VC
-	delay_ms(16);
+	//delay_ms(16);
 
-    write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
+    //write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
 	delay_ms(100);
 
 #ifdef LOW_PERSISTENCE
     write_solomon(deviceID,0xBF,0x08FE); // cmd=FE, data=08
-    delay_ms(16);
+    //delay_ms(16);
     write_solomon(deviceID,0xBF,0x4003); // cmd=FE, data=08
-    delay_ms(16);
+    //delay_ms(16);
     write_solomon(deviceID,0xBF,0x1A07); // cmd=FE, data=08
-    delay_ms(16);
+    //delay_ms(16);
     write_solomon(deviceID,0xBF,0x00FE); // cmd=FE, data=08
-    delay_ms(16);
+    //delay_ms(16);
+	write_solomon(deviceID,0xBF,0x08C2); // cmd=FE, data=08
     write_solomon(deviceID,0xBF,0xFF51); // cmd=FE, data=08
-    delay_ms(16);
+    //delay_ms(16);
 #else
     write_solomon(deviceID,0xBF,0x04FE); // cmd=FE, data=04
 	delay_ms(16);
@@ -251,7 +250,8 @@ void DisplayOn(uint8_t deviceID)
 
 		write_solomon(deviceID,0xBF,0x0011); // sleep out
 		delay_ms(33);
-		write_solomon(deviceID,0xB7,0x034B); // video signal on
+		//write_solomon(deviceID,0xB7,0x032B); // video signal on
+		write_solomon(deviceID,0xB7,0x0329); // video signal on
 		delay_ms(166);    //>10 frame
 		write_solomon(deviceID,0xBF,0x0029); // display on
 
@@ -266,7 +266,7 @@ void DisplayOff(uint8_t deviceID)
 
         WriteLn("Turing display off");
 
-        write_solomon(deviceID,0xB7,0x0341); // video mode off
+        write_solomon(deviceID,0xB7,0x0321); // video mode off
         delay_ms(16);
         write_solomon(deviceID,0xBF,0x0028); // display off
         delay_ms(16);

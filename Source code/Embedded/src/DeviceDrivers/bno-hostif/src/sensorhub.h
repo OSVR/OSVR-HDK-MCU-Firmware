@@ -483,8 +483,9 @@ typedef struct sensorhub_SensorFeature {
  */
 enum sensorhub_Status_e {
     /* Warnings (>0) */
-    SENSORHUB_STATUS_MORE_EVENTS_PENDING = 1,
+	SENSORHUB_STATUS_MORE_EVENTS_PENDING = 1,
     SENSORHUB_STATUS_NO_REPORT_PENDING = 2,
+	SENSORHUB_STATUS_HUB_RESET = 3,
 
     /* Success */
     SENSORHUB_STATUS_SUCCESS = 0,         /**< The operation was successful */
@@ -612,6 +613,11 @@ typedef struct avrDfuStream_s {
   unsigned long numPages;
   /* const int_farptr_t page[DFU_MAX_PAGES]; */
 } avrDfuStream_t;
+
+extern bool sensorhub_needs_init;
+extern uint32_t sensorhub_resets;
+extern uint32_t sensorhub_events;
+extern uint32_t sensorhub_empty_events;
 
 /**
  * Reset the sensor hub and initialize it over the I2C bus. This

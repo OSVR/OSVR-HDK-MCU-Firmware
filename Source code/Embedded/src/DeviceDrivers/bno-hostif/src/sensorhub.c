@@ -11,6 +11,10 @@
 
 #define SENSORHUB_CMD_LEN 12 // TODO-DW : Find a home for this.
 
+uint32_t sensorhub_resets = 0;
+uint32_t sensorhub_events = 0;
+uint32_t sensorhub_empty_events = 0;
+
 static int sensorhub_pollForReport(const sensorhub_t * sh, uint8_t * report);
 
 
@@ -110,7 +114,7 @@ static int sensorhub_i2c_handshake(const sensorhub_t * sh) {
            , (unsigned int) u.desc.wHIDDescLength
            , (unsigned int) u.desc.bcdVersion
               );
-#endif        
+#endif
     }
 
     if (u.desc.wHIDDescLength != BNO070_DESC_V1_LEN) {
@@ -126,7 +130,6 @@ static int sensorhub_i2c_handshake(const sensorhub_t * sh) {
 
 static int sensorhub_probe_internal(const sensorhub_t * sh, bool reset)
 {
-    uint8_t data[2];
     int i;
     int rc;
 
@@ -182,8 +185,8 @@ static int sensorhub_probe_internal(const sensorhub_t * sh, bool reset)
             if (rc == SENSORHUB_STATUS_NO_REPORT_PENDING) {
                 break;
             }
-        }            
-           
+        }
+
         /* Check that the interrupt was cleared. */
         if (!sh->getHOST_INTN(sh)) {
             /* Not expecting HOST_INTN. It should have been cleared. */
@@ -286,6 +289,14 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
     int length = report[0];
     if (length > BNO070_MAX_INPUT_REPORT_LEN || report[1] != 0)
         return checkError(sh, SENSORHUB_STATUS_REPORT_LEN_TOO_LONG);
+
+    // Look for reset indications
+    if ((report[2] == SENSORHUB_CMD_RESP) &&
+        ((report[4] & 0x7F) == 0x04)) {
+	    // The sensorhub says it was reset
+	    sensorhub_resets++;
+		return SENSORHUB_STATUS_HUB_RESET;
+    }
 
     /* Fill out common fields */
     event->sensor = report[2];
@@ -453,17 +464,25 @@ int sensorhub_poll(const sensorhub_t * sh, sensorhub_Event_t * events,
         rc = sensorhub_pollForReport(sh, report);
         if (rc == SENSORHUB_STATUS_NO_REPORT_PENDING)
             return SENSORHUB_STATUS_SUCCESS;
+        else if (rc > 0)
+            return rc;
         else if (rc != SENSORHUB_STATUS_SUCCESS)
             return checkError(sh, rc);
 
+        sensorhub_events++;
+
         /* Null length reports also indicate no more events */
-        if (report[0] == 0)
+        if (report[0] == 0) {
+	        sensorhub_empty_events++;
             return SENSORHUB_STATUS_SUCCESS;
+        }
 
         /* Decode the event. Ignore reports that aren't events. */
         rc = sensorhub_decodeEvent(sh, report, &events[*numEvents]);
         if (rc == SENSORHUB_STATUS_NOT_AN_EVENT)
             continue;
+        else if (rc > 0)
+            return rc;
         else if (rc != SENSORHUB_STATUS_SUCCESS)
             return checkError(sh, rc);
 
@@ -965,7 +984,7 @@ void avr_readBuf(uint8_t *buf, unsigned long length,
 {
     int n = 0;
 	static int trap = 0;
-	
+
 	if(index == 63949) {
 		trap = 1;
 	}
@@ -1148,7 +1167,7 @@ int sensorhub_tareNow(const sensorhub_t * sh, uint8_t axes, uint8_t basis)
 	buffer[2] = SUBCMD_TARE_NOW;
 	buffer[3] = axes;
 	buffer[4] = basis;
-	
+
 	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
 	                buffer, SENSORHUB_CMD_LEN-1);
 
@@ -1165,7 +1184,7 @@ int sensorhub_tarePersist(const sensorhub_t * sh)
 	buffer[0] = 0;     // sequence
 	buffer[1] = CMD_TARE;
 	buffer[2] = SUBCMD_TARE_PERSIST;
-	
+
 	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
 	                buffer, SENSORHUB_CMD_LEN-1);
 
@@ -1185,7 +1204,7 @@ int sensorhub_calEnable(const sensorhub_t * sh, uint8_t flags)
 	buffer[2] = (flags & ACCEL_CAL_EN) ? 1 : 0;
 	buffer[3] = (flags & GYRO_CAL_EN) ? 1 : 0;
 	buffer[4] = (flags & MAG_CAL_EN) ? 1 : 0;
-	
+
 	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
 	                buffer, SENSORHUB_CMD_LEN-1);
 
@@ -1199,7 +1218,7 @@ int sensorhub_calEnable(const sensorhub_t * sh, uint8_t flags)
 				rc = SENSORHUB_STATUS_OP_FAILED;
 			} else {
                 rc = SENSORHUB_STATUS_SUCCESS;
-            }                
+            }
             break;
 		}
 	}
@@ -1217,7 +1236,7 @@ int sensorhub_saveDcd(const sensorhub_t *sh)
 	memset(buffer, 0, sizeof(buffer));
 	buffer[0] = 0;     // sequence
 	buffer[1] = CMD_SAVE_DCD;  // command: Save DCD
-	
+
 	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
 	                buffer, SENSORHUB_CMD_LEN-1);
 
@@ -1231,7 +1250,7 @@ int sensorhub_saveDcd(const sensorhub_t *sh)
 				rc = SENSORHUB_STATUS_OP_FAILED;
 			} else {
                 rc = SENSORHUB_STATUS_SUCCESS;
-            }                
+            }
             break;
 		}
 	}

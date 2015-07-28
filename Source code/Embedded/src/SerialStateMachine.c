@@ -184,6 +184,7 @@ void ProcessIncomingChar(char CharReceived)
 
 
 void ProcessInfoCommands(void);
+void ProcessBNO070Commands(void);
 void ProcessSPICommand(void);
 void ProcessI2CCommand(void);
 void ProcessFPGACommand(void);
@@ -294,7 +295,7 @@ void Display_software_version(void)
 #endif
 #ifdef BNO070
 	Write("Tracker:");
-    sprintf(OutString,"%d.%d.%d.%d",BNO070id.swVersionMajor,BNO070id.swVersionMinor,BNO070id.swVersionPatch,BNO070id.swBuildNumber);
+    sprintf(OutString,"%u.%u.%u.%lu",BNO070id.swVersionMajor,BNO070id.swVersionMinor,BNO070id.swVersionPatch,BNO070id.swBuildNumber);
     WriteLn(OutString);
 #endif
 }
@@ -315,6 +316,14 @@ void ProcessCommand(void)
             ProcessInfoCommands();
             break;
         };
+#ifdef BNO070
+		case 'B':
+		case 'b':
+		{
+			ProcessBNO070Commands();
+			break;
+		};
+#endif
         case 'S':
         case 's':
         {
@@ -350,7 +359,7 @@ void ProcessCommand(void)
             break;
         }
 		#endif
-		
+
         case 'P': // PWM settings
         case 'p':
         {
@@ -456,6 +465,148 @@ void ProcessInfoCommands(void)
     }
     }
 }
+
+#ifdef BNO070
+void ProcessBNO070Commands(void)
+{
+	char OutString[40];
+
+	switch (CommandToExecute[1])
+	{
+		case 'D':
+		case 'd':
+		{
+			switch (CommandToExecute[2])
+			{
+				case 'E':
+				case 'e':
+				{
+					// #BDExx - BNO DCD Enable, set DCD enable flags
+                    int flags = HexPairToDecimal(3);
+					if (SetDcdEn_BNO070(flags)) {
+                        sprintf(OutString, "Calibration flags set (%02x)", flags);
+						WriteLn(OutString);
+					}
+					else {
+						WriteLn("Failed.");
+					}
+					break;
+				}
+				case 'S':
+				case 's':
+				{
+					// #BDS - BNO DCD Save
+					if (SaveDcd_BNO070()) {
+						WriteLn("DCD Saved.");
+					}
+					else {
+						WriteLn("Failed.");
+					}
+					break;
+				}
+			}
+			break;
+		}
+		case 'M':
+		case 'm':
+		{
+			switch (CommandToExecute[2])
+			{
+				case 'E':
+				case 'e':
+				{
+					// #BMExx - BNO Mag Enable
+					bool enabled = HexPairToDecimal(3) > 0;
+                    if (MagSetEnable_BNO070(enabled)) {
+						WriteLn(enabled ? "Mag Enabled." : "Mag Disabled.");
+					}
+					else {
+						WriteLn("Failed.");
+					}
+					break;
+				}
+				case 'Q':
+				case 'q':
+				{
+					// #BMS - BNO Mag Status
+					uint8_t status = MagStatus_BNO070();  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
+                    sprintf(OutString,"Mag Accuracy: %d", status);
+                    WriteLn(OutString);
+					break;
+				}
+			}
+			break;
+		}
+		case 'S':
+		case 's':
+		{
+			switch (CommandToExecute[2])
+			{
+				case 'Q':
+				case 'q':
+				{
+					// #BSQ - BNO Stats Query
+					BNO070_Stats_t stats;
+					GetStats_BNO070(&stats);  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
+					sprintf(OutString,"Resets: %u", stats.resets);
+					WriteLn(OutString);
+					sprintf(OutString,"I2C Events: %u", stats.events);
+					WriteLn(OutString);
+					sprintf(OutString,"Empty events:%u", stats.empty_events);
+					WriteLn(OutString);
+					break;
+				}
+			}
+			break;
+		}
+        case 'V':
+        case 'v':
+        {
+            switch (CommandToExecute[2])
+            {
+                case 'V':
+                case 'v':
+                {
+                    // #BVVxx log events to serial xx=0 turn off, all else = on
+                    bool enabled = HexPairToDecimal(3) > 0;
+                    SetDebugPrintEvents_BNO070(enabled);
+                    WriteLn(enabled ? "enabled\n" : "disabled\n");
+                    break;
+                }
+            }
+        }
+        case 'R':
+        case 'r':
+        {
+            switch (CommandToExecute[2])
+            {
+                case 'I':
+                case 'i':
+                {
+                    // #BRI
+                    if (ReInit_BNO070()) {
+                        WriteLn("Reinitialized");
+                    } else {
+                        WriteLn("Failed");
+                    }
+                    break;
+                }
+                case 'H':
+                case 'h':
+                {
+                    // #BRH
+                    if (Reset_BNO070())  {
+                        WriteLn("Reset");
+                    } else {
+                        WriteLn("Failed");
+                    }
+                    break;
+                }
+            }
+        }
+	}
+}
+#endif
 
 
 // send one or more bytes to the SPI interface and prints the received bytes
@@ -632,7 +783,7 @@ void ProcessI2CCommand(void)
 
 {
     uint8_t TxByte, RxByte, Num, Page;
-    bool Result;
+    bool Result = false;
 
     char OutString[14];
 
@@ -660,7 +811,7 @@ void ProcessI2CCommand(void)
         break;
 
     }
-	
+
 	#ifndef DISABLE_NXP
 
     case 'f':
@@ -678,7 +829,7 @@ void ProcessI2CCommand(void)
     }
 
 	#endif
-	
+
 #ifdef BNO070
 	case 'B':
 	case 'b': // BNO commands
@@ -696,7 +847,7 @@ void ProcessI2CCommand(void)
 		}
 	}
 	break;
-	
+
 #endif
 
 #ifndef DISABLE_NXP
@@ -873,7 +1024,7 @@ void ProcessFPGACommand(void)
 #endif
 		break;
 	}
-	
+
     }
 
 }

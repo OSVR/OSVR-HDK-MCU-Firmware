@@ -326,10 +326,13 @@ static bool applyConfig(struct BNO070_Config * cfg) {
 
     int status;
 
-    status = sensorhub_calEnable(&sensorhub, cfg->cal_flags);
-    if (checkError(status, "error setting cal enable flags") < 0) {
-        return false;
-    }
+    if (BNO_supports_400Hz) {
+		/* Cal Enable introduced in version 1.8.x */
+		status = sensorhub_calEnable(&sensorhub, cfg->cal_flags);
+		if (checkError(status, "error setting cal enable flags") < 0) {
+			return false;
+		}
+	}
 
     status = sensorhub_setDynamicFeature(&sensorhub,
         SENSORHUB_ROTATION_VECTOR, &cfg->sensors.rv);
@@ -344,8 +347,8 @@ static bool applyConfig(struct BNO070_Config * cfg) {
     }
 
     status = sensorhub_setDynamicFeature(&sensorhub,
-        SENSORHUB_ACCELEROMETER, &cfg->sensors.gyro);
-    if (checkError(status, "error setting GYRO") < 0) {
+        SENSORHUB_ACCELEROMETER, &cfg->sensors.acc);
+    if (checkError(status, "error setting ACCEL") < 0) {
         return false;
     }
 
@@ -395,6 +398,17 @@ bool init_BNO070(void)
     return dfu_BNO070();
 #endif
 
+    // setup USB output report
+    #ifdef REPORT_GYRO
+    if (BNO_supports_400Hz)
+    BNO070_Report[0]=2; // this indicates the version number of the report
+    else
+    BNO070_Report[0]=1; // this indicates the version number of the report
+    #else
+    BNO070_Report[0]=1; // this indicates the version number of the report
+    #endif
+    BNO070_Report[1]=0; // this indicates the sequence number
+
     if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
         return false;
     }
@@ -414,17 +428,6 @@ bool init_BNO070(void)
 
 	// configure BNO with our default settings and sensor rate
     ReInit_BNO070();
-
-    // setup USB output report
-#ifdef REPORT_GYRO
-    if (BNO_supports_400Hz)
-        BNO070_Report[0]=2; // this indicates the version number of the report
-    else
-        BNO070_Report[0]=1; // this indicates the version number of the report
-#else
-    BNO070_Report[0]=1; // this indicates the version number of the report
-#endif
-    BNO070_Report[1]=0; // this indicates the sequence number
 
     return true;
 }

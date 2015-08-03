@@ -104,8 +104,11 @@ static int i2cTransfer(const struct sensorhub_s *sh,
 static void gpioSetRSTN(const struct sensorhub_s *sh, int value)
 {
     if (value) {
-        ioport_set_pin_high(BNO_070_Reset_Pin);
+		// set to high state by configuring as input.  External pullup brings it high.
+		ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_INPUT);
     } else {
+		// set to low state by configuring as output, setting it low.
+		ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
         ioport_set_pin_low(BNO_070_Reset_Pin);
     }
 }

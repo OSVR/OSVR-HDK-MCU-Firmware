@@ -371,7 +371,11 @@ bool init_BNO070(void)
     // Clear BNO070_Report so we don't send garbage out the USB.
     memset(BNO070_Report, 0, sizeof(BNO070_Report));
 
-    ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH); // reset is active low
+	// reset line is an output but we config as input when deasserted.  External pullup sets in high state.
+	// When Reset_Pin must be asserted (low), the pin is reconfigured as an output.
+	// This is so that a JTAG debugger can assert reset on the BNO070 if necessary.
+    ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_INPUT);
+	
     ioport_configure_pin(Side_by_side_A,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // Actually the BootN pin
     ioport_configure_pin(Int_BNO070, IOPORT_DIR_INPUT|IOPORT_MODE_PULLUP);
 

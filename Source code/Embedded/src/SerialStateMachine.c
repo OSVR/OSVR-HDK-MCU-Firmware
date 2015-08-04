@@ -548,11 +548,11 @@ void ProcessBNO070Commands(void)
 					// #BSQ - BNO Stats Query
 					BNO070_Stats_t stats;
 					GetStats_BNO070(&stats);  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
-					sprintf(OutString,"Resets: %u", stats.resets);
+					sprintf(OutString,"Resets: %lu", stats.resets);
 					WriteLn(OutString);
-					sprintf(OutString,"I2C Events: %u", stats.events);
+					sprintf(OutString,"I2C Events: %lu", stats.events);
 					WriteLn(OutString);
-					sprintf(OutString,"Empty events:%u", stats.empty_events);
+					sprintf(OutString,"Empty events:%lu", stats.empty_events);
 					WriteLn(OutString);
 					break;
 				}

@@ -176,12 +176,19 @@ static int sensorhub_probe_internal(const sensorhub_t * sh, bool reset)
     if (rc < 0) {
         return checkError(sh, rc);
     }
+	
+	/* Wait up to 100ms for INTN to be asserted for first time */
+	for (i = 0; (i < 100) && (sh->getHOST_INTN(sh)); i++) {
+		sh->delay(sh, 1);
+	}
 
     if (!sh->getHOST_INTN(sh)) {
-        /* Clear the interrupt by up to 10 pending reports */
+        /* Clear the interrupt by reading up to 10 pending reports */
         for (i = 0; i < 10; i++) {
             uint8_t report[BNO070_MAX_INPUT_REPORT_LEN];
-            int rc = sensorhub_pollForReport(sh, report);
+            int rc;
+			
+			rc = sensorhub_pollForReport(sh, report);
             if (rc == SENSORHUB_STATUS_NO_REPORT_PENDING) {
                 break;
             }

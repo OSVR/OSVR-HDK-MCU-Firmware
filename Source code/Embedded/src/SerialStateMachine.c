@@ -1113,12 +1113,14 @@ void ProcessHDMICommand(void)
             _delay_ms(50);
             ProgramMTP0();
         }
+		#ifndef OSVRHDK
         if (CommandBuffer[2]=='1')
         {
             WriteLn(";Program MTP1");
             _delay_ms(50);
             ProgramMTP1();
         }
+		#endif
         break;
     }
     }

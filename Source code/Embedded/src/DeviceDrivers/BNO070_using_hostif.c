@@ -291,7 +291,6 @@ static void handleEvent(const sensorhub_Event_t * event)
         case SENSORHUB_GYROSCOPE_CALIBRATED:
         {
             memcpy(&BNO070_Report[10], &event->un.gyroscope.x_16Q9, 6); // copy gyroscope values
-            while (ioport_get_value(Int_BNO070) == 0);  // wait for interrupt to deassert.
         }
         break;
 

@@ -19,7 +19,7 @@
 
 static void debugPrintf(const char *format, ...)
 {
-#if 1
+#if 0
   static char buffer[256];
 
   va_list ap;

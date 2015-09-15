@@ -574,6 +574,7 @@ enum sensorhub_Cmd_e {
 	CMD_TARE = 0x03,
 	CMD_SAVE_DCD = 0x06,
 	CMD_CONFIG_ME_CAL = 0x07,
+    CMD_CONFIG_DCD_SAVE = 0x09,
 };
 typedef uint8_t sensorhub_Cmd_t;
 
@@ -796,6 +797,14 @@ int sensorhub_dfu_avr(const sensorhub_t * sh,
 			  
 uint32_t dfuAddr(uint32_t index);
 
+/**
+ * Turn on/off automatic saving of DCD (Dynamic Cal Data)
+ *
+ * @param sh the sensorhub
+ * @param state false to disable auto-save, true to enable it.
+ * @return 0 on success, negative on failure.
+ */
+int sensorhub_dcdAutoSave(const sensorhub_t *sh, bool state);
 	
 
 #ifdef __cplusplus

@@ -1264,3 +1264,20 @@ int sensorhub_saveDcd(const sensorhub_t *sh)
 
 	return rc;
 }
+
+int sensorhub_dcdAutoSave(const sensorhub_t *sh, bool state)
+{
+	uint8_t buffer[32];
+	int rc = 0;
+
+	// Send command to config DCD save
+	memset(buffer, 0, sizeof(buffer));
+	buffer[0] = 0;     // sequence
+	buffer[1] = CMD_CONFIG_DCD_SAVE;
+	buffer[2] = state ? 0x00 : 0x01;  // Set P0 parameter
+
+	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
+	buffer, SENSORHUB_CMD_LEN-1);
+
+	return rc;
+}

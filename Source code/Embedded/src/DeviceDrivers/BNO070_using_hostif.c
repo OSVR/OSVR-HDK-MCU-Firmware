@@ -27,6 +27,7 @@
 // Skip version check and always DFU
 #define FORCE_DFU 1
 
+
 #ifdef BNO070
 
 #include "sensorhub.h"
@@ -51,6 +52,9 @@ struct BNO070_Config {
 
     /* calibration flags */
     int cal_flags;
+	
+	/* auto DCD save enable */
+	int dcd_auto_save;
 };
 
 static struct BNO070_Config config_;
@@ -199,6 +203,9 @@ static void loadDefaultConfig(struct BNO070_Config * cfg) {
         common_period = hz2us(200);
         gyro_period = 0;
     }
+	
+	/* disable auto DCD saves */
+	cfg->dcd_auto_save = 0;
 
     /* rv and grv are mutually exclusive */
     cfg->sensors.rv.reportInterval = !SELECT_GRV ? common_period : 0;
@@ -207,6 +214,7 @@ static void loadDefaultConfig(struct BNO070_Config * cfg) {
     cfg->sensors.gyro.reportInterval = REPORT_GYRO ? gyro_period : 0;
     cfg->sensors.acc.reportInterval = REPORT_ACC ? common_period : 0;
     cfg->sensors.mag.reportInterval = REPORT_MAG ? hz2us(100) : 0;
+	
 
     cfg->cal_flags = 0;
 }
@@ -324,6 +332,12 @@ static inline int checkError(int status, const char * msg) {
 static bool applyConfig(struct BNO070_Config * cfg) {
 
     int status;
+	
+	if (!cfg->dcd_auto_save) {
+		/* Disable DCD Auto save, which is on by default */
+		status = sensorhub_dcdAutoSave(&sensorhub, false);
+		checkError(status, "Error disabling DCD auto save.");
+	}
 
     if (BNO_supports_400Hz) {
 		/* Cal Enable introduced in version 1.8.x */
@@ -445,6 +459,7 @@ bool Check_BNO070(void)
 
     /* Get the shEvents - we may get 0 */
     rc = sensorhub_poll(&sensorhub, shEvents, MAX_EVENTS_AT_A_TIME, &numEvents);
+	
 
     if (rc == SENSORHUB_STATUS_HUB_RESET) {
         /* reset event received */
@@ -503,7 +518,9 @@ bool SetDcdEn_BNO070(uint8_t flags)
 
 bool SaveDcd_BNO070(void)
 {
+	/* save DCD */
     int status = sensorhub_saveDcd(&sensorhub);
+	
     return (status == SENSORHUB_STATUS_SUCCESS);
 }
 

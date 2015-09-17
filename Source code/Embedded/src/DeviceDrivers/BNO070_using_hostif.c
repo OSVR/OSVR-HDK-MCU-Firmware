@@ -25,7 +25,7 @@
 #define REPORT_MAG 0
 
 // Skip version check and always DFU
-#define FORCE_DFU 1
+//#define FORCE_DFU 1
 
 
 #ifdef BNO070
@@ -416,6 +416,11 @@ bool init_BNO070(void)
 #endif
 
     // setup USB output report
+	
+   BNO070id = readProductId();
+   if ((BNO070id.swVersionMajor*10+BNO070id.swVersionMinor) >= 18) //version>1.8
+	    BNO_supports_400Hz=true;
+
     #ifdef REPORT_GYRO
     if (BNO_supports_400Hz)
     BNO070_Report[0]=2; // this indicates the version number of the report
@@ -430,9 +435,6 @@ bool init_BNO070(void)
         return false;
     }
 
-    BNO070id = readProductId();
-    if ((BNO070id.swVersionMajor*10+BNO070id.swVersionMinor) >= 18) //version>1.8
-        BNO_supports_400Hz=true;
 
     // restore normal setting
     configureARVRStabilizationFRS();

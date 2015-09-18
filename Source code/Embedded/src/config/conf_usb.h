@@ -55,8 +55,10 @@
 
 //! Device definition (mandatory)
 #ifdef OSVRHDK
-    #define  USB_DEVICE_VENDOR_ID             USB_VID_ATMEL //0x1532 // USB_VID_ATMEL // should be 0x1532 New one is Razer ID
-    #define  USB_DEVICE_PRODUCT_ID            0x2421 //0x0B00 // 0x2421 // should be 0x0B00 - OSVR Hacker Dev Kit.
+    //#define  USB_DEVICE_VENDOR_ID             USB_VID_ATMEL //0x1532 // USB_VID_ATMEL // should be 0x1532 New one is Razer ID
+    //#define  USB_DEVICE_PRODUCT_ID            0x2421 //0x0B00 // 0x2421 // should be 0x0B00 - OSVR Hacker Dev Kit.
+    #define  USB_DEVICE_VENDOR_ID             0x1532 // should be 0x1532 New one is Razer ID
+    #define  USB_DEVICE_PRODUCT_ID            0x0B00 // should be 0x0B00 - OSVR Hacker Dev Kit.
 #else
     #define  USB_DEVICE_VENDOR_ID             USB_VID_ATMEL
     #define  USB_DEVICE_PRODUCT_ID            0x2421

@@ -423,6 +423,10 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
         }
         break;
 
+    case SENSORHUB_ACTIVITY_CLASSIFICATION:
+        event->un.field16[0] = read16(&report[6]);
+	    break;
+	    
     case SENSORHUB_PRODUCT_ID_RESPONSE:
     case SENSORHUB_FRS_READ_RESPONSE:
     case SENSORHUB_FRS_WRITE_RESPONSE:
@@ -437,7 +441,6 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
         /* TBD */
     case SENSORHUB_SAR:
     case SENSORHUB_TAP_DETECTOR:
-    case SENSORHUB_ACTIVITY_CLASSIFICATION:
         break;
     default:
         return checkError(sh, SENSORHUB_STATUS_REPORT_UNKNOWN);

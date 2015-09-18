@@ -27,6 +27,8 @@
 // Skip version check and always DFU
 #define FORCE_DFU 1
 
+#define STABILITY_ON_TABLE 1
+#define DCD_SAVE_PERIOD_SEC (30UL)
 
 #ifdef BNO070
 
@@ -48,6 +50,7 @@ struct BNO070_Config {
         sensorhub_SensorFeature_t acc;
         sensorhub_SensorFeature_t gyro;
         sensorhub_SensorFeature_t mag;
+	    sensorhub_SensorFeature_t stab_det;
     } sensors;
 
     /* calibration flags */
@@ -55,6 +58,7 @@ struct BNO070_Config {
 	
 	/* auto DCD save enable */
 	int dcd_auto_save;
+	uint32_t dcd_save_period;
 };
 
 static struct BNO070_Config config_;
@@ -199,13 +203,18 @@ static void loadDefaultConfig(struct BNO070_Config * cfg) {
     if (BNO_supports_400Hz) {
         common_period = hz2us(400);
         gyro_period = hz2us(400);
+		cfg->dcd_save_period = (400UL * DCD_SAVE_PERIOD_SEC);
     } else {
         common_period = hz2us(200);
         gyro_period = 0;
+		cfg->dcd_save_period = (200UL * DCD_SAVE_PERIOD_SEC);
     }
 	
 	/* disable auto DCD saves */
 	cfg->dcd_auto_save = 0;
+
+	/* enable stability detector */
+	cfg->sensors.stab_det.reportInterval = hz2us(10);
 
     /* rv and grv are mutually exclusive */
     cfg->sensors.rv.reportInterval = !SELECT_GRV ? common_period : 0;
@@ -337,6 +346,14 @@ static bool applyConfig(struct BNO070_Config * cfg) {
 		/* Disable DCD Auto save, which is on by default */
 		status = sensorhub_dcdAutoSave(&sensorhub, false);
 		checkError(status, "Error disabling DCD auto save.");
+
+		/* Enable stability classifier -- we need to use it for manual DCD saves */
+		status = sensorhub_setDynamicFeature(&sensorhub,
+		                                     SENSORHUB_ACTIVITY_CLASSIFICATION,
+		                                     &cfg->sensors.stab_det);
+		if (checkError(status, "error setting Stability Detector") < 0) {
+			return false;
+		}
 	}
 
     if (BNO_supports_400Hz) {
@@ -454,6 +471,7 @@ bool Check_BNO070(void)
 #define MAX_EVENTS_AT_A_TIME 1
     sensorhub_Event_t shEvents[MAX_EVENTS_AT_A_TIME];
     int numEvents = 0;
+	static uint32_t untilDcdSave = 0xFFFFFFFF;
     int i;
     int rc;
 
@@ -465,10 +483,37 @@ bool Check_BNO070(void)
         /* reset event received */
         sensorhub.debugPrintf("Hub reset event received\r\n");
         applyConfig(&config_);
+		untilDcdSave = config_.dcd_save_period;
     }
 
     for (i = 0; i < numEvents; i++) {
         handleEvent(&shEvents[i]);
+
+        if (config_.dcd_save_period > 0) {
+	        /* Check for DCD Save condition */
+			if (untilDcdSave > config_.dcd_save_period) {
+				untilDcdSave = config_.dcd_save_period;
+			}
+			if (shEvents[i].sensor == SENSORHUB_GAME_ROTATION_VECTOR) {
+				if (untilDcdSave > 0) {
+					/* count down on GRV samples until we reach zero.  After that we need a DCD save. */
+					untilDcdSave--;
+				}
+			}
+			
+			if (shEvents[i].sensor == SENSORHUB_ACTIVITY_CLASSIFICATION) {
+				if (shEvents[i].un.field16[0] == STABILITY_ON_TABLE) {
+					if (untilDcdSave == 0) {
+						/* We are on table and it's time to save DCD. */
+						SaveDcd_BNO070();
+
+						/* Count down to next DCD save */
+						untilDcdSave = config_.dcd_save_period;
+					}
+				}
+			}
+		}
+
     }
 
     return numEvents > 0;
@@ -518,8 +563,33 @@ bool SetDcdEn_BNO070(uint8_t flags)
 
 bool SaveDcd_BNO070(void)
 {
+	struct BNO070_Config tempConfig;
+	
+    uint32_t common_period = hz2us(1);
+    uint32_t gyro_period = hz2us(1);
+    
+    memset(&tempConfig, 0x00, sizeof(tempConfig));
+
+	/* disable auto DCD saves */
+	tempConfig.dcd_auto_save = 0;
+
+    /* rv and grv are mutually exclusive */
+    tempConfig.sensors.rv.reportInterval = !SELECT_GRV ? common_period : 0;
+    tempConfig.sensors.grv.reportInterval = SELECT_GRV ? common_period : 0;
+    /* enable the other reports as needed */
+    tempConfig.sensors.gyro.reportInterval = REPORT_GYRO ? gyro_period : 0;
+    tempConfig.sensors.acc.reportInterval = REPORT_ACC ? common_period : 0;
+    tempConfig.sensors.mag.reportInterval = REPORT_MAG ? hz2us(1) : 0;
+    tempConfig.cal_flags = 0;
+
+	/* change sensor rates to 1Hz while we save DCD */
+	applyConfig(&tempConfig);
+	
 	/* save DCD */
     int status = sensorhub_saveDcd(&sensorhub);
+	
+	/* restore desired sensor rates now */
+	applyConfig(&config_);
 	
     return (status == SENSORHUB_STATUS_SUCCESS);
 }

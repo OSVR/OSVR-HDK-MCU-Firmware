@@ -78,5 +78,8 @@ uint8_t actualCEC_1_ADDR;
 void custom_board_init(void); // Sensics-specific initialization of the hardware
 void set_pwm_values(uint8_t Display1, uint8_t Display2); // sets pwm values for each display
 
+// BNO070 will use INT0 vector of PORTD
+#define BNO070_ISR() ISR(PORTD_INT0_vect)
+
 
 #endif /* MY_HARDWARE_H_ */

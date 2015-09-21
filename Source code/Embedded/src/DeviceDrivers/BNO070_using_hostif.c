@@ -410,7 +410,7 @@ bool init_BNO070(void)
     ioport_configure_pin(BNO_070_Reset_Pin,IOPORT_DIR_INPUT);
 	
     ioport_configure_pin(Side_by_side_A,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // Actually the BootN pin
-    ioport_configure_pin(Int_BNO070, IOPORT_DIR_INPUT|IOPORT_MODE_PULLUP);
+    ioport_configure_pin(Int_BNO070, IOPORT_DIR_INPUT| IOPORT_MODE_PULLUP | IOPORT_FALLING);
 
     if (!TWI_BNO070_PORT_initialized)
     {
@@ -432,12 +432,23 @@ bool init_BNO070(void)
     return dfu_BNO070();
 #endif
 
-    // setup USB output report
-	
-   BNO070id = readProductId();
-   if ((BNO070id.swVersionMajor*10+BNO070id.swVersionMinor) >= 18) //version>1.8
+    // Enable interrupts from BNO070.
+    PORTD.INTCTRL &= ~PORT_INT0LVL0_bm;  // disable interrupt
+    PORTD.INT0MASK = 0x08;              // set interrupt mask for BNO INTN
+    PORTD.INTFLAGS = 0xFF;              // clear all pending interrupt flags.
+    PORTD.INTCTRL |= PORT_INT0LVL0_bm;  // enable interrupt at high priority.
+
+    // sensorhub_probe must be called before any other sensorhub API calls.
+    if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
+	   return false;
+    }
+
+    // Get Product Id and determine whether 400Hz is supported.
+    BNO070id = readProductId();
+    if ((BNO070id.swVersionMajor*10+BNO070id.swVersionMinor) >= 18) //version>1.8
 	    BNO_supports_400Hz=true;
 
+    // setup USB output report
     #ifdef REPORT_GYRO
     if (BNO_supports_400Hz)
     BNO070_Report[0]=2; // this indicates the version number of the report
@@ -447,10 +458,6 @@ bool init_BNO070(void)
     BNO070_Report[0]=1; // this indicates the version number of the report
     #endif
     BNO070_Report[1]=0; // this indicates the sequence number
-
-    if (sensorhub_probe(&sensorhub) != SENSORHUB_STATUS_SUCCESS) {
-        return false;
-    }
 
 
     // restore normal setting
@@ -638,4 +645,5 @@ bool dfu_BNO070(void) {
     PrepareForSoftwareUpgrade();
     return true;
 }
+
 #endif

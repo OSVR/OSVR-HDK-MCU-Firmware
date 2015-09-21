@@ -250,6 +250,15 @@ typedef struct sensorhub_s {
     int (*getHOST_INTN) (const struct sensorhub_s * sh);
 
     /**
+     * Return 1 if BNO interrupt has fired since last call.
+     * (The flag is automatically cleared on each call.)
+     *
+     * @param sh the sensorhub
+     * @return value 0 or 1 is returned
+     */
+    int (*getDataReady) (const struct sensorhub_s * sh);
+
+    /**
      * Delay for the specified number of milliseconds
      *
      * @param sh the sensorhub

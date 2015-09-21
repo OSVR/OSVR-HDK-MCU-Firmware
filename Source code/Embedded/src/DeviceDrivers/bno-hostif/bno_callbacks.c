@@ -17,6 +17,9 @@
 #define BNO070_APP_I2C_8BIT_ADDR (0x48)
 #define BNO070_BOOTLOADER_I2C_8BIT_ADDR (0x28)
 
+uint32_t bno_interrupts = 0;
+int bno_data_ready = 0;
+
 static void debugPrintf(const char *format, ...)
 {
 #if 0
@@ -140,6 +143,25 @@ static uint32_t getTick(const struct sensorhub_s *sh)
     return currTick;
 }
 
+BNO070_ISR() {
+    // Clear interrupt cause
+    PORTD.INTFLAGS = PORT_INT0IF_bm;
+
+    bno_data_ready = 1;
+    bno_interrupts++;
+}
+
+static int bnoDataReady(const struct sensorhub_s *sh)
+{
+    int retval;
+
+    PORTD.INTCTRL &= ~PORT_INT0LVL0_bm;  // disable interrupt
+    retval = bno_data_ready;
+    bno_data_ready = 0;
+    PORTD.INTCTRL |= PORT_INT0LVL0_bm;  // enable interrupt, level high
+
+    return retval;
+}
 
 static sensorhub_stats_t sensorhubStats;
 
@@ -151,6 +173,7 @@ sensorhub_t sensorhub = {
     gpioSetRSTN,
     gpioSetBOOTN,
     gpioGetHOST_INTN,
+    bnoDataReady,
     delay,
     getTick,
     logError,

@@ -98,9 +98,6 @@ int main(void)
     board_init();
 
     custom_board_init(); // add initialization that is specific to Sensics board
-
-
-
     //timeout_init(); //- timeouts not working quote yet // todo: activate this
     cpu_irq_enable();
 

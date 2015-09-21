@@ -451,8 +451,9 @@ static int sensorhub_pollForReport(const sensorhub_t * sh,
     int rc;
 
     /* Check HOST_INTN to see if there are events waiting. */
-    if (sh->getHOST_INTN(sh))
+    if (!sh->getDataReady(sh)) {
         return checkError(sh, SENSORHUB_STATUS_NO_REPORT_PENDING);
+    }
 
     rc = sensorhub_i2cTransferWithRetry(sh, sh->sensorhubAddress, NULL, 0, report,
                                         BNO070_MAX_INPUT_REPORT_LEN);

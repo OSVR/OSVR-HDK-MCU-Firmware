@@ -28,7 +28,7 @@
 //#define FORCE_DFU 1
 
 #define STABILITY_ON_TABLE 1
-#define DCD_SAVE_PERIOD_SEC (30UL)
+#define DCD_SAVE_PERIOD_SEC (300UL)  // 300sec = 5 min
 
 #ifdef BNO070
 
@@ -62,6 +62,7 @@ struct BNO070_Config {
 };
 
 static struct BNO070_Config config_;
+static struct BNO070_Config dcdSaveConfig_;
 static int magneticFieldStatus_ = 0xff;
 static bool printEvents_ = false;
 
@@ -225,7 +226,39 @@ static void loadDefaultConfig(struct BNO070_Config * cfg) {
     cfg->sensors.mag.reportInterval = REPORT_MAG ? hz2us(100) : 0;
 	
 
-    cfg->cal_flags = 0;
+    cfg->cal_flags = ACCEL_CAL_EN;
+}
+
+static void loadDcdSaveConfig(struct BNO070_Config * cfg) {
+
+    int32_t common_period;
+    int32_t gyro_period;
+    memset(cfg, 0x00, sizeof(*cfg));
+
+    if (BNO_supports_400Hz) {
+        common_period = hz2us(1);
+        gyro_period = hz2us(1);
+    } else {
+        common_period = hz2us(1);
+        gyro_period = 0;
+    }
+	
+	/* disable auto DCD saves */
+	cfg->dcd_auto_save = 0;
+
+	/* enable stability detector */
+	cfg->sensors.stab_det.reportInterval = hz2us(10);
+
+    /* rv and grv are mutually exclusive */
+    cfg->sensors.rv.reportInterval = !SELECT_GRV ? common_period : 0;
+    cfg->sensors.grv.reportInterval = SELECT_GRV ? common_period : 0;
+    /* enable the other reports as needed */
+    cfg->sensors.gyro.reportInterval = REPORT_GYRO ? gyro_period : 0;
+    cfg->sensors.acc.reportInterval = REPORT_ACC ? common_period : 0;
+    cfg->sensors.mag.reportInterval = REPORT_MAG ? hz2us(1) : 0;
+	
+
+    cfg->cal_flags = ACCEL_CAL_EN;
 }
 
 static void printEvent(const sensorhub_Event_t * event)
@@ -342,19 +375,9 @@ static bool applyConfig(struct BNO070_Config * cfg) {
 
     int status;
 	
-	if (!cfg->dcd_auto_save) {
-		/* Disable DCD Auto save, which is on by default */
-		status = sensorhub_dcdAutoSave(&sensorhub, false);
-		checkError(status, "Error disabling DCD auto save.");
-
-		/* Enable stability classifier -- we need to use it for manual DCD saves */
-		status = sensorhub_setDynamicFeature(&sensorhub,
-		                                     SENSORHUB_ACTIVITY_CLASSIFICATION,
-		                                     &cfg->sensors.stab_det);
-		if (checkError(status, "error setting Stability Detector") < 0) {
-			return false;
-		}
-	}
+	/* Disable DCD Auto save, which is on by default */
+	status = sensorhub_dcdAutoSave(&sensorhub, cfg->dcd_auto_save);
+	checkError(status, "Error configuring DCD auto save.");
 
     if (BNO_supports_400Hz) {
 		/* Cal Enable introduced in version 1.8.x */
@@ -364,11 +387,19 @@ static bool applyConfig(struct BNO070_Config * cfg) {
 		}
 	}
 
+	/* Enable stability classifier -- we need to use it for manual DCD saves */
+	status = sensorhub_setDynamicFeature(&sensorhub,
+		                                 SENSORHUB_ACTIVITY_CLASSIFICATION,
+		                                 &cfg->sensors.stab_det);
+	if (checkError(status, "error setting Stability Detector") < 0) {
+		return false;
+	}
+		
     status = sensorhub_setDynamicFeature(&sensorhub,
         SENSORHUB_ROTATION_VECTOR, &cfg->sensors.rv);
     if (checkError(status, "error setting RV") < 0) {
         return false;
-        }
+    }
 
     status = sensorhub_setDynamicFeature(&sensorhub,
         SENSORHUB_GAME_ROTATION_VECTOR, &cfg->sensors.grv);
@@ -572,27 +603,8 @@ bool SetDcdEn_BNO070(uint8_t flags)
 
 bool SaveDcd_BNO070(void)
 {
-	struct BNO070_Config tempConfig;
-	
-    uint32_t common_period = hz2us(1);
-    uint32_t gyro_period = hz2us(1);
-    
-    memset(&tempConfig, 0x00, sizeof(tempConfig));
-
-	/* disable auto DCD saves */
-	tempConfig.dcd_auto_save = 0;
-
-    /* rv and grv are mutually exclusive */
-    tempConfig.sensors.rv.reportInterval = !SELECT_GRV ? common_period : 0;
-    tempConfig.sensors.grv.reportInterval = SELECT_GRV ? common_period : 0;
-    /* enable the other reports as needed */
-    tempConfig.sensors.gyro.reportInterval = REPORT_GYRO ? gyro_period : 0;
-    tempConfig.sensors.acc.reportInterval = REPORT_ACC ? common_period : 0;
-    tempConfig.sensors.mag.reportInterval = REPORT_MAG ? hz2us(1) : 0;
-    tempConfig.cal_flags = 0;
-
 	/* change sensor rates to 1Hz while we save DCD */
-	applyConfig(&tempConfig);
+	applyConfig(&dcdSaveConfig_);
 	
 	/* save DCD */
     int status = sensorhub_saveDcd(&sensorhub);
@@ -630,6 +642,8 @@ void SetDebugPrintEvents_BNO070(bool enabled) {
 
 bool ReInit_BNO070(void) {
     loadDefaultConfig(&config_);
+	loadDcdSaveConfig(&dcdSaveConfig_);
+	
     return applyConfig(&config_);
 }
 

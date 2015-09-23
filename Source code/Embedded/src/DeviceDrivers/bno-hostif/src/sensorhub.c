@@ -9,7 +9,7 @@
 #include <progmem.h>
 #include <string.h>
 
-#define SENSORHUB_CMD_LEN 12 // TODO-DW : Find a home for this.
+#define SENSORHUB_CMD_LEN 12
 
 uint32_t sensorhub_resets = 0;
 uint32_t sensorhub_events = 0;
@@ -194,11 +194,13 @@ static int sensorhub_probe_internal(const sensorhub_t * sh, bool reset)
             }
         }
 
+#if 0
         /* Check that the interrupt was cleared. */
         if (!sh->getHOST_INTN(sh)) {
             /* Not expecting HOST_INTN. It should have been cleared. */
             return checkError(sh, SENSORHUB_STATUS_RESET_INTN_BROKE);
         }
+#endif
     }
 
     /* We're ready to go. */
@@ -564,7 +566,7 @@ static int sensorhub_sendFRSReadRequest(const sensorhub_t * sh,
                                         sensorhub_FRS_t recordType,
                                         uint16_t offset, uint16_t length)
 {
-    uint8_t payload[7];
+    uint8_t payload[9];
 
     payload[0] = 0;
     write16(&payload[1], offset);
@@ -1168,7 +1170,7 @@ int sensorhub_dfu(const sensorhub_t *sh,
 
 int sensorhub_tareNow(const sensorhub_t * sh, uint8_t axes, uint8_t basis)
 {
-	uint8_t buffer[32];  // TODO: symbol
+	uint8_t buffer[32];
 	int rc = 0;
 
 	// Send Tare Now
@@ -1187,7 +1189,7 @@ int sensorhub_tareNow(const sensorhub_t * sh, uint8_t axes, uint8_t basis)
 
 int sensorhub_tarePersist(const sensorhub_t * sh)
 {
-	uint8_t buffer[32];  // TODO: symbol
+	uint8_t buffer[32];
 	int rc = 0;
 
 	// Send Tare Now
@@ -1204,7 +1206,7 @@ int sensorhub_tarePersist(const sensorhub_t * sh)
 
 int sensorhub_calEnable(const sensorhub_t * sh, uint8_t flags)
 {
-	uint8_t buffer[32];  // TODO: symbol
+	uint8_t buffer[32];
 	int rc = 0;
     int i = 0;
 
@@ -1239,11 +1241,11 @@ int sensorhub_calEnable(const sensorhub_t * sh, uint8_t flags)
 
 int sensorhub_saveDcd(const sensorhub_t *sh)
 {
-	uint8_t buffer[32];  // TODO: symbol
+	uint8_t buffer[32];
 	int rc = 0;
     int i = 0;
 
-	// Send Cal enable command
+	// Send DCD Save command
 	memset(buffer, 0, sizeof(buffer));
 	buffer[0] = 0;     // sequence
 	buffer[1] = CMD_SAVE_DCD;  // command: Save DCD
@@ -1251,7 +1253,7 @@ int sensorhub_saveDcd(const sensorhub_t *sh)
 	shhid_setReport(sh, HID_REPORT_TYPE_OUTPUT, SENSORHUB_CMD_REQ,
 	                buffer, SENSORHUB_CMD_LEN-1);
 
-	// Get Cal enable response
+	// Get response
     rc = SENSORHUB_STATUS_UNEXPECTED_REPORT;
 	for (i = 0; i < 10; ++i)  {
 		sensorhub_waitForReport(sh, buffer, 100);

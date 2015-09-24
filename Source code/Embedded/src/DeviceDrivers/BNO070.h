@@ -28,6 +28,7 @@ bool Check_BNO070(void);
 bool Tare_BNO070(void);
 bool SetDcdEn_BNO070(uint8_t flags);
 bool SaveDcd_BNO070(void);
+bool ClearDcd_BNO070(void);
 bool MagSetEnable_BNO070(bool enabled);
 uint8_t MagStatus_BNO070(void);  // 0 - Unreliable, 1 - Low, 2 - Medium, 3 - High Accuracy.
 void GetStats_BNO070(BNO070_Stats_t *stats);

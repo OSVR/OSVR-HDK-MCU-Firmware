@@ -194,11 +194,14 @@ static int sensorhub_probe_internal(const sensorhub_t * sh, bool reset)
             }
         }
 
+#if 0
         /* Check that the interrupt was cleared. */
         if (!sh->getHOST_INTN(sh)) {
             /* Not expecting HOST_INTN. It should have been cleared. */
             return checkError(sh, SENSORHUB_STATUS_RESET_INTN_BROKE);
         }
+#endif
+
     }
 
     /* We're ready to go. */

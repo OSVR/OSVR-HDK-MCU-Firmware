@@ -16,8 +16,10 @@ void PrepareForSoftwareUpgrade(void)
 
     udc_stop(); /*Required to stop USB interrupts messing you up before the vectors have been moved */
 
+#ifdef BNO070
     /* Disable interrupts from BNO070 */
     PORTD.INTCTRL &= ~PORT_INT0LVL0_bm;  // Disable PORT D Interrupt
+#endif
 
     /* Jump to 0x401FC = BOOT_SECTION_START + 0x1FC which is
      * the stated location of the bootloader entry (AVR1916).

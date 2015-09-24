@@ -201,6 +201,7 @@ static int sensorhub_probe_internal(const sensorhub_t * sh, bool reset)
             return checkError(sh, SENSORHUB_STATUS_RESET_INTN_BROKE);
         }
 #endif
+
     }
 
     /* We're ready to go. */

@@ -889,9 +889,11 @@ int sensorhub_writeFRS(const sensorhub_t * sh, sensorhub_FRS_t recordType,
 
     case SENSORHUB_FRP_WR_FAILED:
         return checkError(sh, SENSORHUB_STATUS_FRS_WRITE_FAILED);
+		
+    case SENSORHUB_FRP_WR_COMPLETE:
+		return SENSORHUB_STATUS_SUCCESS;
 
     case SENSORHUB_FRP_WR_READONLY:
-    case SENSORHUB_FRP_WR_COMPLETE:
     case SENSORHUB_FRP_WR_BAD_TYPE:
     case SENSORHUB_FRP_WR_BUSY:
     case SENSORHUB_FRP_WR_BAD_LENGTH:

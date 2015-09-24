@@ -504,6 +504,18 @@ void ProcessBNO070Commands(void)
 					}
 					break;
 				}
+				case 'C':
+				case 'c':
+				{
+					// #BDC = BNO DCD Clear
+					if (ClearDcd_BNO070()) {
+						WriteLn("DCD Cleared.");
+					}
+					else {
+						WriteLn("Failed.");
+					}
+					break;
+				}
 			}
 			break;
 		}

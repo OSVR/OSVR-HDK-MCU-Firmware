@@ -533,6 +533,14 @@ bool SaveDcd_BNO070(void)
     return (status == SENSORHUB_STATUS_SUCCESS);
 }
 
+bool ClearDcd_BNO070(void)
+{
+	/* clear DCD */
+	int status = sensorhub_writeFRS(&sensorhub, SENSORHUB_FRS_DCD, NULL, 0);
+	
+	return (status == SENSORHUB_STATUS_SUCCESS);
+}
+
 bool MagSetEnable_BNO070(bool enabled)
 {
     config_.sensors.mag.reportInterval = enabled ? hz2us(25) : 0;

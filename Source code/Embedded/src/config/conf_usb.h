@@ -60,8 +60,9 @@
     #define  USB_DEVICE_VENDOR_ID             0x1532 // should be 0x1532 New one is Razer ID
     #define  USB_DEVICE_PRODUCT_ID            0x0B00 // should be 0x0B00 - OSVR Hacker Dev Kit.
 #else
-    #define  USB_DEVICE_VENDOR_ID             USB_VID_ATMEL
-    #define  USB_DEVICE_PRODUCT_ID            0x2421
+    //#define  USB_DEVICE_VENDOR_ID             USB_VID_ATMEL
+	#define  USB_DEVICE_VENDOR_ID             0x16D0 // Sensics
+    #define  USB_DEVICE_PRODUCT_ID            0x0676 // dSight
 #endif
 
 #define  USB_DEVICE_MAJOR_VERSION         1
@@ -74,9 +75,15 @@
 // (USB_CONFIG_ATTR_REMOTE_WAKEUP|USB_CONFIG_ATTR_BUS_POWERED)
 
 //! USB Device string definitions (Optional)
-#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"
-#define  USB_DEVICE_PRODUCT_NAME          "OSVR"
-#define  USB_DEVICE_SERIAL_NAME           "OSVR111" // Disk SN for MSC
+#ifdef OSVRHDK
+	#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"
+	#define  USB_DEVICE_PRODUCT_NAME          "OSVR"
+	#define  USB_DEVICE_SERIAL_NAME           "OSVR111" // Disk SN for MSC
+#else
+	#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"
+	#define  USB_DEVICE_PRODUCT_NAME          "dSight"
+	#define  USB_DEVICE_SERIAL_NAME           "dSight79" // Disk SN for MSC
+#endif
 
 /**
  * Device speeds support

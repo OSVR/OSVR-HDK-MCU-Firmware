@@ -315,6 +315,44 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
     event->delay = report[5];
 
     switch (event->sensor) {
+		
+    case SENSORHUB_GAME_ROTATION_VECTOR:
+		if (length < 12)
+		return checkError(sh, SENSORHUB_STATUS_REPORT_INVALID_LEN);
+
+		event->un.field16[0] = read16(&report[6]);
+		event->un.field16[1] = read16(&report[8]);
+		event->un.field16[2] = read16(&report[10]);
+		event->un.field16[3] = read16(&report[12]);
+		break;
+
+    /* Reports that are 5 16-bit integers */
+    case SENSORHUB_ROTATION_VECTOR:
+    case SENSORHUB_GEOMAGNETIC_ROTATION_VECTOR:
+		if (length < 14)
+		return checkError(sh, SENSORHUB_STATUS_REPORT_INVALID_LEN);
+
+		event->un.field16[0] = read16(&report[6]);
+		event->un.field16[1] = read16(&report[8]);
+		event->un.field16[2] = read16(&report[10]);
+		event->un.field16[3] = read16(&report[12]);
+		event->un.field16[4] = read16(&report[14]);
+		break;
+
+        /* Reports that are 3 16-bit integers */
+    case SENSORHUB_ACCELEROMETER:
+    case SENSORHUB_LINEAR_ACCELERATION:
+    case SENSORHUB_GRAVITY:
+    case SENSORHUB_GYROSCOPE_CALIBRATED:
+    case SENSORHUB_MAGNETIC_FIELD_CALIBRATED:
+        if (length < 12)
+        return checkError(sh, SENSORHUB_STATUS_REPORT_INVALID_LEN);
+
+        event->un.field16[0] = read16(&report[6]);
+        event->un.field16[1] = read16(&report[8]);
+        event->un.field16[2] = read16(&report[10]);
+        break;
+		
         /* Reports that are 1 16-bit integer */
     case SENSORHUB_HUMIDITY:
     case SENSORHUB_PROXIMITY:
@@ -354,44 +392,8 @@ static int sensorhub_decodeEvent(const sensorhub_t * sh,
         event->un.field32[2] = read32(&report[14]);
         break;
 
-        /* Reports that are 3 16-bit integers */
-    case SENSORHUB_ACCELEROMETER:
-    case SENSORHUB_LINEAR_ACCELERATION:
-    case SENSORHUB_GRAVITY:
-    case SENSORHUB_GYROSCOPE_CALIBRATED:
-    case SENSORHUB_MAGNETIC_FIELD_CALIBRATED:
-        if (length < 12)
-            return checkError(sh, SENSORHUB_STATUS_REPORT_INVALID_LEN);
-
-        event->un.field16[0] = read16(&report[6]);
-        event->un.field16[1] = read16(&report[8]);
-        event->un.field16[2] = read16(&report[10]);
-        break;
 
         /* Reports that are 4 16-bit integers */
-    case SENSORHUB_GAME_ROTATION_VECTOR:
-        if (length < 12)
-            return checkError(sh, SENSORHUB_STATUS_REPORT_INVALID_LEN);
-
-        event->un.field16[0] = read16(&report[6]);
-        event->un.field16[1] = read16(&report[8]);
-        event->un.field16[2] = read16(&report[10]);
-        event->un.field16[3] = read16(&report[12]);
-        break;
-
-        /* Reports that are 5 16-bit integers */
-    case SENSORHUB_ROTATION_VECTOR:
-    case SENSORHUB_GEOMAGNETIC_ROTATION_VECTOR:
-        if (length < 14)
-            return checkError(sh, SENSORHUB_STATUS_REPORT_INVALID_LEN);
-
-        event->un.field16[0] = read16(&report[6]);
-        event->un.field16[1] = read16(&report[8]);
-        event->un.field16[2] = read16(&report[10]);
-        event->un.field16[3] = read16(&report[12]);
-        event->un.field16[4] = read16(&report[14]);
-        break;
-
         /* Reports that are 6 16-bit integers */
     case SENSORHUB_GYROSCOPE_UNCALIBRATED:
     case SENSORHUB_MAGNETIC_FIELD_UNCALIBRATED:

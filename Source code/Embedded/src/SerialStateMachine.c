@@ -64,6 +64,7 @@
 #include "DeviceDrivers/BNO070.h"
 #include "Console.h"
 #include "main.h"
+#include "TimingDebug.h"
 #include <util/delay.h>
 
 #define USBNotConnected		0
@@ -517,6 +518,12 @@ void ProcessBNO070Commands(void)
 					break;
 				}
 			}
+			break;
+		}
+		case 'T':
+		case 't':
+		{
+			TimingDebug_output();
 			break;
 		}
 		case 'M':

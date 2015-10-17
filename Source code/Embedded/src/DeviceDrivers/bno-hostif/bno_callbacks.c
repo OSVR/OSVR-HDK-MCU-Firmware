@@ -5,6 +5,7 @@
 #include "GlobalOptions.h"
 #include "my_hardware.h"
 #include "Console.h"
+#include "TimingDebug.h"
 
 #include <stdio.h>
 #include <ioport.h>
@@ -148,6 +149,7 @@ BNO070_ISR() {
     PORTD.INTFLAGS = PORT_INT0IF_bm;
 
     bno_data_ready = 1;
+	TimingDebug_event1(); // measure time in which interrupt was received
     bno_interrupts++;
 }
 

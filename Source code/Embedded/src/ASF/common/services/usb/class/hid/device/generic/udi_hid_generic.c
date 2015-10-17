@@ -307,8 +307,9 @@ static void udi_hid_generic_report_in_sent(udd_ep_status_t status,
     UNUSED(nb_sent);
     UNUSED(ep);
     udi_hid_generic_b_report_in_free = true;
-
-	TimingDebug_event3();
+	#ifdef MeasurePerformance
+		TimingDebug_event3();
+	#endif
 }
 
 //@}

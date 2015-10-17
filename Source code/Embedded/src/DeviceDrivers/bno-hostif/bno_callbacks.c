@@ -18,7 +18,10 @@
 #define BNO070_APP_I2C_8BIT_ADDR (0x48)
 #define BNO070_BOOTLOADER_I2C_8BIT_ADDR (0x28)
 
-uint32_t bno_interrupts = 0;
+#ifdef MeasurePerformance
+	uint32_t bno_interrupts = 0;
+#endif
+	
 int bno_data_ready = 0;
 
 static void debugPrintf(const char *format, ...)
@@ -149,8 +152,10 @@ BNO070_ISR() {
     PORTD.INTFLAGS = PORT_INT0IF_bm;
 
     bno_data_ready = 1;
-	TimingDebug_event1(); // measure time in which interrupt was received
-    bno_interrupts++;
+	#ifdef MeasurePerformance
+		TimingDebug_event1(); // measure time in which interrupt was received
+	    bno_interrupts++;
+	#endif
 }
 
 static int bnoDataReady(const struct sensorhub_s *sh)

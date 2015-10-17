@@ -35,6 +35,7 @@ extern char Msg[];
 #define NXP_TWI_SPEED	50000 //!< TWI data transfer rate
 
 #ifdef BNO070
+	#define MeasurePerformance // if defined, performance is being recorded for BNO work
 	#define BNO_TWI_SPEED	400000 //!< TWI data transfer rate
 #endif
 

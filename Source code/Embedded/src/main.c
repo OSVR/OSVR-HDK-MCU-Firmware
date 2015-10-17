@@ -145,7 +145,9 @@ int main(void)
 
 #ifdef OSVRHDK
 	//ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
-	TimingDebug_init();
+	#ifdef MeasurePerformance
+		TimingDebug_init();
+	#endif
 #endif
 
 
@@ -225,7 +227,9 @@ int main(void)
 			{
 				if (bno_data_ready>0)
 				{
-					TimingIncreaseCounter();
+					#ifdef MeasurePerformance
+						TimingIncreaseCounter();
+					#endif
 					Check_BNO070();
 				}
 			}

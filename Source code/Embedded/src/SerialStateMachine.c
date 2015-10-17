@@ -520,12 +520,14 @@ void ProcessBNO070Commands(void)
 			}
 			break;
 		}
+		#ifdef MeasurePerformance
 		case 'T':
 		case 't':
 		{
 			TimingDebug_output();
 			break;
 		}
+		#endif
 		case 'M':
 		case 'm':
 		{

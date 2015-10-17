@@ -269,7 +269,7 @@ enum vbat_status_code rtc_vbat_system_check(bool first_time_startup)
 static void vbat_init(void)
 {
     // Enable access to VBAT
-    VBAT.CTRL |= VBAT_ACCEN_bm;
+    VBAT.CTRL |= VBAT_ACCEN_bm; 
 
     ccp_write_io((void *)&VBAT.CTRL, VBAT_RESET_bm);
 

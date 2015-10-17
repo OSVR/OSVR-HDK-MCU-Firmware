@@ -160,6 +160,7 @@ int main(void)
 		WriteLn("Video at start");
 #ifdef Solomon1_SPI
 		DisplayOn(Solomon1);
+		UpdateResolutionDetection();
 #endif
 #ifdef Solomon2_SPI
 		DisplayOn(Solomon2);
@@ -289,6 +290,7 @@ int main(void)
 					LastFPGALockStatus=NewFPGALockStatus;
 #ifdef Solomon1_SPI
 					DisplayOn(Solomon1);
+					UpdateResolutionDetection();
 #endif
 #ifdef Solomon2_SPI
 					DisplayOn(Solomon2);
@@ -317,6 +319,7 @@ void HandleHDMI()
 		init_solomon_device(Solomon1); // todo: add back after debug of board
 	#endif
 		DisplayOn(Solomon1);
+		UpdateResolutionDetection();
 	#ifndef H546DLT01
 		init_solomon_device(Solomon1); // todo: add back after debug of board
 	#endif

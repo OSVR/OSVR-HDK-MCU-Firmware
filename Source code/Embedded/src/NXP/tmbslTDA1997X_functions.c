@@ -3175,6 +3175,7 @@ tmbslTDA1997XGetFrameMeasurements
 
     *pPixels = (UInt16)(((UInt16)(pTabRegValue[2] & MASK_NB_PIX) <<  8 ) | pTabRegValue[3]);
 
+	PortraitMode=(*pLines > * pPixels);
     return TM_OK;
 }
 

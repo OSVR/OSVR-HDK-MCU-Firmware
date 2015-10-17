@@ -69,7 +69,7 @@ bool InstanceOpened0=false; // indicates whether HDMI instance already created
 bool KnownResolution0=false; // true once a known resolution is detected on port A
 bool ActivityDetected0=false; // true if activity is detected on port A
 tmdlHdmiRxResolutionID_t ResolutionID0=-1; // identifies detected resolution of port A
-
+bool PortraitMode=false; // true if incoming video is in portrait mode
 
 /* int _tmain(int argc, _TCHAR* argv[])
 {
@@ -787,6 +787,7 @@ static void digitalActivityCallback0 (tmdlHdmiRxEvent_t event,
 		#ifdef Solomon1_SPI
 			#ifdef H546DLT01
 				DisplayOn(Solomon1);
+				UpdateResolutionDetection();
 			#endif
 		#endif
         break;
@@ -1576,8 +1577,18 @@ void Report_HDMI_status()
     errCode = tmbslTDA1997XGetFrameMeasurements(instance,&pInterlaced,&pLineMatch,&pFrameFormat,&pLines,&pPixels);
     sprintf(Msg,"L %d P %d I %d",pLines,pPixels,pInterlaced);
     WriteLn(Msg);
-
-
+		
+	#ifdef OSVRHDK
+		if (ioport_get_pin_level(FPGA_unlocked))
+			WriteLn("No Video detected");
+		else
+		{
+			if (PortraitMode)
+				WriteLn("Portrait mode video");
+			else
+				WriteLn("Landscape mode video");
+		}
+	#endif
 };
 
 
@@ -1790,4 +1801,20 @@ void ProgramMTP1(void)
     errCode = tmbslTDA1997XWriteI2C(1,INT_FLG_CLR_SUS, 1, &regVal);
     //if (errCode) return TM_ERR_BAD_PARAMETER;
 
+}
+
+// uses NXP to determine if we are in portrait or landscape mode
+void UpdateResolutionDetection()
+
+{
+    tmbslHdmiRxAsdMeasureInterlaced_t   pInterlaced;
+    tmbslHdmiRxVhrefAsdLineStandard_t   pLineMatch;
+    tmbslHdmiRxVhrefAsdMeaslin525_t     pFrameFormat;
+    UInt16                              pLines;
+    UInt16                              pPixels;
+
+    tmErrorCode_t               errCode;
+    tmInstance_t             instance=0;
+
+    errCode = tmbslTDA1997XGetFrameMeasurements(instance,&pInterlaced,&pLineMatch,&pFrameFormat,&pLines,&pPixels);
 }

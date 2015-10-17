@@ -50,6 +50,7 @@
 #include "SerialStateMachine.h"
 #include "DeviceDrivers/Solomon.h"
 #include "my_hardware.h"
+#include "bno_callbacks.h"
 
 #ifndef DISABLE_NXP
 #include "nxp/AVRHDMI.h"
@@ -58,6 +59,8 @@
 #include "DeviceDrivers/TI-TMDS442.h"
 #include "DeviceDrivers/BNO070.h"
 #include "Console.h"
+
+#include "TimingDebug.h"
 
 #ifdef OSVRHDK
     #include "nxp\i2c.h"
@@ -72,6 +75,7 @@ bool HDMISwitch_task=true;
 bool NewVideoDetected=false;
 bool VideoLost=false;
 bool NXPEverLocked=false; // true if HDMI receiver was ever locked on incoming video signal
+
 
 #ifdef OSVRHDK
 bool LastFPGALockStatus=0; // last state of FPGA_unlocked pin
@@ -98,15 +102,12 @@ int main(void)
     board_init();
 
     custom_board_init(); // add initialization that is specific to Sensics board
-    //timeout_init(); //- timeouts not working quote yet // todo: activate this
+    //timeout_init(); //- timeouts not working quite yet // todo: activate this
     cpu_irq_enable();
 
     ui_init();
     ui_powerdown();
 
-#ifdef OSVRHDK
-	//ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
-#endif
 
     init_solomon();
 
@@ -142,6 +143,10 @@ int main(void)
     TMDS_422_Task();
 #endif
 
+#ifdef OSVRHDK
+	//ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
+	TimingDebug_init();
+#endif
 
 
 #ifndef DISABLE_NXP
@@ -189,7 +194,7 @@ int main(void)
 #endif
 
 
-	uint8_t slower = 0;
+	uint16_t slower = 0;
 
 #ifdef OSVRHDK
 	//ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
@@ -208,7 +213,7 @@ int main(void)
             CommandReady=false;
         }
 
-        delay_us(100); // Some delay is required to allow USB interrupt to process
+        delay_us(50); // Some delay is required to allow USB interrupt to process
 
 
 #ifdef BNO070
@@ -217,7 +222,13 @@ int main(void)
 		//else // check tracker only if we can actually report its results
 		{
 	        if (BNO070Active)
-		        Check_BNO070();
+			{
+				if (bno_data_ready>0)
+				{
+					TimingIncreaseCounter();
+					Check_BNO070();
+				}
+			}
 		}
 #endif
 
@@ -231,7 +242,7 @@ int main(void)
 
 #ifndef DISABLE_NXP
 		slower++; // used to slow down the rate of checking HDMI
-		if ((HDMI_task) && (slower>100))
+		if ((HDMI_task) && (slower>1000))
 		{
 			slower=0;
 	#ifdef OSVRHDK

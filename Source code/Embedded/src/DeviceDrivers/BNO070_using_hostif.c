@@ -10,6 +10,7 @@
 
 #include "GlobalOptions.h"
 #include "my_hardware.h"
+#include "TimingDebug.h"
 #include "Console.h"
 
 #include <ioport.h>
@@ -326,6 +327,7 @@ static void handleEvent(const sensorhub_Event_t * event)
 
             BNO070_Report[1] = event->sequenceNumber;
             memcpy(&BNO070_Report[2], &event->un.rotationVector.i_16Q14, 8); // copy quaternion data
+			TimingDebug_event2();
             udi_hid_generic_send_report_in(BNO070_Report);
         }
         break;
@@ -334,6 +336,7 @@ static void handleEvent(const sensorhub_Event_t * event)
         {
             BNO070_Report[1] = event->sequenceNumber;
             memcpy(&BNO070_Report[2], &event->un.gameRotationVector.i_16Q14, 8); // copy quaternion data
+			TimingDebug_event2();
             udi_hid_generic_send_report_in(BNO070_Report);
         }
         break;

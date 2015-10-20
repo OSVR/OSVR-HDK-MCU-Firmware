@@ -183,6 +183,11 @@ int main(void)
 	{
 #ifdef Solomon1_SPI
 		DisplayOff(Solomon1);
+		UpdateResolutionDetection();
+		#ifdef BNO070
+			Update_BNO_Report_Header();
+		#endif
+		
 #endif
 #ifdef Solomon2_SPI
 		DisplayOff(Solomon2);
@@ -266,6 +271,10 @@ int main(void)
 
 #ifdef Solomon1_SPI
 					DisplayOff(Solomon1);
+					UpdateResolutionDetection();
+					#ifdef BNO070
+						Update_BNO_Report_Header();
+					#endif
 #endif
 #ifdef Solomon2_SPI
 					DisplayOff(Solomon2);
@@ -351,6 +360,10 @@ void HandleHDMI()
 				
 #ifdef Solomon1_SPI
 		DisplayOff(Solomon1);
+		UpdateResolutionDetection();
+		#ifdef BNO070
+			Update_BNO_Report_Header();
+		#endif
 #endif
 #ifdef Solomon2_SPI
 		DisplayOff(Solomon2);

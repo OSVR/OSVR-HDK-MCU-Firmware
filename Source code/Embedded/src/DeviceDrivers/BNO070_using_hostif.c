@@ -12,6 +12,7 @@
 #include "my_hardware.h"
 #include "TimingDebug.h"
 #include "Console.h"
+#include "nxp/AVRHDMI.h" // for video mode status to be fed into BNO report
 
 #include <ioport.h>
 #include "BNO070.h"
@@ -39,6 +40,7 @@ extern sensorhub_t sensorhub;
 bool BNO070Active=false;
 uint8_t BNO070_Report[USB_REPORT_SIZE];
 bool TWI_BNO070_PORT_initialized=false; // true if already initialized
+uint8_t BNOReportVersion; // version 1 or 3 depending on whether velocity is being reported
 
 sensorhub_ProductID_t BNO070id;
 Bool BNO_supports_400Hz=false; // true if firmware is new enough to support higher-rate reads
@@ -329,6 +331,7 @@ static void handleEvent(const sensorhub_Event_t * event)
             memcpy(&BNO070_Report[2], &event->un.rotationVector.i_16Q14, 8); // copy quaternion data
 #ifdef MeasurePerformance
 			TimingDebug_event2();
+			TimingDebug_RecordEventType(1);
 #endif
             udi_hid_generic_send_report_in(BNO070_Report);
         }
@@ -340,6 +343,7 @@ static void handleEvent(const sensorhub_Event_t * event)
             memcpy(&BNO070_Report[2], &event->un.gameRotationVector.i_16Q14, 8); // copy quaternion data
 #ifdef MeasurePerformance
 			TimingDebug_event2();
+			TimingDebug_RecordEventType(2);
 #endif
             udi_hid_generic_send_report_in(BNO070_Report);
         }
@@ -487,14 +491,17 @@ bool init_BNO070(void)
 	    BNO_supports_400Hz=true;
 
     // setup USB output report
+	
+	// determine report version coming out of BNO
     #ifdef REPORT_GYRO
     if (BNO_supports_400Hz)
-    BNO070_Report[0]=2; // this indicates the version number of the report
+		BNOReportVersion=3;
     else
-    BNO070_Report[0]=1; // this indicates the version number of the report
+		BNOReportVersion=1; 
     #else
-    BNO070_Report[0]=1; // this indicates the version number of the report
+		BNOReportVersion=1;
     #endif
+	Update_BNO_Report_Header(); // set up some initial value for BNO_report[0]
     BNO070_Report[1]=0; // this indicates the sequence number
 
 
@@ -675,4 +682,19 @@ bool dfu_BNO070(void) {
     return true;
 }
 
+void Update_BNO_Report_Header()
+// update message header to reflect video status
+
+{
+	if (BNOReportVersion==3)
+	{
+		BNO070_Report[0]=BNOReportVersion+(	HDMIStatus << 4);
+	}
+}
+
+uint8_t Get_BNO_Report_Header() // for debug, returns first byte of BNO message header
+{
+	return BNO070_Report[0];
+
+}
 #endif

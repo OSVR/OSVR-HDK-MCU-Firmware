@@ -30,8 +30,10 @@
 		//rtc_set_time(0);
 		tc_enable(&TIMER_EXAMPLE);
 		tc_set_wgm(&TIMER_EXAMPLE, TC_WG_NORMAL);
-		tc_write_period(&TIMER_EXAMPLE, TIMER_EXAMPLE_PERIOD);
-		tc_set_resolution(&TIMER_EXAMPLE, TIMER_EXAMPLE_PERIOD);
+		//tc_write_period(&TIMER_EXAMPLE, TIMER_EXAMPLE_PERIOD);
+		tc_write_period(&TIMER_EXAMPLE, 65535);
+		//tc_set_resolution(&TIMER_EXAMPLE, TIMER_EXAMPLE_PERIOD);
+		tc_set_resolution(&TIMER_EXAMPLE, 1000000);
 		tick1=0;
 		tick2=0;
 		tick3=0;
@@ -63,6 +65,7 @@
 			tick1++;
 		}
 	};
+	
 
 	void TimingDebug_event2(void) // indicates when event 2 in a sequence of up to 3 happened
 	{
@@ -82,11 +85,12 @@
 		}
 	};
 
-	void TimingIncreaseCounter(void) // increase timing counter
 
+	void TimingDebug_RecordEventType(uint8_t Event)
+	
 	{
-		TimingCounter[TimeLogIndex]++;
-	};
+		TimingCounter[TimeLogIndex]=Event;
+	}
 
 	void TimingDebug_output(void) // outputs results of timing collection
 	{
@@ -95,7 +99,7 @@
 		TimingDebug_disable();
 		for (int i=0; i<50;i++)
 		{
-			sprintf(msg,"%d: %d %d %d %d",i,TimeLog1[i],TimeLog2[i],TimeLog3[i],TimingCounter[i]);
+			sprintf(msg,"%d: %u %u %u %d",i,TimeLog1[i],TimeLog2[i],TimeLog3[i],TimingCounter[i]);
 			WriteLn(msg);
 		}
 		sprintf(msg,"%ld %ld %ld",tick1,tick2,tick3);

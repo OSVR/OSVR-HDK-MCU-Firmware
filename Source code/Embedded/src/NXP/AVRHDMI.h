@@ -28,8 +28,9 @@ void HDMI_Reset(uint8_t HDMINum);
 void ProgramMTP0(void);
 void ProgramMTP1(void);
 
-void UpdateResolutionDetection();
+void UpdateResolutionDetection(void);
 
 extern bool PortraitMode; // true if incoming video is in portrait mode
+extern uint8_t HDMIStatus; // shows whether we have video and also video mode
 
 #endif

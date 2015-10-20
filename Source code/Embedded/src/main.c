@@ -66,6 +66,7 @@
     #include "nxp\i2c.h"
 #endif
 
+
 #include "main.h"
 
 static volatile bool main_b_cdc_enable = false;
@@ -82,6 +83,7 @@ bool LastFPGALockStatus=0; // last state of FPGA_unlocked pin
 #endif
 
 void HandleHDMI(void);
+
 
 /*! \brief Main function. Execution starts here.
  */
@@ -161,6 +163,9 @@ int main(void)
 #ifdef Solomon1_SPI
 		DisplayOn(Solomon1);
 		UpdateResolutionDetection();
+		#ifdef BNO070
+			Update_BNO_Report_Header();
+		#endif
 #endif
 #ifdef Solomon2_SPI
 		DisplayOn(Solomon2);
@@ -228,9 +233,6 @@ int main(void)
 			{
 				if (bno_data_ready>0)
 				{
-					#ifdef MeasurePerformance
-						TimingIncreaseCounter();
-					#endif
 					Check_BNO070();
 				}
 			}
@@ -291,6 +293,9 @@ int main(void)
 #ifdef Solomon1_SPI
 					DisplayOn(Solomon1);
 					UpdateResolutionDetection();
+					#ifdef BNO070
+					Update_BNO_Report_Header();
+					#endif
 #endif
 #ifdef Solomon2_SPI
 					DisplayOn(Solomon2);
@@ -320,6 +325,10 @@ void HandleHDMI()
 	#endif
 		DisplayOn(Solomon1);
 		UpdateResolutionDetection();
+		#ifdef BNO070
+		Update_BNO_Report_Header();
+		#endif
+
 	#ifndef H546DLT01
 		init_solomon_device(Solomon1); // todo: add back after debug of board
 	#endif
@@ -348,6 +357,7 @@ void HandleHDMI()
 #endif
 	}
 }
+
 
 
 void main_suspend_action(void)

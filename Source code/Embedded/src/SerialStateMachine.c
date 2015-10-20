@@ -420,10 +420,12 @@ void ProcessCommand(void)
         case 'd':
         case 'D':
         {
-            // debug commands
-            WriteLn("Set debug level");
-            SetDebugLevel(HexPairToDecimal(1));
-            break;
+			{
+				// debug commands
+				WriteLn("Set debug level");
+				SetDebugLevel(HexPairToDecimal(1));
+			}
+			break;
         }
         default:
             WriteLn(";Unrecognized command");
@@ -596,6 +598,13 @@ void ProcessBNO070Commands(void)
                 }
             }
         }
+		case 'H': // display BNO header
+		case 'h':
+		{
+			sprintf(Msg,"header: %x ",Get_BNO_Report_Header());
+			WriteLn(Msg);
+			break;
+		}
         case 'R':
         case 'r':
         {
@@ -738,6 +747,10 @@ void ProcessSPICommand(void)
 	{
 		WriteLn("Display on");
 		DisplayOn(Solomon1);
+		UpdateResolutionDetection();
+		#ifdef BNO070
+			Update_BNO_Report_Header();
+		#endif
 		break;
 	}
 	case 'f':
@@ -745,6 +758,10 @@ void ProcessSPICommand(void)
 	{
 		WriteLn("Display off");
 		DisplayOff(Solomon1);
+		UpdateResolutionDetection();
+		#ifdef BNO070
+			Update_BNO_Report_Header();
+		#endif
 		break;
 	}
     case 'd':

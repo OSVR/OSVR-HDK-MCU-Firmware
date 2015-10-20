@@ -20,6 +20,10 @@
 
 #include "DeviceDrivers/Solomon.h"
 
+#ifdef BNO070
+#include "DeviceDrivers/BNO070.h"
+#endif
+
 #include "avrhdmi.h"
 #include <util/delay.h>
 #include <stdio.h>
@@ -70,6 +74,7 @@ bool KnownResolution0=false; // true once a known resolution is detected on port
 bool ActivityDetected0=false; // true if activity is detected on port A
 tmdlHdmiRxResolutionID_t ResolutionID0=-1; // identifies detected resolution of port A
 bool PortraitMode=false; // true if incoming video is in portrait mode
+uint8_t HDMIStatus=0; // shows whether we have video and also video mode
 
 /* int _tmain(int argc, _TCHAR* argv[])
 {
@@ -788,6 +793,9 @@ static void digitalActivityCallback0 (tmdlHdmiRxEvent_t event,
 			#ifdef H546DLT01
 				DisplayOn(Solomon1);
 				UpdateResolutionDetection();
+				#ifdef BNO070
+					Update_BNO_Report_Header();
+				#endif
 			#endif
 		#endif
         break;
@@ -1591,6 +1599,18 @@ void Report_HDMI_status()
 	#endif
 };
 
+uint8_t Get_HDMI_Status()
+// returns byte showing HDMI status. This is used for reporting video mode in USB reports
+{
+	uint8_t Result=0;
+	if (!ioport_get_pin_level(FPGA_unlocked))
+	{
+		Result+=1;
+		if (PortraitMode)
+			Result+=2;
+	}
+	return Result;
+}
 
 void NXPSuspend(void)
 
@@ -1803,18 +1823,20 @@ void ProgramMTP1(void)
 
 }
 
-// uses NXP to determine if we are in portrait or landscape mode
+// uses NXP to determine if we are in portrait or landscape mode and then updates USB report
 void UpdateResolutionDetection()
 
 {
-    tmbslHdmiRxAsdMeasureInterlaced_t   pInterlaced;
-    tmbslHdmiRxVhrefAsdLineStandard_t   pLineMatch;
-    tmbslHdmiRxVhrefAsdMeaslin525_t     pFrameFormat;
-    UInt16                              pLines;
-    UInt16                              pPixels;
+	tmbslHdmiRxAsdMeasureInterlaced_t   pInterlaced;
+	tmbslHdmiRxVhrefAsdLineStandard_t   pLineMatch;
+	tmbslHdmiRxVhrefAsdMeaslin525_t     pFrameFormat;
+	UInt16                              pLines;
+	UInt16                              pPixels;
 
-    tmErrorCode_t               errCode;
-    tmInstance_t             instance=0;
+	tmErrorCode_t               errCode;
+	tmInstance_t             instance=0;
 
-    errCode = tmbslTDA1997XGetFrameMeasurements(instance,&pInterlaced,&pLineMatch,&pFrameFormat,&pLines,&pPixels);
+	errCode = tmbslTDA1997XGetFrameMeasurements(instance,&pInterlaced,&pLineMatch,&pFrameFormat,&pLines,&pPixels);
+	HDMIStatus=Get_HDMI_Status();
 }
+

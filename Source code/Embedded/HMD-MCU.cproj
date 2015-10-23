@@ -19,7 +19,7 @@
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
     <OverrideVtorValue>exception_table</OverrideVtorValue>
-    <eraseonlaunchrule>0</eraseonlaunchrule>
+    <eraseonlaunchrule>1</eraseonlaunchrule>
     <ProgFlashFromRam>true</ProgFlashFromRam>
     <RamSnippetAddress>0x20000000</RamSnippetAddress>
     <CacheFlash>true</CacheFlash>
@@ -310,6 +310,17 @@
       <ApplicationOutput30 xmlns="">String</ApplicationOutput30>
       <ApplicationOutput31 xmlns="">String</ApplicationOutput31>
     </PercepioTrace>
+    <com_atmel_avrdbg_tool_flip>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+        </InterfaceProperties>
+        <InterfaceName>JTAG</InterfaceName>
+      </ToolOptions>
+      <ToolType xmlns="">com.atmel.avrdbg.tool.flip</ToolType>
+      <ToolNumber xmlns="">
+      </ToolNumber>
+      <ToolName xmlns="">Atmel FLIP</ToolName>
+    </com_atmel_avrdbg_tool_flip>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'HDK_OLED' ">
     <ToolchainSettings>
@@ -858,6 +869,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\TimingDebug.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\USB.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\USB.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="_StackInstrument.c">

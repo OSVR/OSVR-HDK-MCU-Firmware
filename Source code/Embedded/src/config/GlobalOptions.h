@@ -12,7 +12,7 @@
 #include "VariantOptions.h"
 
 #define MajorVersion	1
-#define MinorVersion	83
+#define MinorVersion	84
 
 #define TMFL_TDA19971 // same reasons
 

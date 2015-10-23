@@ -48,6 +48,9 @@
 #include "udi.h"
 #include "udc.h"
 
+#include "my_hardware.h" // included to get dynamic product name
+#include "string.h"
+
 /**
  * \ingroup udc_group
  * \defgroup udc_group_interne Implementation of UDC
@@ -106,8 +109,8 @@ static uint8_t udc_string_manufacturer_name[] = USB_DEVICE_MANUFACTURE_NAME;
  * by usb application configuration
  */
 #ifdef USB_DEVICE_PRODUCT_NAME
-    static uint8_t udc_string_product_name[] = USB_DEVICE_PRODUCT_NAME;
-    #define USB_DEVICE_PRODUCT_NAME_SIZE  (sizeof(udc_string_product_name)-1)
+	static uint8_t udc_string_product_name[] = USB_DEVICE_PRODUCT_NAME;
+	#define USB_DEVICE_PRODUCT_NAME_SIZE  (sizeof(udc_string_product_name)-1)
 #else
     #define USB_DEVICE_PRODUCT_NAME_SIZE  0
 #endif
@@ -622,8 +625,13 @@ static bool udc_req_std_dev_get_str_desc(void)
 #endif
 #ifdef USB_DEVICE_PRODUCT_NAME
     case 2:
-        str_length = USB_DEVICE_PRODUCT_NAME_SIZE;
-        str = udc_string_product_name;
+		#ifndef DYNAMIC_PRODUCT_NAME
+			str_length = USB_DEVICE_PRODUCT_NAME_SIZE;
+			str = udc_string_product_name;
+		#else
+			str_length = USB_DEVICE_PRODUCT_NAME_SIZE;
+			strcpy(str, ProductName);
+		#endif
         break;
 #endif
 #if defined USB_DEVICE_SERIAL_NAME || defined USB_DEVICE_GET_SERIAL_NAME_POINTER

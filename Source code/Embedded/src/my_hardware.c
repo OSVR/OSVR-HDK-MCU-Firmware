@@ -13,6 +13,10 @@
 #include "GlobalOptions.h"
 #include "delay.h"
 
+uint8_t HDK_Version_Major=1;
+uint8_t HDK_Version_Minor=2; // set 1.2 as default version
+char ProductName[]="OSVR HDK 1.2";
+
 uint8_t actualNXP_1_ADDR=NXP_1_ADDR;
 uint8_t actualCEC_1_ADDR=CEC_1_ADDR;
 

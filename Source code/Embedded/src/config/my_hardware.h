@@ -78,6 +78,11 @@ uint8_t actualCEC_1_ADDR;
 void custom_board_init(void); // Sensics-specific initialization of the hardware
 void set_pwm_values(uint8_t Display1, uint8_t Display2); // sets pwm values for each display
 
+// indicates version of HDK, e.g. 1.1, 1.2, 1.3
+extern uint8_t HDK_Version_Major;
+extern uint8_t HDK_Version_Minor;
+extern char ProductName[];
+
 // BNO070 will use INT0 vector of PORTD
 #define BNO070_ISR() ISR(PORTD_INT0_vect)
 

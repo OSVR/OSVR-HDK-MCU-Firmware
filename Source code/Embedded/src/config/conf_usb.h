@@ -76,8 +76,9 @@
 
 //! USB Device string definitions (Optional)
 #ifdef OSVRHDK
+	#define DYNAMIC_PRODUCT_NAME			// if true, product name is reported based on detected configuration
 	#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"
-	#define  USB_DEVICE_PRODUCT_NAME          "OSVR"
+	#define  USB_DEVICE_PRODUCT_NAME          "OSVR HDK 1.2"
 	#define  USB_DEVICE_SERIAL_NAME           "OSVR111" // Disk SN for MSC
 #else
 	#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"
@@ -323,23 +324,23 @@
  * @{
  */
 //! Interface callback definition
-#define  UDI_HID_GENERIC_ENABLE_EXT()       true
-#define  UDI_HID_GENERIC_DISABLE_EXT()
-#define  UDI_HID_GENERIC_REPORT_OUT(ptr)
-#define  UDI_HID_GENERIC_SET_FEATURE(f)
-/*
- * #define UDI_HID_GENERIC_ENABLE_EXT() my_callback_generic_enable()
- * extern bool my_callback_generic_enable(void);
- * #define UDI_HID_GENERIC_DISABLE_EXT() my_callback_generic_disable()
- * extern void my_callback_generic_disable(void);
- * #define  UDI_HID_GENERIC_REPORT_OUT(ptr) my_callback_generic_report_out(ptr)
- * extern void my_callback_generic_report_out(uint8_t *report);
- * #define  UDI_HID_GENERIC_SET_FEATURE(f) my_callback_generic_set_feature(f)
- * extern void my_callback_generic_set_feature(uint8_t *report_feature);
- */
+//#define  UDI_HID_GENERIC_ENABLE_EXT()       true
+//#define  UDI_HID_GENERIC_DISABLE_EXT()
+//#define  UDI_HID_GENERIC_REPORT_OUT(ptr)
+//#define  UDI_HID_GENERIC_SET_FEATURE(f) 
+
+#define UDI_HID_GENERIC_ENABLE_EXT() my_callback_generic_enable()
+extern bool my_callback_generic_enable(void);
+#define UDI_HID_GENERIC_DISABLE_EXT() my_callback_generic_disable()
+extern void my_callback_generic_disable(void);
+#define  UDI_HID_GENERIC_REPORT_OUT(ptr) my_callback_generic_report_out(ptr)
+extern void my_callback_generic_report_out(uint8_t *report);
+#define  UDI_HID_GENERIC_SET_FEATURE(f) my_callback_generic_set_feature(f)
+extern void my_callback_generic_set_feature(uint8_t *report_feature);
+ 
 #define  UDI_HID_REPORT_IN_SIZE             USB_REPORT_SIZE
 #define  UDI_HID_REPORT_OUT_SIZE            64
-#define  UDI_HID_REPORT_FEATURE_SIZE        4
+#define  UDI_HID_REPORT_FEATURE_SIZE        16
 #define  UDI_HID_GENERIC_EP_SIZE            64
 
 /**

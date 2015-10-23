@@ -78,7 +78,7 @@ bool udi_hid_setup( uint8_t *rate, uint8_t *protocol, uint8_t *report_desc, bool
             switch (udd_g_ctrlreq.req.bRequest) {
 
             case USB_REQ_HID_GET_REPORT:
-                // TODO
+                // TODO - YSB: perhaps this is the 'get feature?
                 break;
 
             case USB_REQ_HID_GET_IDLE:

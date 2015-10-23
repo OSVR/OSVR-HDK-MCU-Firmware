@@ -50,7 +50,7 @@
 #include <string.h>
 
 #include "uart.h"
-#include "main.h"
+#include "usb.h"
 
 #ifdef UDI_CDC_LOW_RATE
     #ifdef USB_DEVICE_HS_SUPPORT

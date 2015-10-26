@@ -630,7 +630,7 @@ static bool udc_req_std_dev_get_str_desc(void)
 			str = udc_string_product_name;
 		#else
 			str_length = USB_DEVICE_PRODUCT_NAME_SIZE;
-			strcpy(str, ProductName);
+			str = ProductName;
 		#endif
         break;
 #endif

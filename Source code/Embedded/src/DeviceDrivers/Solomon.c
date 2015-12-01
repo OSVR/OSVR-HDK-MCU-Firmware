@@ -170,6 +170,10 @@ bool init_solomon_device(uint8_t deviceID)
     write_solomon(deviceID,0xBF,0x08FE); // cmd=FE, data=08
     write_solomon(deviceID,0xBF,0x4003); // cmd=FE, data=08
     write_solomon(deviceID,0xBF,0x1A07); // cmd=FE, data=08
+	/*Add by AUO*/
+	write_solomon(deviceID,0xBF,0x0DFE); // cmd=FE, data=0D
+	write_solomon(deviceID,0xBF,0xFE53); // cmd=53, data=FE
+    /* -----*/
     write_solomon(deviceID,0xBF,0x00FE); // cmd=FE, data=08
 	write_solomon(deviceID,0xBF,0x08C2); // cmd=FE, data=08
     write_solomon(deviceID,0xBF,0xFF51); // cmd=FE, data=08

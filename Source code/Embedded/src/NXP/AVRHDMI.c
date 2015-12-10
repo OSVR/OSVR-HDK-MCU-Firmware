@@ -1480,7 +1480,7 @@ void HDMITask(void)
 
 
 
-    return; // !!! this disables the HDMI task. Should be removed after debug
+    return; // this disables the HDMI task. Should be removed after debug
 
     tmErrorCode_t errCode = TM_OK;
 
@@ -1536,7 +1536,7 @@ void HDMITask(void)
 
     {
         {
-            //errCode = tmdlHdmiRxHandleInterrupt(0); !!!
+            //errCode = tmdlHdmiRxHandleInterrupt(0); 
             //PRINTIF(errCode, __LINE__);
         }
     }

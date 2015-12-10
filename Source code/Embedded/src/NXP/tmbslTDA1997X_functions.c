@@ -447,7 +447,7 @@ bslTDA1997XWriteI2C
         //sprintf(Msg,"Page: %d",requestedPage);
         //WriteLn(Msg);
 //
-        if ( (requestedPage  != RxHdmiConfig[unit].currentPage) || (RxHdmiConfig[unit].writePageErrorFlag == 1) ) // !!! comment to write page register any time
+        if ( (requestedPage  != RxHdmiConfig[unit].currentPage) || (RxHdmiConfig[unit].writePageErrorFlag == 1) ) // comment out if you want to write page register any time
         {
 
 
@@ -640,7 +640,7 @@ tmbslTDA1997XWriteI2C
         //sprintf(Msg,"Page: %d",requestedPage);
         //Writ(Msg);
 
-        if ( (requestedPage  != RxHdmiConfig[unit].currentPage) || (RxHdmiConfig[unit].writePageErrorFlag == 1) ) // !!! comment to write page every time
+        if ( (requestedPage  != RxHdmiConfig[unit].currentPage) || (RxHdmiConfig[unit].writePageErrorFlag == 1) ) // comment out if you want to write page every time
         {
 
 
@@ -867,7 +867,7 @@ tmbslTDA1997XReadI2C
         //sprintf(Msg,"Page: %d",requestedPage);
         //WriteLn(Msg);
 
-        if (requestedPage != RxHdmiConfig[unit].currentPage) // !!! comment to write page value every time
+        if (requestedPage != RxHdmiConfig[unit].currentPage) // comment out if you want to write page value every time
         {
             regValue = (UInt8)requestedPage;
 

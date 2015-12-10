@@ -3957,7 +3957,7 @@ tmErrorCode_t dlHdmiRxConfigureVideoPort
 
             }
             
-            // todo: !!! check i below can support index [2]
+            // todo:  check i below can support index [2]
             errCode  = tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_3_0, VP_Comp_8[videoPortBSelection][0]);
             errCode |= tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_7_4, VP_Comp_8[videoPortBSelection][1]);
             

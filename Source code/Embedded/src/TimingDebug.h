@@ -2,7 +2,7 @@
  * TimingDebug.h
  *
  * Created: 10/15/2015 11:58:35 AM
- *  Author: Yuval Boger
+ *  Author: YSB
  */ 
 
 

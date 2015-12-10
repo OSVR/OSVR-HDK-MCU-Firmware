@@ -75,7 +75,7 @@ static int i2cTransfer(const struct sensorhub_s *sh,
                 return SENSORHUB_STATUS_SUCCESS;
             }
         } else {
-            return SENSORHUB_STATUS_ERROR_I2C_IO;  // Don't support this yet!!!
+            return SENSORHUB_STATUS_ERROR_I2C_IO;  // Don't support this yet
         }
     }
 

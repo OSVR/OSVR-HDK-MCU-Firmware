@@ -177,6 +177,18 @@ bool init_solomon_device(uint8_t deviceID)
     write_solomon(deviceID,0xBF,0x00FE); // cmd=FE, data=08
 	write_solomon(deviceID,0xBF,0x08C2); // cmd=FE, data=08
     write_solomon(deviceID,0xBF,0xFF51); // cmd=FE, data=08
+	
+	// added commands to address strobing
+	write_solomon(deviceID,0xBF,0x08fe);
+	//write_solomon(deviceID,0xBF,0x9889);
+	//write_solomon(deviceID,0xBF,0x068a);
+	//write_solomon(deviceID,0xBF,0x708b);
+	write_solomon(deviceID,0xBF,0xE689);
+	write_solomon(deviceID,0xBF,0x8E8a);
+	write_solomon(deviceID,0xBF,0x118b);
+	write_solomon(deviceID,0xBF,0x00fe);
+
+	
 #else
     write_solomon(deviceID,0xBF,0x04FE); // cmd=FE, data=04
 	delay_ms(16);

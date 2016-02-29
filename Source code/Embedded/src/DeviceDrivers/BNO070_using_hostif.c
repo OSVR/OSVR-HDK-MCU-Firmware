@@ -16,6 +16,7 @@
 
 #include <ioport.h>
 #include "BNO070.h"
+#include "bno_callbacks.h"
 #include "util/delay.h"
 #include "Boot.h"
 
@@ -696,5 +697,20 @@ uint8_t Get_BNO_Report_Header() // for debug, returns first byte of BNO message 
 {
 	return BNO070_Report[0];
 
+}
+
+void BNO_Yield()
+{
+	#ifdef BNO070
+	{
+		if (BNO070Active)
+		{
+			if (bno_data_ready>0)
+			{
+				Check_BNO070();
+			}
+		}
+	}
+	#endif
 }
 #endif

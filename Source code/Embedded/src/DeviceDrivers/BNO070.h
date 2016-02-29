@@ -36,6 +36,7 @@ void SetDebugPrintEvents_BNO070(bool);
 bool ReInit_BNO070(void);
 bool Reset_BNO070(void);
 bool dfu_BNO070(void);
+void BNO_Yield(void);
 
 void Update_BNO_Report_Header(void); // update message header to reflect video status
 uint8_t Get_BNO_Report_Header(void); // for debug, returns first byte of BNO message header

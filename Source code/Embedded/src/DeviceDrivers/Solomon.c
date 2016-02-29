@@ -15,6 +15,7 @@
 #include "nxp\my_bit.h"
 #include "delay.h"
 #include "Console.h"
+#include "BNO070.h"
 
 #define Solomon_CLOCK_SPEED 1000000 // todo: consider increasing
 
@@ -46,6 +47,17 @@ bool init_solomon_spi(uint8_t deviceID)
     return true;
 }
 
+void solomon_delay_ms(uint16_t ms)
+// delays for specified number of ms, while yielding to BNO
+{
+	while (ms>0)
+	{
+		delay_ms(1);
+		BNO_Yield();
+		ms--;
+	}
+}
+
 void powercycle_display(uint8_t deviceID)
 
 // power cycles display connected to the specific device
@@ -53,14 +65,14 @@ void powercycle_display(uint8_t deviceID)
 {
 
     write_solomon(deviceID,0xBF,0x0028); // display on
-    delay_ms(120);
+    solomon_delay_ms(120);
     write_solomon(deviceID,0xBF,0x0010); // sleep out
 
-    delay_ms(1000);
+    solomon_delay_ms(1000);
 
 
     write_solomon(deviceID,0xBF,0x0029); // display on
-    delay_ms(120);
+    solomon_delay_ms(120);
     write_solomon(deviceID,0xBF,0x0011); // sleep out
 }
 
@@ -71,7 +83,7 @@ bool init_solomon_device(uint8_t deviceID)
 {
 	//if (SolomonInitialized==true)
 		//return true;
-	delay_ms(500);
+	solomon_delay_ms(500);
 	SolomonInitialized=true;
 	
     // check if Solomon returns ID. If not, can't initialize
@@ -112,7 +124,7 @@ bool init_solomon_device(uint8_t deviceID)
     write_solomon(deviceID,0xC4,0x0001); // auto BTA
 #endif
 
-    delay_ms(50);
+    solomon_delay_ms(50);
     // module panel initialization
     write_solomon(deviceID,0xB7,0x0302); // LP generic write
     write_solomon(deviceID,0xB8,0x0000); // VC
@@ -131,7 +143,7 @@ bool init_solomon_device(uint8_t deviceID)
 
     write_solomon(deviceID,0xBC,0x0001); //
     write_solomon(deviceID,0xBF,0x0029); // display on
-    delay_ms(120);
+    solomon_delay_ms(120);
     write_solomon(deviceID,0xBF,0x0011); // sleep out
 #endif
 
@@ -151,7 +163,7 @@ bool init_solomon_device(uint8_t deviceID)
     write_solomon(deviceID,0xBF,0x0453); // cmd=53, data=04
     write_solomon(deviceID,0xBC,0x0001); //
     write_solomon(deviceID,0xBF,0x0029); // display on
-    delay_ms(120);
+    solomon_delay_ms(120);
     write_solomon(deviceID,0xBF,0x0011); // sleep out
 
     // end of LS050T1SX01 data sheet
@@ -164,7 +176,7 @@ bool init_solomon_device(uint8_t deviceID)
     write_solomon(deviceID,0xB8,0x0000); // VC
 
     //write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
-	delay_ms(100);
+	solomon_delay_ms(100);
 
 #ifdef LOW_PERSISTENCE
     write_solomon(deviceID,0xBF,0x08FE); // cmd=FE, data=08
@@ -191,25 +203,25 @@ bool init_solomon_device(uint8_t deviceID)
 	
 #else
     write_solomon(deviceID,0xBF,0x04FE); // cmd=FE, data=04
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x005E);
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x4744);
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x07FE);
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x6AA9);
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x0AFE);
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x5214);
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x00FE);
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x0135);
-	delay_ms(16);
+	solomon_delay_ms(16);
     write_solomon(deviceID,0xBF,0x0055);
-	delay_ms(16);
+	solomon_delay_ms(16);
 #endif
 	/*
     write_solomon(deviceID,0xBC,0x0001); //
@@ -232,9 +244,9 @@ bool init_solomon_device(uint8_t deviceID)
 
 #ifndef H546DLT01 // AUO 5.46" OLED
     // video mode on
-	delay_ms(250);
+	solomon_delay_ms(250);
     write_solomon(deviceID,0xB7,0x034B); // video mode on
-	delay_ms(100);
+	solomon_delay_ms(100);
 #endif
 	
     return true;
@@ -245,19 +257,19 @@ void DisplayOn(uint8_t deviceID)
 {
 
 #ifdef H546DLT01 // AUO 5.46" OLED
-		//delay_ms(500);
+		//solomon_delay_ms(500);
 		WriteLn("Turning display on");
 				
 		//display power on	
-		delay_ms(20);				
+		solomon_delay_ms(20);				
 		
 		//initial setting
 		write_solomon(deviceID,0xBC,0x0002); // no of byte send
 
 		write_solomon(deviceID,0xBF,0x0011); // sleep out
-		delay_ms(33);
+		solomon_delay_ms(33);
 		write_solomon(deviceID,0xB7,0x0329); // video signal on
-		delay_ms(166);    //>10 frame
+		solomon_delay_ms(166);    //>10 frame
 		write_solomon(deviceID,0xBF,0x0029); // display on
 
 #endif
@@ -268,16 +280,18 @@ void DisplayOn(uint8_t deviceID)
 void DisplayOff(uint8_t deviceID)
 
 {
+	
+
 #ifdef H546DLT01 // AUO 5.46" OLED
 
         WriteLn("Turing display off");
 
         write_solomon(deviceID,0xB7,0x0321); // video mode off
-        delay_ms(16);
+        solomon_delay_ms(16);
         write_solomon(deviceID,0xBF,0x0028); // display off
-        delay_ms(16);
+        solomon_delay_ms(16);
         write_solomon(deviceID,0xBF,0x0010); // sleep in
-        delay_ms(20); // delay > 1 frames
+        solomon_delay_ms(20); // delay > 1 frames
       
 #endif
 }
@@ -461,14 +475,14 @@ void Solomon_Reset(uint8_t SolomonNum)
     {
         WriteLn("reset Sol1");
         ioport_set_pin_low(Solomon1_Reset);
-        delay_ms(10);
+        solomon_delay_ms(10);
         ioport_set_pin_high(Solomon1_Reset);
     }
     else if (SolomonNum==2)
     {
         WriteLn("reset Sol2");
         ioport_set_pin_low(Solomon2_Reset);
-        delay_ms(1);
+        solomon_delay_ms(1);
         ioport_set_pin_high(Solomon2_Reset);
     }
     else

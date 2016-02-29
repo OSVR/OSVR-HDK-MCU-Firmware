@@ -242,18 +242,7 @@ int main(void)
 
 
 #ifdef BNO070
-		//if (CDCWriteInProgress)
-			//UpdateCDCBusyStatus();
-		//else // check tracker only if we can actually report its results
-		{
-	        if (BNO070Active)
-			{
-				if (bno_data_ready>0)
-				{
-					Check_BNO070();
-				}
-			}
-		}
+		BNO_Yield();
 #endif
 
 #ifdef TMDS422
@@ -264,6 +253,7 @@ int main(void)
         }
 #endif
 
+//#ifndef OSVRHDK // disable checking the NXP here; video changes will be picked up by interrupts anyway
 #ifndef DISABLE_NXP
 		slower++; // used to slow down the rate of checking HDMI
 		if ((HDMI_task) && (slower>1000))
@@ -329,6 +319,7 @@ int main(void)
 	#endif
 		}
 #endif
+//#endif // #ifndef OSVRHDK
 	}
 }
 

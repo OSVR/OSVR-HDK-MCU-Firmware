@@ -8,6 +8,7 @@
 // driver for Solomon MIPI bridge chip
 
 #include <asf.h>
+#include "stdio.h"
 #include "Solomon.h"
 #include "board.h"
 #include "spi_master.h"
@@ -78,6 +79,90 @@ void powercycle_display(uint8_t deviceID)
 
 bool SolomonInitialized=false;
 
+void set_strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
+{
+
+	// added commands to address strobing
+	write_solomon(deviceID,0xBF,0x08fe);
+
+	if (refresh==60)
+	{
+		write_solomon(deviceID,0xBF,0x9889);
+		switch (percentage)
+		{
+			case 0:
+				write_solomon(deviceID,0xBF,0x078a);
+				write_solomon(deviceID,0xBF,0x708b);
+				break;		
+			case 10:
+				write_solomon(deviceID,0xBF,0xbd8a);
+				write_solomon(deviceID,0xBF,0x708b);
+				break;
+			case 20:
+				write_solomon(deviceID,0xBF,0x808a);
+				write_solomon(deviceID,0xBF,0x718b);
+				break;
+			case 30:
+				write_solomon(deviceID,0xBF,0x438a);
+				write_solomon(deviceID,0xBF,0x728b);
+				break;
+			case 40:
+				write_solomon(deviceID,0xBF,0x068a);
+				write_solomon(deviceID,0xBF,0x738b);
+				break;
+			case 50:
+				write_solomon(deviceID,0xBF,0xcc8a);
+				write_solomon(deviceID,0xBF,0x738b);
+				break;
+			case 60:
+				write_solomon(deviceID,0xBF,0x8c8a);
+				write_solomon(deviceID,0xBF,0x748b);
+				break;
+			case 70:
+				write_solomon(deviceID,0xBF,0x8b8a);
+				write_solomon(deviceID,0xBF,0x758b);
+				break;
+			case 80:
+				write_solomon(deviceID,0xBF,0x128a);
+				write_solomon(deviceID,0xBF,0x768b);
+				break;
+			case 82:
+				write_solomon(deviceID,0xBF,0x3a8a);
+				write_solomon(deviceID,0xBF,0x768b);
+				break;
+			case 90:
+				write_solomon(deviceID,0xBF,0xd58a);
+				write_solomon(deviceID,0xBF,0x768b);
+				break;
+			default:		
+				write_solomon(deviceID,0xBF,0xCC8a);
+				write_solomon(deviceID,0xBF,0x738b);
+				break;
+		}
+	}
+
+	else // refresh is 240
+	{
+		write_solomon(deviceID,0xBF,0xe689);
+		switch (percentage)
+		{
+			case 50:
+				write_solomon(deviceID,0xBF,0xf38a);
+				write_solomon(deviceID,0xBF,0x108b);
+				break;
+			case 82:
+				write_solomon(deviceID,0xBF,0x8e8a);
+				write_solomon(deviceID,0xBF,0x118b);
+				break;
+			default:
+				write_solomon(deviceID,0xBF,0x8e8a);
+				write_solomon(deviceID,0xBF,0x118b);
+				break;
+		}
+	}
+	
+	write_solomon(deviceID,0xBF,0x00fe);
+}
 bool init_solomon_device(uint8_t deviceID)
 
 {
@@ -190,15 +275,18 @@ bool init_solomon_device(uint8_t deviceID)
 	write_solomon(deviceID,0xBF,0x08C2); // cmd=FE, data=08
     write_solomon(deviceID,0xBF,0xFF51); // cmd=FE, data=08
 	
-	// added commands to address strobing
-	write_solomon(deviceID,0xBF,0x08fe);
 	//write_solomon(deviceID,0xBF,0x9889);
 	//write_solomon(deviceID,0xBF,0x068a);
 	//write_solomon(deviceID,0xBF,0x708b);
-	write_solomon(deviceID,0xBF,0xE689);
-	write_solomon(deviceID,0xBF,0x8E8a);
-	write_solomon(deviceID,0xBF,0x118b);
-	write_solomon(deviceID,0xBF,0x00fe);
+	
+	// removed for test
+	//write_solomon(deviceID,0xBF,0xE689);
+	//write_solomon(deviceID,0xBF,0x8E8a);
+	//write_solomon(deviceID,0xBF,0x118b);
+
+	set_strobing(deviceID,60,20);
+	
+    write_solomon(deviceID,0xBF,0xFF51); // cmd=FE, data=08
 
 	
 #else

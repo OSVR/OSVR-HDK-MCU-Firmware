@@ -48,6 +48,8 @@ void write_solomon_pair(uint8_t channel, uint8_t address, uint16_t data1, uint16
 void raise_sdc(uint8_t channel);
 void lower_sdc(uint8_t channel);
 void Solomon_Reset(uint8_t SolomonNum);
+void set_strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage);
+
 
 // read the solomon ID
 uint16_t read_Solomon_ID(uint8_t channel);

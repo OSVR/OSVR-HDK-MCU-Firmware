@@ -785,6 +785,12 @@ void ProcessSPICommand(void)
             WriteLn("Wrong Solomon ID");
         break;
     }
+    case 'p': // persistance settings
+	case 'P':
+    {
+		set_strobing(HexDigitToDecimal(2),HexPairToDecimal(3),HexPairToDecimal(5));
+	    break;
+    }
     case '0': // solomon reset
     {
         Solomon_Reset(HexDigitToDecimal(2));

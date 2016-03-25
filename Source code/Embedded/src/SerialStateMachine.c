@@ -66,6 +66,7 @@
 #include "main.h"
 #include "TimingDebug.h"
 #include <util/delay.h>
+#include "my_hardware.h"
 
 #define USBNotConnected		0
 #define AwaitingCommand		1
@@ -199,56 +200,7 @@ void ProcessHDMICommand(void);
     void ProcessTMDSCommand(void);
 #endif
 
-#define SIGNATURE_PAGE 0 // EEPROM page where Sensics signature is stored
-/**
- * Set all values of a memory buffer to a given value
- */
-static void set_buffer(uint8_t *buffer, uint8_t value)
-{
-    uint8_t i;
-
-    for (i = 0; i < EEPROM_PAGE_SIZE; i++) {
-        buffer[i] = value;
-    }
-}
-
-
-/**
- * Check if an EEPROM page is equal to a memory buffer
- */
-static bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer)
-{
-    uint8_t i;
-    char Msg[10];
-
-    for (i = 0; i < EEPROM_PAGE_SIZE; i++) {
-        //WriteLn("+");
-        if (nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i) != buffer[i]) {
-            WriteLn("---");
-            sprintf(Msg,"%d %d %d",nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i) ,buffer[i],i);
-            WriteLn(Msg);
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-
-/*void eeprom_write_block (void *__src, uint32_t __dst, size_t __n)
-
-{
-	//nvm_write(INT_EEPROM,__dst,__src,__n);
-};
-
-void eeprom_read_block (void *__dst, const uint32_t __src, size_t __n)
-
-{
-	//nvm_read(INT_EEPROM, __src, __dst,__n);
-};*/
-
-
+	
 // To do: move this to a util module
 
 // converts hex digit to decimal equivalent. Works for upper and lower case. If not found, returns 0.
@@ -753,6 +705,27 @@ void ProcessSPICommand(void)
 		#endif
 		break;
 	}
+	#ifdef BNO070
+	case 'G':
+	case 'g':
+	{
+		if (CommandToExecute[2]=='1')
+		{
+			SELECT_GRV=1;
+			WriteLn("Game rotation vector");
+		}
+		else if (CommandToExecute[2]=='0')
+		{
+			SELECT_GRV=0;
+			WriteLn("Rotation vector");
+		}
+		else
+			WriteLn("Bad parameter");
+			
+		SetConfigValue(GRVOffset,SELECT_GRV);
+		break;
+	}
+	#endif
 	case 'f':
 	case 'F':
 	{
@@ -1049,6 +1022,10 @@ void ProcessFPGACommand(void)
         ioport_toggle_pin_level(Side_by_side_A);
 #endif
         ioport_toggle_pin_level(Side_by_side_B);
+		#ifdef OSVRHDK
+			SideBySideMode=~SideBySideMode;
+			SetConfigValue(SideBySideOffset,SideBySideMode);
+		#endif
         break;
     }
     case '0':

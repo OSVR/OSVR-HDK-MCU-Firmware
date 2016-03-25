@@ -15,4 +15,6 @@ void InitSerialState(void);
 void ProcessIncomingChar(char CharReceived);
 void ProcessCommand(void);
 
+
+
 #endif /* SERIALSTATEMACHINE_H_ */

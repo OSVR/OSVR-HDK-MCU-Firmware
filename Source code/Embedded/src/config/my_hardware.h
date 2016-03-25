@@ -78,6 +78,8 @@ uint8_t actualCEC_1_ADDR;
 void custom_board_init(void); // Sensics-specific initialization of the hardware
 void set_pwm_values(uint8_t Display1, uint8_t Display2); // sets pwm values for each display
 
+
+
 // indicates version of HDK, e.g. 1.1, 1.2, 1.3
 extern uint8_t HDK_Version_Major;
 extern uint8_t HDK_Version_Minor;
@@ -85,6 +87,23 @@ extern char ProductName[];
 
 // BNO070 will use INT0 vector of PORTD
 #define BNO070_ISR() ISR(PORTD_INT0_vect)
+
+#define SIGNATURE_PAGE 0 // EEPROM page where Sensics signature is stored
+
+#define CONFIGURATION_PAGE 1	// EEPROM page where configuration is stored
+
+#define SBSOffset	0 			// Side-by-side settings
+#define PersistenceOffset	4	//Persistence refresh rate
+#define PersistencePercentOffset 8	// Persistence percent
+#define SideBySideOffset 12	// Persistence percent
+#define GRVOffset 16 // BNO game rotation vector mode
+
+void set_buffer(uint8_t *buffer, uint8_t value);
+bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer);
+bool SetConfigValue(uint8_t offset, uint8_t value);
+uint8_t GetConfigValue(uint8_t offset);
+bool IsConfigOffsetValid(uint8_t offset);
+bool SetConfigValue(uint8_t offset, uint8_t value);
 
 
 #endif /* MY_HARDWARE_H_ */

@@ -12,6 +12,7 @@
 #include "Console.h"
 #include "GlobalOptions.h"
 #include "delay.h"
+#include <stdio.h>
 
 uint8_t HDK_Version_Major=1;
 uint8_t HDK_Version_Minor=2; // set 1.2 as default version
@@ -90,6 +91,19 @@ void custom_board_init(void)
     ioport_configure_pin(Side_by_side_B ,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
 #endif
 
+#ifdef OSVRHDK
+
+	if (IsConfigOffsetValid(SideBySideOffset))
+	{
+		if (GetConfigValue(PersistenceOffset)==0)
+			ioport_set_pin_low(Side_by_side_B); // normal mode
+		else
+			ioport_set_pin_high(Side_by_side_B); // SBS mode
+	}
+	else
+		SetConfigValue(SideBySideOffset,0);
+#endif
+
 #ifndef OSVRHDK
 
     ioport_configure_pin(NXP2_Reset_Pin,IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
@@ -157,3 +171,85 @@ void custom_board_init(void)
 	#endif
 
 };
+
+
+/**
+ * Set all values of a memory buffer to a given value
+ */
+void set_buffer(uint8_t *buffer, uint8_t value)
+{
+    uint8_t i;
+
+    for (i = 0; i < EEPROM_PAGE_SIZE; i++) {
+        buffer[i] = value;
+    }
+}
+
+
+/**
+ * Check if an EEPROM page is equal to a memory buffer
+ */
+bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer)
+{
+    uint8_t i;
+    char Msg[10];
+
+    for (i = 0; i < EEPROM_PAGE_SIZE; i++) {
+        //WriteLn("+");
+        if (nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i) != buffer[i]) {
+            WriteLn("---");
+            sprintf(Msg,"%d %d %d",nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i) ,buffer[i],i);
+            WriteLn(Msg);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+void eeprom_write_byte(uint8_t page_addr, uint8_t offset, uint8_t value)
+
+{
+	nvm_eeprom_write_byte(EEPROM_PAGE_SIZE+offset, value);
+}
+
+uint8_t eeprom_read_byte(uint8_t page_addr, uint8_t offset)
+
+{
+	return nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE+offset);
+}
+
+bool IsConfigOffsetValid(uint8_t offset)
+
+// determines if value at particular offset in config page is valid
+
+{
+	// for each value, next byte needs to be value+37, next byte reverse bitwise of value and next byte 65
+	
+	bool Valid=true;
+	if ( (( eeprom_read_byte(CONFIGURATION_PAGE,offset)+37 ) & 0xff) != eeprom_read_byte(CONFIGURATION_PAGE,offset+1))
+		Valid=false;
+	if ( eeprom_read_byte(CONFIGURATION_PAGE,offset)  != (eeprom_read_byte(CONFIGURATION_PAGE,offset+2) ^ 0xff ))
+		Valid=false;
+	if ( eeprom_read_byte(CONFIGURATION_PAGE,offset+3)  != 65)
+		Valid=false;
+	return Valid;
+}
+
+uint8_t GetConfigValue(uint8_t offset)
+
+{
+	return eeprom_read_byte(CONFIGURATION_PAGE,offset);
+}
+
+bool SetConfigValue(uint8_t offset, uint8_t value)
+
+{
+	eeprom_write_byte(CONFIGURATION_PAGE,offset, value);
+	eeprom_write_byte(CONFIGURATION_PAGE,offset+1, (value+37) & 0xff);
+	eeprom_write_byte(CONFIGURATION_PAGE,offset+2, value ^ 0xff);
+	eeprom_write_byte(CONFIGURATION_PAGE,offset+3, 65);
+}
+
+

@@ -36,6 +36,9 @@ bool init_solomon_spi(uint8_t deviceID);
 void select_solomon(uint8_t channel);
 void deselect_solomon(void);
 
+uint8_t Strobing_rate = 60;
+uint8_t Strobing_percent = 80;
+
 bool init_solomon_spi(uint8_t deviceID)
 
 {
@@ -81,6 +84,12 @@ bool SolomonInitialized=false;
 
 void set_strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 {
+
+	Strobing_rate = refresh;
+	SetConfigValue(PersistenceOffset,Strobing_rate);
+	
+	Strobing_percent = percentage;
+	SetConfigValue(PersistencePercentOffset,Strobing_percent);
 
 	// added commands to address strobing
 	write_solomon(deviceID,0xBF,0x08fe);
@@ -284,7 +293,7 @@ bool init_solomon_device(uint8_t deviceID)
 	//write_solomon(deviceID,0xBF,0x8E8a);
 	//write_solomon(deviceID,0xBF,0x118b);
 
-	set_strobing(deviceID,60,20);
+	set_strobing(deviceID,Strobing_rate, Strobing_percent);
 	
     write_solomon(deviceID,0xBF,0xFF51); // cmd=FE, data=08
 

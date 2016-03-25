@@ -54,6 +54,9 @@ void set_strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage);
 // read the solomon ID
 uint16_t read_Solomon_ID(uint8_t channel);
 
+// strobing settings
+extern uint8_t Strobing_rate;
+extern uint8_t Strobing_percent;
 
 
 #endif /* SOLOMON_H_ */

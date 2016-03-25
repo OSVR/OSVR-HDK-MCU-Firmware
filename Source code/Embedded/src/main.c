@@ -86,6 +86,22 @@ bool LastFPGALockStatus=0; // last state of FPGA_unlocked pin
 void HandleHDMI(void);
 
 
+void load_configuration(void)
+
+
+{
+	if (IsConfigOffsetValid(PersistenceOffset))
+		Strobing_rate=GetConfigValue(PersistenceOffset);
+	else
+		SetConfigValue(PersistenceOffset,Strobing_rate);
+		
+	if (IsConfigOffsetValid(PersistencePercentOffset))
+		Strobing_percent=GetConfigValue(PersistencePercentOffset );
+	else
+		SetConfigValue(PersistencePercentOffset,Strobing_percent);
+		
+}
+
 /*! \brief Main function. Execution starts here.
  */
 int main(void)
@@ -111,7 +127,8 @@ int main(void)
     ui_init();
     ui_powerdown();
 
-
+	load_configuration();
+		
     init_solomon();
 
 

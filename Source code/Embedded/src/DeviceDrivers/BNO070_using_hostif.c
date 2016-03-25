@@ -20,8 +20,6 @@
 #include "util/delay.h"
 #include "Boot.h"
 
-/* Set this to 1 to report GRV instead of standard RV */
-#define SELECT_GRV 1
 /* Define this to enable the calibrated gyro reports and stuff them in the USB reports at offset 10 */
 #define REPORT_GYRO 1
 #define REPORT_ACC 0
@@ -42,6 +40,9 @@ bool BNO070Active=false;
 uint8_t BNO070_Report[USB_REPORT_SIZE];
 bool TWI_BNO070_PORT_initialized=false; // true if already initialized
 uint8_t BNOReportVersion; // version 1 or 3 depending on whether velocity is being reported
+
+/* Set this to 1 to report GRV instead of standard RV */
+uint8_t SELECT_GRV=1; // When set to 1, the system will use Game Rotation Vector (GRV) which does not align to magnetic North.  When set to 0, the system will use Rotation Vector (RV) which will always try to have its 0 degree heading aligned with magnetic North. 
 
 sensorhub_ProductID_t BNO070id;
 Bool BNO_supports_400Hz=false; // true if firmware is new enough to support higher-rate reads
@@ -444,6 +445,12 @@ bool init_BNO070(void)
 {
     int result;
 
+	// determine if we are in GRV or RV mode
+	if (IsConfigOffsetValid(GRVOffset))
+		SELECT_GRV=GetConfigValue(GRVOffset);
+	else
+		SetConfigValue(GRVOffset,GRVOffset);
+	
     // Clear BNO070_Report so we don't send garbage out the USB.
     memset(BNO070_Report, 0, sizeof(BNO070_Report));
 

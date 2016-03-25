@@ -21,6 +21,7 @@ typedef struct BNO070_Stats_s BNO070_Stats_t;
 
 extern bool BNO070Active;
 extern sensorhub_ProductID_t BNO070id;
+extern uint8_t SELECT_GRV; 
 
 bool init_BNO070(void);
 void SimReset_BNO070(void);
@@ -40,4 +41,5 @@ void BNO_Yield(void);
 
 void Update_BNO_Report_Header(void); // update message header to reflect video status
 uint8_t Get_BNO_Report_Header(void); // for debug, returns first byte of BNO message header
+
 #endif /* BNO070_H_ */

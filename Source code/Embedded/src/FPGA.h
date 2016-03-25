@@ -9,6 +9,8 @@
 #ifndef FPGA_H_
 #define FPGA_H_
 
+extern bool SideBySideMode;
+
 void FPGA_reset(void);
 void FPGA_write(uint8_t FPGANun, uint8_t Command, uint8_t Value);
 uint8_t FPGA_read(uint8_t FPGANun, uint8_t Command);

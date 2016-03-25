@@ -10,6 +10,8 @@
 #include "my_hardware.h"
 #include "Console.h"
 
+bool SideBySideMode=false;
+
 void FPGA_reset(void)
 
 {

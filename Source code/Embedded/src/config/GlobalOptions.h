@@ -12,7 +12,7 @@
 #include "VariantOptions.h"
 
 #define MajorVersion	1
-#define MinorVersion	92
+#define MinorVersion	93
 
 #define TMFL_TDA19971 // same reasons
 
@@ -35,7 +35,7 @@ extern char Msg[];
 #define NXP_TWI_SPEED	50000 //!< TWI data transfer rate
 
 #ifdef BNO070
-	#define MeasurePerformance // if defined, performance is being recorded for BNO work
+	//#define MeasurePerformance // if defined, performance is being recorded for BNO work, with some performance impact
 	#define BNO_TWI_SPEED	400000 //!< TWI data transfer rate
 #endif
 

@@ -78,7 +78,7 @@
 #ifdef OSVRHDK
 	#define DYNAMIC_PRODUCT_NAME			// if true, product name is reported based on detected configuration
 	#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"
-	#define  USB_DEVICE_PRODUCT_NAME          "OSVR HDK 1.2"
+	#define  USB_DEVICE_PRODUCT_NAME          "OSVR HDK"
 	#define  USB_DEVICE_SERIAL_NAME           "OSVR111" // Disk SN for MSC
 #else
 	#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"

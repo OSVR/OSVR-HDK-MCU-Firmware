@@ -57,7 +57,9 @@ void solomon_delay_ms(uint16_t ms)
 	while (ms>0)
 	{
 		delay_ms(1);
+		#ifdef OSVRHDK
 		BNO_Yield();
+		#endif
 		ms--;
 	}
 }

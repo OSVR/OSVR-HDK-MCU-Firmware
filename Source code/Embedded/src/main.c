@@ -67,6 +67,7 @@
 	#include "string.h"
 #endif
 
+
 #include "USB.h"
 
 #include "main.h"
@@ -211,6 +212,16 @@ int main(void)
 		VideoLost=false;
 	}
 	
+
+#ifdef DSIGHT
+	if (NewVideoDetected)
+	{
+		delay_ms(1000);
+		init_solomon_device(Solomon1);
+		init_solomon_device(Solomon2);
+	}
+#endif
+		
 		
     //ProgramMTP0();
 
@@ -259,7 +270,9 @@ int main(void)
 
 
 #ifdef BNO070
+	#ifdef OSVRHDK
 		BNO_Yield();
+	#endif
 #endif
 
 #ifdef TMDS422

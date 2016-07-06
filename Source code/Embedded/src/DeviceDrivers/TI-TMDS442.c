@@ -10,6 +10,7 @@
 #include "TI-TMDS442.h"
 #include "GlobalOptions.h"
 #include "Console.h"
+#include "Solomon.h"
 #include "nxp/i2c.h"
 #include "my_hardware.h"
 
@@ -78,6 +79,11 @@ void ProgramHDMISwitch(void)
         // switch to side by side mode as there is one input
         ioport_set_pin_high(Side_by_side_A);
         ioport_set_pin_high(Side_by_side_B);
+		init_solomon_device(Solomon1);
+		init_solomon_device(Solomon2);
+		delay_ms(1000);
+		init_solomon_device(Solomon1);
+		init_solomon_device(Solomon2);
         break;
     }
     case 2: // just input B
@@ -88,6 +94,11 @@ void ProgramHDMISwitch(void)
         // switch to side by side mode as there is one input
         ioport_set_pin_high(Side_by_side_A);
         ioport_set_pin_high(Side_by_side_B);
+		init_solomon_device(Solomon1);
+		init_solomon_device(Solomon2);
+		delay_ms(1000);
+		init_solomon_device(Solomon1);
+		init_solomon_device(Solomon2);
         break;
     }
     case 3: // both inputs
@@ -98,6 +109,11 @@ void ProgramHDMISwitch(void)
         // switch to regular (not side-by-side) mode as there are two inputs
         ioport_set_pin_low(Side_by_side_A);
         ioport_set_pin_low(Side_by_side_B);
+		init_solomon_device(Solomon1);
+		init_solomon_device(Solomon2);
+		delay_ms(1000);
+		init_solomon_device(Solomon1);
+		init_solomon_device(Solomon2);
         break;
     }
     }

@@ -699,7 +699,8 @@
         <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
       </AvrGcc>
     </ToolchainSettings>
-    <PostBuildEvent>copy "$(OutputDirectory)\$(OutputFileName).hex" "$(SolutionDir)$(OutputFileName)-$(Configuration).hex"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\" />

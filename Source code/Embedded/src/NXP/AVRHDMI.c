@@ -1603,12 +1603,17 @@ uint8_t Get_HDMI_Status()
 // returns byte showing HDMI status. This is used for reporting video mode in USB reports
 {
 	uint8_t Result=0;
+	#ifdef OSVRHDK
 	if (!ioport_get_pin_level(FPGA_unlocked))
 	{
 		Result+=1;
 		if (PortraitMode)
 			Result+=2;
 	}
+	#else
+	if (PortraitMode)
+		Result+=2;
+	#endif
 	return Result;
 }
 

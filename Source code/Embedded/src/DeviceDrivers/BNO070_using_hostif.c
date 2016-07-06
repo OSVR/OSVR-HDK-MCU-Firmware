@@ -706,6 +706,7 @@ uint8_t Get_BNO_Report_Header() // for debug, returns first byte of BNO message 
 
 }
 
+#ifdef OSVRHDK
 void BNO_Yield()
 {
 	#ifdef BNO070
@@ -720,4 +721,5 @@ void BNO_Yield()
 	}
 	#endif
 }
+#endif
 #endif

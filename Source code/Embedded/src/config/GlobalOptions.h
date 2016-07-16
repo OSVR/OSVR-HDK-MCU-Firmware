@@ -26,7 +26,7 @@
 #endif
 
 
-#define HDMI_DEBUG
+//#define HDMI_DEBUG
 
 extern char Msg[];
 #define TMFL_NO_RTOS
@@ -38,6 +38,8 @@ extern char Msg[];
 	//#define MeasurePerformance // if defined, performance is being recorded for BNO work, with some performance impact
 	#define BNO_TWI_SPEED	400000 //!< TWI data transfer rate
 #endif
+
+//#define DISABLE_NXP // for debug - disables access to HDMI chips
 
 #define USB_REPORT_SIZE		16
 

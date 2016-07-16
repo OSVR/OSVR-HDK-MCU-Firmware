@@ -699,7 +699,9 @@ void ProcessSPICommand(void)
 	{
 		WriteLn("Display on");
 		DisplayOn(Solomon1);
+		#ifndef DISABLE_NXP
 		UpdateResolutionDetection();
+		#endif
 		#ifdef BNO070
 			Update_BNO_Report_Header();
 		#endif
@@ -731,7 +733,9 @@ void ProcessSPICommand(void)
 	{
 		WriteLn("Display off");
 		DisplayOff(Solomon1);
+		#ifndef DISABLE_NXP
 		UpdateResolutionDetection();
+		#endif
 		#ifdef BNO070
 			Update_BNO_Report_Header();
 		#endif

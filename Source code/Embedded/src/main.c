@@ -356,6 +356,7 @@ int main(void)
 void HandleHDMI()
 
 {
+	#ifndef DISABLE_NXP
 	HDMITask();
 	if (NewVideoDetected)
 	{
@@ -402,6 +403,7 @@ void HandleHDMI()
 		DisplayOff(Solomon2);
 #endif
 	}
+#endif
 }
 
 

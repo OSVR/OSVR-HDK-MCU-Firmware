@@ -2,7 +2,7 @@
  * USB.c
  *
  * Created: 10/23/2015 5:33:42 PM
- *  Author: AdminNoPW
+ *  Author: Sensics
  */
 
 // usb events

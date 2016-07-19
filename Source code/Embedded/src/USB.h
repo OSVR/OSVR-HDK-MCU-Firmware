@@ -2,7 +2,7 @@
  * USB.h
  *
  * Created: 10/23/2015 5:32:56 PM
- *  Author: AdminNoPW
+ *  Author: Sensics
  */
 
 #ifndef USB_H_

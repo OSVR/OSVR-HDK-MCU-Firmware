@@ -2,7 +2,7 @@
  * SingleDisplayNXPSolomonFPGA.h
  *
  * Created: 7/19/2016 10:12:25 AM
- *  Author: Ryan
+ *  Author: Sensics
  */
 
 #ifndef SINGLEDISPLAYNXPSOLOMONFPGA_H_

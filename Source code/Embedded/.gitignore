@@ -4,6 +4,6 @@
 /Debug - DFU/
 /Release - DFU/
 
-/dSight_Sharp_LCD/
-/HDK_OLED/
-/HDK_Sharp_LCD/
+dSight_Sharp_LCD/
+HDK_OLED/
+HDK_Sharp_LCD/

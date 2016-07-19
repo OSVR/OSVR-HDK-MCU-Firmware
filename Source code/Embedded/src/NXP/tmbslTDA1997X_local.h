@@ -1,6 +1,5 @@
 #include "GlobalOptions.h"
-
-
+#include "NXP_AVR_Internal.h"
 
 
 /**
@@ -36,7 +35,7 @@
 #define ACC_REG(a,p)            (UInt16)(((p)<<8)|(a))
 //#define RETIF(cond, rslt) {if ((cond)){return (rslt);} }
 #define RETIF(cond, rslt)       if ((cond)) \
-	{PRINTIF(1998,__LINE__); \
+	{NXP_Private_PRINTIF(1998,__LINE__); \
 	return (rslt);\
 	}
 

@@ -75,7 +75,7 @@ extern "C" {
 /* macro for quick error handling */
 //#define RETIF(cond, rslt) if ((cond)){WriteLn("rx-iw"); return (rslt);}
 #define RETIF(cond, rslt)       if ((cond)) \
-	{PRINTIF(1998,__LINE__); \
+	{NXP_Private_PRINTIF(1998,__LINE__); \
 	return (rslt);\
 	}
 /* Timer tick value in ms (defined in the "RTX_Config.c" file) */

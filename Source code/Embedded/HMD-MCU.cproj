@@ -863,6 +863,12 @@
     <None Include="src\Variants\dSight_Sharp_LCD\VariantOptions.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\NXP\NXP_AVR_Internal.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\NXP\NXP_AVR_Internal.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\TimingDebug.c">
       <SubType>compile</SubType>
     </Compile>

@@ -172,14 +172,14 @@ int main(void)
 
 #ifndef DISABLE_NXP
 
-    Init_HDMI(); // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has already been initizliaed
+    NXP_Init_HDMI(); // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has already been initizliaed
 	
 	if (NewVideoDetected)
 	{
 		WriteLn("Video at start");
 #ifdef Solomon1_SPI
 		DisplayOn(Solomon1);
-		UpdateResolutionDetection();
+		NXP_Update_Resolution_Detection();
 		#ifdef BNO070
 			Update_BNO_Report_Header();
 		#endif
@@ -200,7 +200,7 @@ int main(void)
 	{
 #ifdef Solomon1_SPI
 		DisplayOff(Solomon1);
-		UpdateResolutionDetection();
+		NXP_Update_Resolution_Detection();
 		#ifdef BNO070
 			Update_BNO_Report_Header();
 		#endif
@@ -303,7 +303,7 @@ int main(void)
 
 #ifdef Solomon1_SPI
 					DisplayOff(Solomon1);
-					UpdateResolutionDetection();
+					NXP_Update_Resolution_Detection();
 					#ifdef BNO070
 						Update_BNO_Report_Header();
 					#endif
@@ -333,7 +333,7 @@ int main(void)
 					LastFPGALockStatus=NewFPGALockStatus;
 #ifdef Solomon1_SPI
 					DisplayOn(Solomon1);
-					UpdateResolutionDetection();
+					NXP_Update_Resolution_Detection();
 					#ifdef BNO070
 					Update_BNO_Report_Header();
 					#endif
@@ -357,7 +357,7 @@ void HandleHDMI()
 
 {
 	#ifndef DISABLE_NXP
-	HDMITask();
+	NXP_HDMI_Task();
 	if (NewVideoDetected)
 	{
 		NewVideoDetected=false;
@@ -367,7 +367,7 @@ void HandleHDMI()
 		init_solomon_device(Solomon1); // todo: add back after debug of board
 	#endif
 		DisplayOn(Solomon1);
-		UpdateResolutionDetection();
+		NXP_Update_Resolution_Detection();
 		#ifdef BNO070
 		Update_BNO_Report_Header();
 		#endif
@@ -394,7 +394,7 @@ void HandleHDMI()
 				
 #ifdef Solomon1_SPI
 		DisplayOff(Solomon1);
-		UpdateResolutionDetection();
+		NXP_Update_Resolution_Detection();
 		#ifdef BNO070
 			Update_BNO_Report_Header();
 		#endif

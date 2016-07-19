@@ -5,7 +5,7 @@
 //#include "stdafx.h"
 #include "GlobalOptions.h"
 #include "Console.h"
-
+#include "NXP_AVR_Internal.h"
 
 
 #include <asf.h>
@@ -481,9 +481,9 @@ tmExAppliColorSpaceManagement_t gColorSpaceManagement0;
 
 #ifdef HDMI_DEBUG
     //#define x	;
-    //#define x	Write("AV-"); PRINTIF(999,__LINE__);
+    //#define x	Write("AV-"); NXP_Private_PRINTIF(999,__LINE__);
 #else
-    //#define x	PRINTIF(999,__LINE__);
+    //#define x	NXP_Private_PRINTIF(999,__LINE__);
     //#define x	;
 #endif
 
@@ -530,11 +530,11 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 #ifndef BYPASS_FIRST_NXP
     if (InstanceOpened0==false)
     {
-        PRINTIF(tmdlHdmiRxOpenM(&gDlHdmiRxInstance0, 0), __LINE__);
+        NXP_Private_PRINTIF(tmdlHdmiRxOpenM(&gDlHdmiRxInstance0, 0), __LINE__);
 
 #ifdef TMFL_TDA19972_FAMILY
         /* Set HPD low */
-        PRINTIF(tmdlHdmiRxManualHPD(gDlHdmiRxInstance0, TMDL_HDMIRX_HPD_LOW), __LINE__);
+        NXP_Private_PRINTIF(tmdlHdmiRxManualHPD(gDlHdmiRxInstance0, TMDL_HDMIRX_HPD_LOW), __LINE__);
 #endif
 
         
@@ -562,7 +562,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
                                         handle data related events (typically infoframes) */
         /* 5: pInfoCallback             Pointer to the callback function that will
                                         handle new informative events (input locked ...)*/
-        PRINTIF(tmdlHdmiRxRegisterCallbacks(gDlHdmiRxInstance0,
+        NXP_Private_PRINTIF(tmdlHdmiRxRegisterCallbacks(gDlHdmiRxInstance0,
                                             Null,
                                             (ptmdlHdmiRxActivityCallback_t) digitalActivityCallback0,
                                             (ptmdlHdmiRxDataCallback_t)     infoFrameCallback0,
@@ -586,7 +586,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 
     
 #ifndef BYPASS_FIRST_NXP
-    PRINTIF(tmdlHdmiRxInstanceSetup(gDlHdmiRxInstance0, &gDlHdmiRxSetupInfo0), __LINE__);
+    NXP_Private_PRINTIF(tmdlHdmiRxInstanceSetup(gDlHdmiRxInstance0, &gDlHdmiRxSetupInfo0), __LINE__);
 #endif
     
 
@@ -597,19 +597,19 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 
 #ifdef OSVRHDK
     /* The internal EDIDs are enabled, so we can now load EDID data into embedded EDID memory */
-    PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, (UInt8 *) edid1080p6050xvYCC, (UInt16 *) sPAEdid, Reg_EDID_SPA_SUB), __LINE__);
+    NXP_Private_PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, (UInt8 *) edid1080p6050xvYCC, (UInt16 *) sPAEdid, Reg_EDID_SPA_SUB), __LINE__);
 #endif
 
     /* Load DDC and RT data into embedded memory */ //
 #ifndef BYPASS_FIRST_NXP
-    PRINTIF(tmdlHdmiRxLoadConfigData(gDlHdmiRxInstance0, (UInt8 *) DDC_Config0, (UInt8 *) RT_Config), __LINE__);
+    NXP_Private_PRINTIF(tmdlHdmiRxLoadConfigData(gDlHdmiRxInstance0, (UInt8 *) DDC_Config0, (UInt8 *) RT_Config), __LINE__);
 
 
     /* Set HPD high */
-    PRINTIF(tmdlHdmiRxManualHPD(gDlHdmiRxInstance0, TMDL_HDMIRX_HPD_HIGH), __LINE__);
+    NXP_Private_PRINTIF(tmdlHdmiRxManualHPD(gDlHdmiRxInstance0, TMDL_HDMIRX_HPD_HIGH), __LINE__);
 #endif
 #else
-    PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, (UInt8 *) edid1080p6050xvYCC, (UInt16 *) sPAEdid, sPAOffsetEdid), __LINE__);
+    NXP_Private_PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, (UInt8 *) edid1080p6050xvYCC, (UInt16 *) sPAEdid, sPAOffsetEdid), __LINE__);
     
 #endif
 
@@ -623,12 +623,12 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     /* input A > input B > input C > input D */
 
 #ifndef BYPASS_FIRST_NXP
-    PRINTIF(tmdlHdmiRxSelectInput(gDlHdmiRxInstance0, TMDL_HDMIRX_INPUT_HDMI_A), __LINE__);
+    NXP_Private_PRINTIF(tmdlHdmiRxSelectInput(gDlHdmiRxInstance0, TMDL_HDMIRX_INPUT_HDMI_A), __LINE__);
 #endif
     /* Set bypass of the color space matrix => no conversion */
     /* Blanking codes values depend on the output color space (RGB or YCbCr), if Null they are not set */
 #ifndef BYPASS_FIRST_NXP
-    PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0, TMDL_HDMIRX_CONVERSIONMATRIX_BYPASS, Null, Null), __LINE__);
+    NXP_Private_PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0, TMDL_HDMIRX_CONVERSIONMATRIX_BYPASS, Null, Null), __LINE__);
 #endif
 
 
@@ -637,7 +637,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     /* Set output mode to 4:4:4, blanking and timing code are not inserted, clock mode is single edge */
 
 #ifndef BYPASS_FIRST_NXP
-    PRINTIF(tmdlHdmiRxSetVideoOutputFormat(gDlHdmiRxInstance0, TMDL_HDMIRX_OUTPUTFORMAT_444, False, False, TMDL_HDMIRX_OUTCLKMODE_SINGLE_EDGE), __LINE__); 
+    NXP_Private_PRINTIF(tmdlHdmiRxSetVideoOutputFormat(gDlHdmiRxInstance0, TMDL_HDMIRX_OUTPUTFORMAT_444, False, False, TMDL_HDMIRX_OUTCLKMODE_SINGLE_EDGE), __LINE__); 
 #endif
     
 
@@ -678,7 +678,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 
     /* Set audio to I2S 32 bits format and audio sysclk frequency to 256FS */
 #ifndef BYPASS_FIRST_NXP
-    PRINTIF(tmdlHdmiRxSetAudioOutputFormat(gDlHdmiRxInstance0,
+    NXP_Private_PRINTIF(tmdlHdmiRxSetAudioOutputFormat(gDlHdmiRxInstance0,
                                            TMDL_HDMIRX_AUDIOFORMAT_I2S32,
                                            TMDL_HDMIRX_AUDIOSYSCLK_256FS), __LINE__);
 #endif
@@ -689,8 +689,8 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 
     /* Enable detection of all the event */
 #ifndef BYPASS_FIRST_NXP
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ACTIVITY_DETECTED), __LINE__);                 /* New activity has been detected */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ACTIVITY_LOST), __LINE__);                     /* Activity has been lost */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ACTIVITY_DETECTED), __LINE__);                 /* New activity has been detected */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ACTIVITY_LOST), __LINE__);                     /* Activity has been lost */
 #endif
     
 
@@ -700,42 +700,42 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     // ISRC was developed by the international recording industry through the International Organisation for Standardisation (ISO) as a response to a need to identify sound and music video recordings
 #ifndef BYPASS_FIRST_NXP
 
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ISRC1_PACKET_RECEIVED), __LINE__);             /* ISRC1 packet has been received */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ISRC2_PACKET_RECEIVED), __LINE__);             /* ISRC2 packet has been received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ISRC1_PACKET_RECEIVED), __LINE__);             /* ISRC1 packet has been received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ISRC2_PACKET_RECEIVED), __LINE__);             /* ISRC2 packet has been received */
 
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ACP_PACKET_RECEIVED), __LINE__);               /* Audio Content Protection packet has been received */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AVI_INFOFRAME_RECEIVED), __LINE__);            /* Auxiliary Video Information infoframe has been received */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_SPD_INFOFRAME_RECEIVED), __LINE__);            /* Source product Description infoframe has been received */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUD_INFOFRAME_RECEIVED), __LINE__);            /* Audio infoframe has been received */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_MPS_INFOFRAME_RECEIVED), __LINE__);            /* MPEG Source infoframe has been received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ACP_PACKET_RECEIVED), __LINE__);               /* Audio Content Protection packet has been received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AVI_INFOFRAME_RECEIVED), __LINE__);            /* Auxiliary Video Information infoframe has been received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_SPD_INFOFRAME_RECEIVED), __LINE__);            /* Source product Description infoframe has been received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUD_INFOFRAME_RECEIVED), __LINE__);            /* Audio infoframe has been received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_MPS_INFOFRAME_RECEIVED), __LINE__);            /* MPEG Source infoframe has been received */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ENCRYPTION_DETECTED), __LINE__);               /* Indicates that the active digital input is receiving HDCP encrypted data */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_EESS_HDCP_DETECTED), __LINE__);                /* Indicates that the active digital input is receiving data in EESS mode */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_GBD_PACKET_RECEIVED), __LINE__);               /* Indicates a GAMUT packet has been received */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_SAMPLE_PACKET_DETECTED), __LINE__);      /* Indicates that audio samples packets are detected */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_HBR_PACKET_DETECTED), __LINE__);         /* Indicates that audio HBR packets are detected */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_OBA_PACKET_DETECTED), __LINE__);         /* Indicates that audio OBA packets are detected */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ENCRYPTION_DETECTED), __LINE__);               /* Indicates that the active digital input is receiving HDCP encrypted data */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_EESS_HDCP_DETECTED), __LINE__);                /* Indicates that the active digital input is receiving data in EESS mode */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_GBD_PACKET_RECEIVED), __LINE__);               /* Indicates a GAMUT packet has been received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_SAMPLE_PACKET_DETECTED), __LINE__);      /* Indicates that audio samples packets are detected */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_HBR_PACKET_DETECTED), __LINE__);         /* Indicates that audio HBR packets are detected */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_OBA_PACKET_DETECTED), __LINE__);         /* Indicates that audio OBA packets are detected */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_DST_PACKET_DETECTED), __LINE__);         /* Indicates that audio DST packets are detected */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_HDMI_DETECTED), __LINE__);                     /* Indicates that HDMI stream is detected */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DVI_DETECTED), __LINE__);                      /* Indicates that DVI stream is detected */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_NO_ENCRYPTION_DETECTED), __LINE__);            /* Indicates the the active digital input is not receiving HDCP encrypted data */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_OESS_HDCP_DETECTED), __LINE__);                /* Indicates that the active digital input is receiving data in OESS mode */
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AVI_AVMUTE_ACTIVE), __LINE__);                 /* AV mute active received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_DST_PACKET_DETECTED), __LINE__);         /* Indicates that audio DST packets are detected */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_HDMI_DETECTED), __LINE__);                     /* Indicates that HDMI stream is detected */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DVI_DETECTED), __LINE__);                      /* Indicates that DVI stream is detected */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_NO_ENCRYPTION_DETECTED), __LINE__);            /* Indicates the the active digital input is not receiving HDCP encrypted data */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_OESS_HDCP_DETECTED), __LINE__);                /* Indicates that the active digital input is receiving data in OESS mode */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AVI_AVMUTE_ACTIVE), __LINE__);                 /* AV mute active received */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AVI_AVMUTE_INACTIVE), __LINE__);               /* AV mute inactive received */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AVI_AVMUTE_INACTIVE), __LINE__);               /* AV mute inactive received */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_SAMPLE_FREQ_CHANGED), __LINE__);         /* Indicates that audio sampling frequency has changed */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_SAMPLE_FREQ_CHANGED), __LINE__);         /* Indicates that audio sampling frequency has changed */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_INPUT_LOCKED), __LINE__);                      /* Indicates that clocks are locked on the new active input */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_INPUT_LOCKED), __LINE__);                      /* Indicates that clocks are locked on the new active input */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_REPEATER), __LINE__);                          /* Indicates that the HDCP repeater authentication can start */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_REPEATER), __LINE__);                          /* Indicates that the HDCP repeater authentication can start */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_24BITS), __LINE__);            /* Indicates that deep color mode is 24 bits */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_24BITS), __LINE__);            /* Indicates that deep color mode is 24 bits */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_30BITS), __LINE__);            /* Indicates that deep color mode is 30 bits */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_30BITS), __LINE__);            /* Indicates that deep color mode is 30 bits */
     
-    PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_36BITS), __LINE__);            /* Indicates that deep color mode is 36 bits */
+    NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_36BITS), __LINE__);            /* Indicates that deep color mode is 36 bits */
 #endif
     
 
@@ -792,7 +792,7 @@ static void digitalActivityCallback0 (tmdlHdmiRxEvent_t event,
 		#ifdef Solomon1_SPI
 			#ifdef H546DLT01
 				DisplayOn(Solomon1);
-				UpdateResolutionDetection();
+				NXP_Update_Resolution_Detection();
 				#ifdef BNO070
 					Update_BNO_Report_Header();
 				#endif
@@ -920,7 +920,7 @@ static void infoFrameCallback0(tmdlHdmiRxEvent_t  event,
 
         /* Configure the receiver with the new color space */
         
-        PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
+        NXP_Private_PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
         
         break;
 
@@ -979,7 +979,7 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
 
 
         /* Detect the video resolution */
-        PRINTIF(tmdlHdmiRxDetectResolution(gDlHdmiRxInstance0, &resolutionID), __LINE__);
+        NXP_Private_PRINTIF(tmdlHdmiRxDetectResolution(gDlHdmiRxInstance0, &resolutionID), __LINE__);
 
         /* Display on the terminal the name of the detected resolution */
         HDMI_debug_progmem(cAutomaticDetectionOfResolution);
@@ -994,7 +994,7 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
 
         /* Configure the active input to the given resolution */
 
-        PRINTIF(tmdlHdmiRxConfigureInput(gDlHdmiRxInstance0, resolutionID), __LINE__);
+        NXP_Private_PRINTIF(tmdlHdmiRxConfigureInput(gDlHdmiRxInstance0, resolutionID), __LINE__);
 
         /* On "input locked" event, RGB color space is forced (the AVI infoframe is not received yet at this moment) */
         /* If an AVI infoframe is received later, the color space will be re-configured in the AVI infoframe callback */
@@ -1003,7 +1003,7 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
 
         /* Configure the receiver with the new color space */
         
-        PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
+        NXP_Private_PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
         
         break;
 
@@ -1019,7 +1019,7 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
 
         /* Configure the receiver with the new color space */
         
-        PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
+        NXP_Private_PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
         
         break;
 
@@ -1080,7 +1080,7 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
         WriteLn("Audio changed");
 #endif
         /* Get the new audio sampling frequency */
-        PRINTIF(tmdlHdmiRxGetAudioFrequency(gDlHdmiRxInstance0, &dstRate, &audioFreq), __LINE__);
+        NXP_Private_PRINTIF(tmdlHdmiRxGetAudioFrequency(gDlHdmiRxInstance0, &dstRate, &audioFreq), __LINE__);
 
         switch(audioFreq)
         {
@@ -1274,7 +1274,7 @@ static void storeResolution0(tmdlHdmiRxResolutionID_t resolutionID)
 
 
 
-void VideoOn(void)
+void NXP_Video_On(void)
 
 {
 	
@@ -1286,7 +1286,7 @@ void VideoOn(void)
 }
 
 
-void VideoOff(void)
+void NXP_Video_Off(void)
 
 {
 }
@@ -1318,7 +1318,7 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void)
         /* Input color space is RGB */
         /* As output color space is also RGB => no conversion to do */
         /* The blanking codes depend on the output color space => it will always be RGB in our case */
-        PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
+        NXP_Private_PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
                 TMDL_HDMIRX_CONVERSIONMATRIX_BYPASS,
                 Null,
                 &gRGBBlankingCode), __LINE__);
@@ -1356,7 +1356,7 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void)
             if(gColorSpaceManagement0.resolutionType == TMEX_APPLI_HDTV_RESOLUTION)
             {
                 HDMI_debug_progmem(cITU709); /* YCbCr ITU709 is used */
-                PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
+                NXP_Private_PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
                         TMDL_HDMIRX_CONVERSIONMATRIX_CUSTOM,
                         &TMEX_APPLI_CONVERSIONMATRIX_YCbCr709_RGBLimited,
                         &gRGBBlankingCode), __LINE__);
@@ -1364,7 +1364,7 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void)
             else
             {
                 HDMI_debug_progmem(cSMPTE170M);
-                PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
+                NXP_Private_PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
                         TMEX_APPLI_CONVERSIONMATRIX_YCbCr601_RGBLimited,
                         Null,
                         &gRGBBlankingCode), __LINE__);
@@ -1374,7 +1374,7 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void)
         case TMEX_APPLI_COLORIMETRY_SMPTE170_ITU601:
             /* YCbCr ITU601 is used */
             HDMI_debug_progmem(cSMPTE170M);
-            PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
+            NXP_Private_PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
                     TMEX_APPLI_CONVERSIONMATRIX_YCbCr601_RGBLimited,
                     Null,
                     &gRGBBlankingCode), __LINE__);
@@ -1382,7 +1382,7 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void)
 
         case TMEX_APPLI_COLORIMETRY_ITU709:
             HDMI_debug_progmem(cITU709);
-            PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
+            NXP_Private_PRINTIF(tmdlHdmiRxSetColorConversionMatrix(gDlHdmiRxInstance0,
                     TMDL_HDMIRX_CONVERSIONMATRIX_CUSTOM,
                     &TMEX_APPLI_CONVERSIONMATRIX_YCbCr709_RGBLimited,
                     &gRGBBlankingCode), __LINE__);
@@ -1401,49 +1401,9 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void)
 
 
 
-/*============================================================================*/
-/**
-    \brief   Function that prints the returned error codes
-
-    \param   Error code and line number
-
-    \return  None
-
- ******************************************************************************/
-void PRINTIF(uint16_t errCode, uint16_t lineNumber)
-{
-
-//	return;
-#ifdef HDMI_DEBUG
-    char OutString[20];
-    if(errCode != TM_OK)
-    {
-        sprintf(OutString,"E 0x%X, l %d",errCode, lineNumber);
-        if  (errCode==999)
-        {
-            sprintf(OutString,"l %d",lineNumber);
-            //return;
-        }
-        else
-        {
-            sprintf(OutString," " /*Error caught"*/);
-        }
-
-        if  (lineNumber==999)
-        {
-            sprintf(OutString,"l %d",errCode);
-            //return;
-        }
-
-        //MACRO_HDMI_DEBUG(OutString);
-        WriteLn(OutString);
-    }
-#endif
-}
 
 
-
-void Init_HDMI(void)
+void NXP_Init_HDMI(void)
 
 // performs initialization tasks for NXP
 
@@ -1473,7 +1433,7 @@ void Init_HDMI(void)
 
 
 
-void HDMITask(void)
+void NXP_HDMI_Task(void)
 // periodically called to address HDMI task
 
 {
@@ -1521,7 +1481,7 @@ void HDMITask(void)
         //WriteLn(Msg);
         //uint8_t CECInterrupt;
         //errCode = tmdlHdmiRxDebugReadI2CRegister(0, 0x80, 0xFC, 1, &CECInterrupt);
-        //PRINTIF(errCode, __LINE__);
+        //NXP_Private_PRINTIF(errCode, __LINE__);
         //sprintf(Msg,"CEC %x",CECInterrupt);
         //WriteLn(Msg);
         //if ((CECInterrupt & 2)>0) // bit 1 is HDMI interrupt
@@ -1529,7 +1489,7 @@ void HDMITask(void)
         {
 #ifndef SkipNXP1
             errCode = tmdlHdmiRxHandleInterrupt(0);
-            PRINTIF(errCode, __LINE__);
+            NXP_Private_PRINTIF(errCode, __LINE__);
 #endif
         }
     }
@@ -1537,7 +1497,7 @@ void HDMITask(void)
     {
         {
             //errCode = tmdlHdmiRxHandleInterrupt(0); 
-            //PRINTIF(errCode, __LINE__);
+            //NXP_Private_PRINTIF(errCode, __LINE__);
         }
     }
     //else
@@ -1551,7 +1511,7 @@ void HDMITask(void)
 
 #ifndef SkipNXP1
     errCode = tmdlHdmiRxHeartBeat(0);
-    PRINTIF(errCode, __LINE__);
+    NXP_Private_PRINTIF(errCode, __LINE__);
 #endif
 
 
@@ -1560,7 +1520,7 @@ void HDMITask(void)
 }
 
 
-void Report_HDMI_status()
+void NXP_Report_HDMI_status()
 
 {
 
@@ -1617,14 +1577,14 @@ uint8_t Get_HDMI_Status()
 	return Result;
 }
 
-void NXPSuspend(void)
+void NXP_Suspend(void)
 
 {
     tmbslTDA1997XSetPowerState(gDlHdmiRxInstance0,tmPowerSuspend);
     tmbslTDA1997XConfigureEDID(gDlHdmiRxInstance0,BSLHDMIRX_EDID_NACK_OFF,BSLHDMIRX_EDID_RESET_OFF,BSLHDMIRX_EDID_PD_OFF,BSLHDMIRX_EDID_PD_DDC_OFF);
 };
 
-void NXPResume(void)
+void NXP_Resume(void)
 
 {
     tmbslTDA1997XSetPowerState(gDlHdmiRxInstance0,tmPowerOn);
@@ -1634,14 +1594,14 @@ void NXPResume(void)
 
 
 
-void NXPDebug(bool bothSides)
+void NXP_Debug(bool bothSides)
 
 {
 }
 
 
 
-void HDMI_Reset(uint8_t HDMINum)
+void NXP_HDMI_Reset(uint8_t HDMINum)
 
 {
     if (HDMINum==1)
@@ -1675,7 +1635,7 @@ bslTDA1997XWriteI2C
 ); // definition for I2C routine
 
 
-void ProgramMTP0(void)
+void NXP_Program_MTP0(void)
 
 // program the MTP for the NXP
 
@@ -1752,7 +1712,7 @@ void ProgramMTP0(void)
 
 }
 
-void ProgramMTP1(void)
+void NXP_Program_MTP1(void)
 
 // program the MTP for the NXP
 
@@ -1829,7 +1789,7 @@ void ProgramMTP1(void)
 }
 
 // uses NXP to determine if we are in portrait or landscape mode and then updates USB report
-void UpdateResolutionDetection()
+void NXP_Update_Resolution_Detection()
 
 {
 	tmbslHdmiRxAsdMeasureInterlaced_t   pInterlaced;

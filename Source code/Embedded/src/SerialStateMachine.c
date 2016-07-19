@@ -700,7 +700,7 @@ void ProcessSPICommand(void)
 		WriteLn("Display on");
 		DisplayOn(Solomon1);
 		#ifndef DISABLE_NXP
-		UpdateResolutionDetection();
+		NXP_Update_Resolution_Detection();
 		#endif
 		#ifdef BNO070
 			Update_BNO_Report_Header();
@@ -734,7 +734,7 @@ void ProcessSPICommand(void)
 		WriteLn("Display off");
 		DisplayOff(Solomon1);
 		#ifndef DISABLE_NXP
-		UpdateResolutionDetection();
+		NXP_Update_Resolution_Detection();
 		#endif
 		#ifdef BNO070
 			Update_BNO_Report_Header();
@@ -961,12 +961,12 @@ void ProcessI2CCommand(void)
         };
         case '0':
         {
-            NXPSuspend();
+            NXP_Suspend();
             break;
         }
         case '1':
         {
-            NXPResume();
+            NXP_Resume();
             break;
         }
         };
@@ -1065,7 +1065,7 @@ void ProcessHDMICommand(void)
     case 'i':
     {
         WriteLn(";Init HDMI");
-        Init_HDMI();
+        NXP_Init_HDMI();
         WriteLn(";End init");
         break;
     }
@@ -1089,7 +1089,7 @@ void ProcessHDMICommand(void)
     case 'R':
     case 'r':
     {
-        Report_HDMI_status();
+        NXP_Report_HDMI_status();
         break;
     }
     case 'T':
@@ -1126,7 +1126,7 @@ void ProcessHDMICommand(void)
     }
     case '0':
     {
-        HDMI_Reset(HexDigitToDecimal(2));
+        NXP_HDMI_Reset(HexDigitToDecimal(2));
         break;
     }
     case 'M':
@@ -1136,14 +1136,14 @@ void ProcessHDMICommand(void)
         {
             WriteLn(";Program MTP");
             _delay_ms(50);
-            ProgramMTP0();
+            NXP_Program_MTP0();
         }
 		#ifndef OSVRHDK
         if (CommandBuffer[2]=='1')
         {
             WriteLn(";Program MTP1");
             _delay_ms(50);
-            ProgramMTP1();
+            NXP_Program_MTP1();
         }
 		#endif
         break;

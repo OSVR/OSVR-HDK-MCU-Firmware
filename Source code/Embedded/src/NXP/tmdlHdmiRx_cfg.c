@@ -36,6 +36,7 @@
 #include "tmdlHdmiRx_cfg.h"
 #include "tmbslTDA1997X_Functions.h"
 #include "Console.h"
+#include "NXP_AVR_Internal.h"
 
 
 #include <asf.h>
@@ -45,7 +46,7 @@
 
 #ifdef HDMI_DEBUG
     //#define x
-    //#define x	Write("dlcfg-"); PRINTIF(999,__LINE__);
+    //#define x	Write("dlcfg-"); NXP_Private_PRINTIF(999,__LINE__);
 #else
     //#define x	;
 #endif
@@ -563,7 +564,7 @@ tmdlHdmiRxDriverConfigTable_t driverConfigTable[MAX_UNITS] = {
 /* macro for quick error handling */
 //#define RETIF(cond, rslt) if ((cond)){WriteLn("Back rx-cfg"); return (rslt);}
 #define RETIF(cond, rslt)       if ((cond)) \
-	{Write("CFG:"); PRINTIF(1998,__LINE__); \
+	{Write("CFG:"); NXP_Private_PRINTIF(1998,__LINE__); \
 	return (rslt);\
 	}
 

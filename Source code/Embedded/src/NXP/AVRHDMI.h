@@ -1,34 +1,35 @@
 #ifndef _HDMI_H_
 #define _HDMI_H_
 
-void Init_HDMI(void);
-// performs initialization tasks for NXP
+#include <stdint.h>
+#include <stdbool.h>
+
+/// performs initialization tasks for NXP
+void NXP_Init_HDMI(void);
 
 
-void HDMITask(void);
-// periodically called to address HDMI task
+/// periodically called to address HDMI task
+void NXP_HDMI_Task(void);
 
-void Report_HDMI_status(void);
-// report HDMI status for debug
+/// report HDMI status for debug
+void NXP_Report_HDMI_status(void);
 
-void PRINTIF(uint16_t errCode, uint16_t lineNumber);
+void NXP_Video_On(void);
 
-void VideoOn(void);
+void NXP_Video_Off(void);
 
-void VideoOff(void);
+void NXP_Suspend(void);
 
-void NXPSuspend(void);
+void NXP_Resume(void);
 
-void NXPResume(void);
+void NXP_Debug(bool bothSides);
 
-void NXPDebug(bool bothSides);
+void NXP_HDMI_Reset(uint8_t HDMINum);
 
-void HDMI_Reset(uint8_t HDMINum);
+void NXP_Program_MTP0(void);
+void NXP_Program_MTP1(void);
 
-void ProgramMTP0(void);
-void ProgramMTP1(void);
-
-void UpdateResolutionDetection(void);
+void NXP_Update_Resolution_Detection(void);
 
 extern bool PortraitMode; // true if incoming video is in portrait mode
 extern uint8_t HDMIStatus; // shows whether we have video and also video mode

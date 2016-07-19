@@ -104,7 +104,7 @@ static tmErrorCode_t dlHdmiRxConfigVideoPort(tmInstance_t  instance, tmdlVPBitsC
 
 #ifdef HDMI_DEBUG
     //#define x
-    //#define x	; Write("dl-"); PRINTIF(999,__LINE__);
+    //#define x	; Write("dl-"); NXP_Private_PRINTIF(999,__LINE__);
 #else
     //#define x	;
 #endif

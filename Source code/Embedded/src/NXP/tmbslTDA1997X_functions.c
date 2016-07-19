@@ -58,7 +58,7 @@ uint8_t CECInterrupt;
 
 #ifdef HDMI_DEBUG
     //#define x
-    //#define x	{Write("bs-"); PRINTIF(999,__LINE__); }
+    //#define x	{Write("bs-"); NXP_Private_PRINTIF(999,__LINE__); }
 
 #else
     //#define x	;

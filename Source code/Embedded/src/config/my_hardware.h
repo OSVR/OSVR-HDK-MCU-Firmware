@@ -96,9 +96,8 @@ extern char ProductName[];
 
 void set_buffer(uint8_t *buffer, uint8_t value);
 bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer);
-bool SetConfigValue(uint8_t offset, uint8_t value);
+void SetConfigValue(uint8_t offset, uint8_t value);
 uint8_t GetConfigValue(uint8_t offset);
 bool IsConfigOffsetValid(uint8_t offset);
-bool SetConfigValue(uint8_t offset, uint8_t value);
 
 #endif /* MY_HARDWARE_H_ */

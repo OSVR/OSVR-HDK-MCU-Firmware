@@ -227,7 +227,7 @@ bool IsConfigOffsetValid(uint8_t offset)
 }
 
 uint8_t GetConfigValue(uint8_t offset) { return eeprom_read_byte(CONFIGURATION_PAGE, offset); }
-bool SetConfigValue(uint8_t offset, uint8_t value)
+void SetConfigValue(uint8_t offset, uint8_t value)
 
 {
 	eeprom_write_byte(CONFIGURATION_PAGE, offset, value);

@@ -10,6 +10,7 @@
 #include "my_hardware.h"
 #include "Console.h"
 
+#ifdef SVR_HAVE_FPGA
 bool SideBySideMode = false;
 
 void FPGA_reset(void)
@@ -79,3 +80,5 @@ uint8_t FPGA_read(uint8_t FPGANun, uint8_t Command)
 	}
 	return Value;
 };
+
+#endif  // SVR_HAVE_FPGA

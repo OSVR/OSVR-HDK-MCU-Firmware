@@ -8,6 +8,8 @@
 #ifndef FPGA_H_
 #define FPGA_H_
 
+#include <stdint.h>
+
 extern bool SideBySideMode;
 
 void FPGA_reset(void);

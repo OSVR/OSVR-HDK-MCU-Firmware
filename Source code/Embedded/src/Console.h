@@ -5,7 +5,6 @@
  *  Author: Sensics
  */
 
-
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
@@ -15,7 +14,7 @@
 #define debugNXPLineMask 2
 #define debugSolomonMask 4
 
-extern bool CDCWriteInProgress; // true if USB is being used to write console messages
+extern bool CDCWriteInProgress;  // true if USB is being used to write console messages
 
 void Write(char *const Data);
 void dWrite(char *const Data, uint8_t DebugMask);

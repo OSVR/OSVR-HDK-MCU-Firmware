@@ -3,8 +3,7 @@
  *
  * Created: 7/19/2016 10:12:25 AM
  *  Author: Ryan
- */ 
-
+ */
 
 #ifndef SINGLEDISPLAYNXPSOLOMONFPGA_H_
 #define SINGLEDISPLAYNXPSOLOMONFPGA_H_

@@ -5,12 +5,9 @@
  *  Author: Sensics
  */
 
-
 #ifndef BOOT_H_
-    #define BOOT_H_
+#define BOOT_H_
 
-    void PrepareForSoftwareUpgrade(void);
-
-
+void PrepareForSoftwareUpgrade(void);
 
 #endif /* BOOT_H_ */

@@ -93,4 +93,4 @@ void ui_com_overflow(void);
  */
 void ui_process(uint16_t framenumber);
 
-#endif // _UI_H_
+#endif  // _UI_H_

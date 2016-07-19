@@ -3,8 +3,7 @@
  *
  * Created: 10/23/2015 5:32:56 PM
  *  Author: AdminNoPW
- */ 
-
+ */
 
 #ifndef USB_H_
 #define USB_H_
@@ -40,9 +39,5 @@ void main_resume_action(void);
  * The DTR notify that the terminal have open or close the communication port.
  */
 void main_cdc_set_dtr(uint8_t port, bool b_enable);
-
-
-
-
 
 #endif /* USB_H_ */

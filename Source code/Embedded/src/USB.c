@@ -3,7 +3,7 @@
  *
  * Created: 10/23/2015 5:33:42 PM
  *  Author: AdminNoPW
- */ 
+ */
 
 // usb events
 
@@ -37,47 +37,42 @@
 
 static volatile bool main_b_cdc_enable = false;
 
-void main_suspend_action(void)
-{
-    ui_powerdown();
-}
-
-void main_resume_action(void)
-{
-    ui_wakeup();
-}
-
+void main_suspend_action(void) { ui_powerdown(); }
+void main_resume_action(void) { ui_wakeup(); }
 void main_sof_action(void)
 {
-    if (!main_b_cdc_enable)
-        return;
-    ui_process(udd_get_frame_number());
+	if (!main_b_cdc_enable)
+		return;
+	ui_process(udd_get_frame_number());
 }
 
 bool main_cdc_enable(uint8_t port)
 {
-    main_b_cdc_enable = true;
-    // Open communication
-    uart_open(port);
-    return true;
+	main_b_cdc_enable = true;
+	// Open communication
+	uart_open(port);
+	return true;
 }
 
 void main_cdc_disable(uint8_t port)
 {
-    main_b_cdc_enable = false;
-    // Close communication
-    uart_close(port);
+	main_b_cdc_enable = false;
+	// Close communication
+	uart_close(port);
 }
 
 void main_cdc_set_dtr(uint8_t port, bool b_enable)
 {
-    if (b_enable) {
-        // Host terminal has open COM
-        ui_com_open(port);
-    } else {
-        // Host terminal has close COM
-        ui_com_close(port);
-    }
+	if (b_enable)
+	{
+		// Host terminal has open COM
+		ui_com_open(port);
+	}
+	else
+	{
+		// Host terminal has close COM
+		ui_com_close(port);
+	}
 }
 
 static bool my_flag_autorize_generic_events = false;
@@ -86,24 +81,20 @@ bool my_callback_generic_enable(void)
 	my_flag_autorize_generic_events = true;
 	return true;
 }
-void my_callback_generic_disable(void)
-{
-	my_flag_autorize_generic_events = false;
-}
-
-//void my_button_press_event(void)
+void my_callback_generic_disable(void) { my_flag_autorize_generic_events = false; }
+// void my_button_press_event(void)
 //{
-	//if (!my_flag_autorize_generic_events) {
-		//return;
-	//}
-	//uint8_t report[] = {0x00,0x01,0x02};
-	//udi_hid_generic_send_report_in(report);
+// if (!my_flag_autorize_generic_events) {
+// return;
+//}
+// uint8_t report[] = {0x00,0x01,0x02};
+// udi_hid_generic_send_report_in(report);
 //}
 
 void my_callback_generic_report_out(uint8_t *report)
 {
-	if ((report[0] == 0) &&
-	(report[1] == 1)) {
+	if ((report[0] == 0) && (report[1] == 1))
+	{
 		DisplayOff(Solomon1);
 		// The report is correct
 	}
@@ -114,27 +105,26 @@ void my_callback_generic_set_feature(uint8_t *report_feature)
 // next byte is version number for report, defaults to 1
 // next byte is "1" to set side-by-side mode, 0 to go to normal mode
 {
-	if ((report_feature[0] == 0x71) &&
-	(report_feature[1] == 0x25)) {
+	if ((report_feature[0] == 0x71) && (report_feature[1] == 0x25))
+	{
 		// The report feature is correct
-		if (report_feature[2]==1)
+		if (report_feature[2] == 1)
 		{
-			#ifdef OSVRHDK
-				//if (report_feature[3]==0)
-				//{
-					//ioport_set_pin_low(Side_by_side_B); // normal mode
-					//SetConfigValue(SideBySideOffset,0);
-				//}
-				//else
-				//{
-					//ioport_set_pin_high(Side_by_side_B); // side by side
-					//SetConfigValue(SideBySideOffset,1);
-				//}
-			#endif
+#ifdef OSVRHDK
+// if (report_feature[3]==0)
+//{
+// ioport_set_pin_low(Side_by_side_B); // normal mode
+// SetConfigValue(SideBySideOffset,0);
+//}
+// else
+//{
+// ioport_set_pin_high(Side_by_side_B); // side by side
+// SetConfigValue(SideBySideOffset,1);
+//}
+#endif
 		}
 	}
 }
-
 
 /**
  * \mainpage ASF USB Device CDC

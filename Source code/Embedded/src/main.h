@@ -52,5 +52,4 @@ bool HDMISwitch_task;
 bool NewVideoDetected;
 bool VideoLost;
 
-
-#endif // _MAIN_H_
+#endif  // _MAIN_H_

@@ -63,155 +63,139 @@
 #include "TimingDebug.h"
 
 #ifdef OSVRHDK
-    #include "nxp\i2c.h"
-	#include "string.h"
+#include "nxp\i2c.h"
+#include "string.h"
 #endif
-
 
 #include "USB.h"
 
 #include "main.h"
 
-
-bool HDMI_task=false;
-bool HDMISwitch_task=true;
-bool NewVideoDetected=false;
-bool VideoLost=false;
-bool NXPEverLocked=false; // true if HDMI receiver was ever locked on incoming video signal
-
+bool HDMI_task = false;
+bool HDMISwitch_task = true;
+bool NewVideoDetected = false;
+bool VideoLost = false;
+bool NXPEverLocked = false;  // true if HDMI receiver was ever locked on incoming video signal
 
 #ifdef OSVRHDK
-bool LastFPGALockStatus=0; // last state of FPGA_unlocked pin
+bool LastFPGALockStatus = 0;  // last state of FPGA_unlocked pin
 #endif
 
 void HandleHDMI(void);
 
-
 void load_configuration(void)
-
 
 {
 	if (IsConfigOffsetValid(PersistenceOffset))
-		Strobing_rate=GetConfigValue(PersistenceOffset);
+		Strobing_rate = GetConfigValue(PersistenceOffset);
 	else
-		SetConfigValue(PersistenceOffset,Strobing_rate);
-		
+		SetConfigValue(PersistenceOffset, Strobing_rate);
+
 	if (IsConfigOffsetValid(PersistencePercentOffset))
-		Strobing_percent=GetConfigValue(PersistencePercentOffset );
+		Strobing_percent = GetConfigValue(PersistencePercentOffset);
 	else
-		SetConfigValue(PersistencePercentOffset,Strobing_percent);
-		
+		SetConfigValue(PersistencePercentOffset, Strobing_percent);
 }
 
 /*! \brief Main function. Execution starts here.
  */
 int main(void)
 {
+	//_StackPaint();
 
-    //_StackPaint();
+	irq_initialize_vectors();
 
-    irq_initialize_vectors();
+	// Initialize the sleep manager
+	sysclk_init();
+	pmic_init();
+	sleepmgr_init();
 
+	board_init();
 
+	custom_board_init();  // add initialization that is specific to Sensics board
+	// timeout_init(); //- timeouts not working quite yet // todo: activate this
+	cpu_irq_enable();
 
-    // Initialize the sleep manager
-    sysclk_init();
-    pmic_init();
-    sleepmgr_init();
-
-    board_init();
-
-    custom_board_init(); // add initialization that is specific to Sensics board
-    //timeout_init(); //- timeouts not working quite yet // todo: activate this
-    cpu_irq_enable();
-
-    ui_init();
-    ui_powerdown();
+	ui_init();
+	ui_powerdown();
 
 	load_configuration();
-		
-    init_solomon();
 
+	init_solomon();
 
-    // init the incoming serial state machine
-    InitSerialState();
+	// init the incoming serial state machine
+	InitSerialState();
 
-    ioport_set_pin_high(USB_Hub_Reset_Pin); // free hub from reset
-    // disable this after removing the appropriate resistor
-    ioport_set_pin_low(USB_Hub_Power_Pin); // enable power on hub
+	ioport_set_pin_high(USB_Hub_Reset_Pin);  // free hub from reset
+	// disable this after removing the appropriate resistor
+	ioport_set_pin_low(USB_Hub_Power_Pin);  // enable power on hub
 
+// delay_ms(100);
 
+// delay_s(1);
+// to assist in debug
+// WriteLn("Start");
 
+// sleepmgr_lock_mode(SLEEPMGR_IDLE); // allow timers
+// timeout_start_periodic(Debug_LED_Timeout, 1);
+// timeout_start_periodic(	TMDS_422_Timeout, 1);
 
-    //delay_ms(100);
-	
-	//delay_s(1);
-	// to assist in debug
-	//WriteLn("Start");
-
-
-    //sleepmgr_lock_mode(SLEEPMGR_IDLE); // allow timers
-    //timeout_start_periodic(Debug_LED_Timeout, 1);
-    //timeout_start_periodic(	TMDS_422_Timeout, 1);
-
-    // The main loop manages only the power mode
-    // because the USB management is done by interrupt
+// The main loop manages only the power mode
+// because the USB management is done by interrupt
 
 #ifdef TMDS422
-    InitHDMISwitch();
-    TMDS_422_Task();
+	InitHDMISwitch();
+	TMDS_422_Task();
 #endif
 
 #ifdef OSVRHDK
-	//ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
-	#ifdef MeasurePerformance
-		TimingDebug_init();
-	#endif
+// ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
+#ifdef MeasurePerformance
+	TimingDebug_init();
 #endif
-
+#endif
 
 #ifndef DISABLE_NXP
 
-    NXP_Init_HDMI(); // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has already been initizliaed
-	
+	NXP_Init_HDMI();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
+	                  // already been initizliaed
+
 	if (NewVideoDetected)
 	{
 		WriteLn("Video at start");
 #ifdef Solomon1_SPI
 		DisplayOn(Solomon1);
 		NXP_Update_Resolution_Detection();
-		#ifdef BNO070
-			Update_BNO_Report_Header();
-		#endif
+#ifdef BNO070
+		Update_BNO_Report_Header();
+#endif
 #endif
 #ifdef Solomon2_SPI
 		DisplayOn(Solomon2);
 #endif
-		NewVideoDetected=false;
-	
+		NewVideoDetected = false;
 	};
 #ifdef OSVRHDK
 
 	if (!(ioport_get_pin_level(FPGA_unlocked)))
-		NXPEverLocked=true;
+		NXPEverLocked = true;
 #endif
-			
+
 	if (VideoLost)
 	{
 #ifdef Solomon1_SPI
 		DisplayOff(Solomon1);
 		NXP_Update_Resolution_Detection();
-		#ifdef BNO070
-			Update_BNO_Report_Header();
-		#endif
-		
+#ifdef BNO070
+		Update_BNO_Report_Header();
+#endif
+
 #endif
 #ifdef Solomon2_SPI
 		DisplayOff(Solomon2);
 #endif
-		VideoLost=false;
+		VideoLost = false;
 	}
-	
 
 #ifdef DSIGHT
 	if (NewVideoDetected)
@@ -221,183 +205,178 @@ int main(void)
 		init_solomon_device(Solomon2);
 	}
 #endif
-		
-		
-    //ProgramMTP0();
 
-    HDMI_task=true;
-	
+	// ProgramMTP0();
+
+	HDMI_task = true;
+
 #endif
-
 
 #ifdef BNO070
-	BNO070Active=init_BNO070();
+	BNO070Active = init_BNO070();
 	if (BNO070Active)
+	{
+		if (BNO070id.swVersionMajor * 100 + BNO070id.swVersionMinor * 10 + BNO070id.swVersionPatch >= 184)
 		{
-			if (BNO070id.swVersionMajor*100+BNO070id.swVersionMinor*10+BNO070id.swVersionPatch>=184)
-			{
-				HDK_Version_Major=1;
-				HDK_Version_Minor=3;
-				strcpy(ProductName, "OSVR HDK 1.3"); /// important! make sure did length of this product name is not longer than original name defined in udc.h and in my_hardware.c
-			}
+			HDK_Version_Major = 1;
+			HDK_Version_Minor = 3;
+			strcpy(ProductName, "OSVR HDK 1.3");  /// important! make sure did length of this product name is not longer
+			                                      /// than original name defined in udc.h and in my_hardware.c
 		}
+	}
 #endif
 
-
-    // Start USB stack to authorize VBus monitoring
-    udc_start();
+	// Start USB stack to authorize VBus monitoring
+	udc_start();
 
 	uint16_t slower = 0;
 
 #ifdef OSVRHDK
-	//ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
+// ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
 #endif
 
 #ifdef OSVRHDK
-	LastFPGALockStatus=ioport_get_pin_level(FPGA_unlocked); // last state of FPGA_unlocked pin
+	LastFPGALockStatus = ioport_get_pin_level(FPGA_unlocked);  // last state of FPGA_unlocked pin
 #endif
 
-	
-    while (true) {
-        //sleepmgr_enter_sleep(); // todo - probably remove this since the board has to work without USB
-        if (CommandReady)
-        {
-            ProcessCommand();
-            CommandReady=false;
-        }
+	while (true)
+	{
+		// sleepmgr_enter_sleep(); // todo - probably remove this since the board has to work without USB
+		if (CommandReady)
+		{
+			ProcessCommand();
+			CommandReady = false;
+		}
 
-        delay_us(50); // Some delay is required to allow USB interrupt to process
-
+		delay_us(50);  // Some delay is required to allow USB interrupt to process
 
 #ifdef BNO070
-	#ifdef OSVRHDK
+#ifdef OSVRHDK
 		BNO_Yield();
-	#endif
+#endif
 #endif
 
 #ifdef TMDS422
-        if (HDMISwitch_task) //(timeout_test_and_clear_expired(TMDS_422_Timeout))
-        {
-            // check status of HDMI switch
-            TMDS_422_Task();
-        }
+		if (HDMISwitch_task)  //(timeout_test_and_clear_expired(TMDS_422_Timeout))
+		{
+			// check status of HDMI switch
+			TMDS_422_Task();
+		}
 #endif
 
 //#ifndef OSVRHDK // disable checking the NXP here; video changes will be picked up by interrupts anyway
 #ifndef DISABLE_NXP
-		slower++; // used to slow down the rate of checking HDMI
-		if ((HDMI_task) && (slower>1000))
+		slower++;  // used to slow down the rate of checking HDMI
+		if ((HDMI_task) && (slower > 1000))
 		{
-			slower=0;
-	#ifdef OSVRHDK
+			slower = 0;
+#ifdef OSVRHDK
 			bool NewFPGALockStatus;
-			NewFPGALockStatus=ioport_get_pin_level(FPGA_unlocked);
+			NewFPGALockStatus = ioport_get_pin_level(FPGA_unlocked);
 			if (NewFPGALockStatus)
 			{
-				if (LastFPGALockStatus!=NewFPGALockStatus)
+				if (LastFPGALockStatus != NewFPGALockStatus)
 				{
-					//WriteLn("Video signal lost");
+// WriteLn("Video signal lost");
 #ifdef OSVRHDK
-					LastFPGALockStatus=NewFPGALockStatus;
+					LastFPGALockStatus = NewFPGALockStatus;
 #endif
 
 #ifdef Solomon1_SPI
 					DisplayOff(Solomon1);
 					NXP_Update_Resolution_Detection();
-					#ifdef BNO070
-						Update_BNO_Report_Header();
-					#endif
+#ifdef BNO070
+					Update_BNO_Report_Header();
+#endif
 #endif
 #ifdef Solomon2_SPI
 					DisplayOff(Solomon2);
 #endif
 				}
 			}
-			else // FPGA is locked
+			else  // FPGA is locked
 			{
 				if (!NXPEverLocked)
 				{
-					//WriteLn("First lock");
-					NXPEverLocked=true;
-					//Init_HDMI();
-//#ifdef Solomon1_SPI
-					//DisplayOn(Solomon1);
-//#endif
-//#ifdef Solomon2_SPI
-					//DisplayOn(Solomon2);
-//#endif
+					// WriteLn("First lock");
+					NXPEverLocked = true;
+					// Init_HDMI();
+					//#ifdef Solomon1_SPI
+					// DisplayOn(Solomon1);
+					//#endif
+					//#ifdef Solomon2_SPI
+					// DisplayOn(Solomon2);
+					//#endif
 				}
-				if (LastFPGALockStatus!=NewFPGALockStatus)
+				if (LastFPGALockStatus != NewFPGALockStatus)
 				{
-					//WriteLn("Video signal detected");
-					LastFPGALockStatus=NewFPGALockStatus;
+					// WriteLn("Video signal detected");
+					LastFPGALockStatus = NewFPGALockStatus;
 #ifdef Solomon1_SPI
 					DisplayOn(Solomon1);
 					NXP_Update_Resolution_Detection();
-					#ifdef BNO070
+#ifdef BNO070
 					Update_BNO_Report_Header();
-					#endif
+#endif
 #endif
 #ifdef Solomon2_SPI
 					DisplayOn(Solomon2);
 #endif
 				}
-					
 			}
-	#else // dSight
+#else  // dSight
 			HandleHDMI();
-	#endif
+#endif
 		}
 #endif
-//#endif // #ifndef OSVRHDK
+		//#endif // #ifndef OSVRHDK
 	}
 }
 
 void HandleHDMI()
 
 {
-	#ifndef DISABLE_NXP
+#ifndef DISABLE_NXP
 	NXP_HDMI_Task();
 	if (NewVideoDetected)
 	{
-		NewVideoDetected=false;
-		//WriteLn("New video detected");
+		NewVideoDetected = false;
+// WriteLn("New video detected");
 #ifdef Solomon1_SPI
-	#ifndef H546DLT01
-		init_solomon_device(Solomon1); // todo: add back after debug of board
-	#endif
+#ifndef H546DLT01
+		init_solomon_device(Solomon1);  // todo: add back after debug of board
+#endif
 		DisplayOn(Solomon1);
 		NXP_Update_Resolution_Detection();
-		#ifdef BNO070
+#ifdef BNO070
 		Update_BNO_Report_Header();
-		#endif
+#endif
 
-	#ifndef H546DLT01
-		init_solomon_device(Solomon1); // todo: add back after debug of board
-	#endif
+#ifndef H546DLT01
+		init_solomon_device(Solomon1);  // todo: add back after debug of board
+#endif
 #endif
 #ifdef Solomon2_SPI
-	#ifndef H546DLT01
+#ifndef H546DLT01
 		init_solomon_device(Solomon2);
-	#endif
-		DisplayOn(Solomon2); // added to make it same process as solomon 1
-	#ifndef H546DLT01
+#endif
+		DisplayOn(Solomon2);  // added to make it same process as solomon 1
+#ifndef H546DLT01
 		init_solomon_device(Solomon2);
-	#endif
+#endif
 #endif
 	}
 	if (VideoLost)
 	{
+		VideoLost = false;
+// WriteLn("Video lost");
 
-		VideoLost=false;
-		//WriteLn("Video lost");
-				
 #ifdef Solomon1_SPI
 		DisplayOff(Solomon1);
 		NXP_Update_Resolution_Detection();
-		#ifdef BNO070
-			Update_BNO_Report_Header();
-		#endif
+#ifdef BNO070
+		Update_BNO_Report_Header();
+#endif
 #endif
 #ifdef Solomon2_SPI
 		DisplayOff(Solomon2);
@@ -405,5 +384,3 @@ void HandleHDMI()
 	}
 #endif
 }
-
-

@@ -577,6 +577,7 @@ void Solomon_Reset(uint8_t SolomonNum)
         solomon_delay_ms(10);
         ioport_set_pin_high(Solomon1_Reset);
     }
+#ifdef SVR_HAVE_SOLOMON2
     else if (SolomonNum==2)
     {
         WriteLn("reset Sol2");
@@ -584,6 +585,7 @@ void Solomon_Reset(uint8_t SolomonNum)
         solomon_delay_ms(1);
         ioport_set_pin_high(Solomon2_Reset);
     }
+#endif
     else
         WriteLn("Wrong Sol num");
 }

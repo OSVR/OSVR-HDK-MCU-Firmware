@@ -52,10 +52,14 @@
 
 #define TWI_NXP1_PORT			(&TWIE) // j4 on ATMega Xplained for A3BU
 
-#ifdef OSVRHDK
+#ifdef BNO070
     #define TWI_BNO070_PORT			(&TWIC)
-#else
+#endif
+
+#ifdef SVR_HAVE_TMDS422
     #define TWI_TMDS422_PORT        (&TWIC)
+#endif
+#ifdef SVR_HAVE_NXP2
     #define TWI_NXP2_PORT			(&TWIC) // same port as the TMDS one
 #endif
 

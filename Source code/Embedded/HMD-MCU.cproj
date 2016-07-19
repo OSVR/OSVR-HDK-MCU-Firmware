@@ -823,6 +823,9 @@
     <None Include="src\config\conf_timeout.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\config\SingleDisplayNXPSolomonFPGA.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\DeviceDrivers\bno-hostif\1000-3251_1.7.0.390_avr.c">
       <SubType>compile</SubType>
     </Compile>

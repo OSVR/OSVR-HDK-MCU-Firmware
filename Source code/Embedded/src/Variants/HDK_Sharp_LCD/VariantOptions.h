@@ -1,5 +1,6 @@
 /*
  * VariantOptions.h
+ * for the Sharp LCD-based OSVR HDK and derived HMDs
  *
  * Created: 5/26/2015 5:10:07 PM
  *  Author: Sensics
@@ -8,6 +9,8 @@
 
 #ifndef VARIANTOPTIONS_H_
 #define VARIANTOPTIONS_H_
+
+#include "SingleDisplayNXPSolomonFPGA.h"
 
 #define OSVRHDK
 #define BNO070

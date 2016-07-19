@@ -9,6 +9,8 @@
 #ifndef VARIANTOPTIONS_H_
 #define VARIANTOPTIONS_H_
 
+#include "SingleDisplayNXPSolomonFPGA.h"
+
 #define OSVRHDK
 #define BNO070
 

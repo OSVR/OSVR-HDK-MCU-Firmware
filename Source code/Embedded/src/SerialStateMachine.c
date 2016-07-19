@@ -186,13 +186,33 @@ void ProcessSPICommand(void);
 void ProcessI2CCommand(void);
 void ProcessFPGACommand(void);
 
-#ifndef DISABLE_NXP
+#if defined(SVR_HAVE_NXP) && !defined(DISABLE_NXP)
+#define SVR_USING_NXP
 void ProcessHDMICommand(void);
 #endif
 
-#ifdef TMDS422
+#ifdef SVR_HAVE_TMDS422
 void ProcessTMDSCommand(void);
 #endif
+
+bool is_sensics_id_equal_to_buffer(uint8_t addr, uint8_t *buffer, int leng)
+{
+	uint8_t i;
+	char Msg[10];
+
+	for (i = 0; i < leng; i++)
+	{
+		if (nvm_eeprom_read_byte(addr + i) != buffer[i])
+		{
+			WriteLn("---");
+			sprintf(Msg, "%d %d %d", nvm_eeprom_read_byte(addr + i), buffer[i], i);
+			WriteLn(Msg);
+			return false;
+		}
+	}
+
+	return true;
+}
 
 // To do: move this to a util module
 
@@ -280,21 +300,23 @@ void ProcessCommand(void)
 			ProcessI2CCommand();
 			break;
 		};
+#ifdef SVR_HAVE_FPGA
 		case 'F':
 		case 'f':
 		{
 			ProcessFPGACommand();
 			break;
 		};
+#endif
 		case 't':  // test commands for TMDS 422 switch
 		case 'T':
 		{
-#ifdef TMDS422
+#ifdef SVR_HAVE_TMDS422
 			ProcessTMDSCommand();
 #endif
 			break;
 		}
-#ifndef DISABLE_NXP
+#ifdef SVR_USING_NXP
 
 		case 'H':  // HDMI commands
 		case 'h':
@@ -320,23 +342,39 @@ void ProcessCommand(void)
 			{
 				set_buffer(EEPROM.Buffer, 0);
 				memcpy(EEPROM.Signature, SENSICS, sizeof(SENSICS));
+/// @todo HDK20RF sizeof(EEPROM.Buffer) was changed to sizeof(SENSICS) - 1 due to "write Sensics ID will overwrite S/N"
+#ifndef HDK_20
 				nvm_eeprom_erase_and_write_buffer(SIGNATURE_PAGE * EEPROM_PAGE_SIZE, &EEPROM.Buffer[0],
 				                                  sizeof(EEPROM.Buffer));
+#else  // 20160605, fctu, fix write SENSICS ID will overwrite S/N.
+				nvm_eeprom_erase_and_write_buffer(SIGNATURE_PAGE * EEPROM_PAGE_SIZE, &EEPROM.Buffer[0],
+				                                  sizeof(SENSICS) - 1);
+#endif
 				break;
 			}
 			case 'W':  // write four bytes of data
 			case 'w':
 			{
 				EEPROM_addr = HexPairToDecimal(2);
+/// @todo HDK20RF uses the version of nvm_eeprom_write_byte in its binary-only libhdk20, called nvm_eeprom_write_byte_ -
+/// differences unknown
+#ifdef HDK_20
+				nvm_eeprom_write_byte_(EEPROM_addr, HexPairToDecimal(4));
+				nvm_eeprom_write_byte_(EEPROM_addr + 1, HexPairToDecimal(6));
+				nvm_eeprom_write_byte_(EEPROM_addr + 2, HexPairToDecimal(8));
+				nvm_eeprom_write_byte_(EEPROM_addr + 3, HexPairToDecimal(10));
+#else
 				nvm_eeprom_write_byte(EEPROM_addr, HexPairToDecimal(4));
 				nvm_eeprom_write_byte(EEPROM_addr + 1, HexPairToDecimal(6));
 				nvm_eeprom_write_byte(EEPROM_addr + 2, HexPairToDecimal(8));
 				nvm_eeprom_write_byte(EEPROM_addr + 3, HexPairToDecimal(10));
+#endif
 				break;
 			}
 			case 'V':  // verify Sensics ID
 			case 'v':
 			{
+#ifndef HDK_20
 				set_buffer(EEPROM.Buffer, 0);
 				memcpy(EEPROM.Buffer, SENSICS, sizeof(SENSICS));
 				if (is_eeprom_page_equal_to_buffer(SIGNATURE_PAGE, EEPROM.Buffer))
@@ -344,6 +382,15 @@ void ProcessCommand(void)
 				else
 					WriteLn("Not verified");
 				break;
+#else  // 20160605, fctu, fix write SENSICS ID will overwrite S/N.
+				/// @todo HDK20RF presumably related to the above
+				memcpy(EEPROM.Buffer, SENSICS, sizeof(SENSICS) - 1);
+				if (is_sensics_id_equal_to_buffer(SIGNATURE_PAGE, EEPROM.Buffer, sizeof(SENSICS) - 1))
+					WriteLn("Verified");
+				else
+					WriteLn("Not verified");
+				break;
+#endif
 			}
 			case 'R':  // read four bytes of data
 			case 'r':

@@ -9,8 +9,8 @@
 
 #if defined(SVR_IS_HDK_20)
 #include "Display.h"
+#include "SvrYield.h"
 
-#include <delay.h>
 #include <libhdk20.h>
 
 static uint8_t tc_data;
@@ -42,12 +42,12 @@ void Display_On(uint8_t deviceID)
 	// WriteLn("Turning display on");
 
 	// display power on
-	delay_ms(20);
+	svr_yield_ms(20);
 #if 0
 	// Exit Sleep
 	TC358870_i2c_Write(0x0504, 0x0005, 2);
 	TC358870_i2c_Write(0x0504, 0x0011, 2);
-	delay_ms(33);
+	svr_yield_ms(33);
 #endif
 #if 0  // Not for SSD2848
 	TC358870_i2c_Write(0x0504, 0x8029, 2); // DCSCMD Long Write
@@ -56,7 +56,7 @@ void Display_On(uint8_t deviceID)
 	TC358870_i2c_Write(0x0504, 0x0000, 2); // DCSCMD_Q
 	TC358870_i2c_Write(0x0504, 0x2903, 2); // DCSCMD_Q
 #endif
-	delay_ms(166);  //>10 frame
+	svr_yield_ms(166);  //>10 frame
 
 	// Display On
 	TC358870_i2c_Write(0x0504, 0x0005 /*0x0015*/, 2);
@@ -72,20 +72,20 @@ void Display_Off(uint8_t deviceID)
     TC358870_i2c_Write(0x0504, 0xB700, 2); // 0xB7
     TC358870_i2c_Write(0x0504, 0x0000, 2); // DCSCMD_Q
     TC358870_i2c_Write(0x0504, 0x2103, 2); // DCSCMD_Q
-	delay_ms(16);
+	svr_yield_ms(16);
 #endif
 
 #if 1
 	// Display Off
 	TC358870_i2c_Write(0x0504, 0x0005 /*0x0015*/, 2);
 	TC358870_i2c_Write(0x0504, 0x0028, 2);
-	delay_ms(16);
+	svr_yield_ms(16);
 
 #if 0        
 			//  Sleep In
 			TC358870_i2c_Write(0x0504, 0x0005, 2);
 			TC358870_i2c_Write(0x0504, 0x0010, 2);
-			delay_ms(20); // delay > 1 frames
+			svr_yield_ms(20); // delay > 1 frames
 #endif
 #else
 	TC358870_i2c_Write(0x0004, 0x0004, 2);  // ConfCtl0
@@ -100,19 +100,19 @@ void Display_Powercycle(uint8_t deviceID)
 	TC358870_i2c_Write(0x0504, 0x0015, 2);
 	TC358870_i2c_Write(0x0504, 0x0028, 2);
 
-	delay_ms(120);
+	svr_yield_ms(120);
 
 	//  Sleep In
 	TC358870_i2c_Write(0x0504, 0x0005, 2);
 	TC358870_i2c_Write(0x0504, 0x0010, 2);
 
-	delay_ms(1000);
+	svr_yield_ms(1000);
 
 	// Exit Sleep
 	TC358870_i2c_Write(0x0504, 0x0005, 2);
 	TC358870_i2c_Write(0x0504, 0x0011, 2);
 
-	delay_ms(166);  //>10 frame
+	svr_yield_ms(166);  //>10 frame
 
 	// Display On
 	TC358870_i2c_Write(0x0504, 0x0015, 2);

@@ -694,9 +694,11 @@
 </AvrGcc>
     </ToolchainSettings>
   </PropertyGroup>
+  <!--
   <PropertyGroup>
     <PostBuildEvent>copy "$(OutputDirectory)\$(OutputFileName).hex" "$(SolutionDir)$(OutputFileName)-$(Configuration).hex"</PostBuildEvent>
   </PropertyGroup>
+  -->
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="src\ASF\" />

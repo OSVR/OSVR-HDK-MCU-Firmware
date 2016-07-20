@@ -40,7 +40,7 @@ void VideoInput_Resume(void) { NXP_Resume(); }
 bool VideoInput_Poll_Status()
 {
 	// We don't poll on this hardware, but we can return the latest status.
-	return VideoInput_Protected_Get_Status();
+	return VideoInput_Get_Status();
 }
 
 #if 0

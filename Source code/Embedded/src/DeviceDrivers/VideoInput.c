@@ -81,4 +81,4 @@ void VideoInput_Protected_Report_No_Signal()
 	internal_report_lost_event();
 }
 
-bool VideoInput_Protected_Get_Status() { return s_lastStatus; }
+bool VideoInput_Get_Status() { return s_lastStatus; }

@@ -32,6 +32,9 @@ extern VideoInputEvents_t VideoInput_Events;
 /// Checks whether there is a video input, potentially updating VideoInput_Events (if not done via interrupts)
 bool VideoInput_Poll_Status(void);
 
+/// Have we been notified of having a signal? (does not poll)
+bool VideoInput_Get_Status(void);
+
 // to console
 void VideoInput_Report_Status(void);
 

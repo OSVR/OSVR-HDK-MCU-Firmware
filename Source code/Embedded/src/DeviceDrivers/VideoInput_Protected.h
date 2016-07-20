@@ -12,10 +12,12 @@
 
 /// This is equivalent to calling report_signal or report_no_signal in an if-else
 void VideoInput_Protected_Report_Status(bool signalStatus);
-void VideoInput_Protected_Report_Signal(void);
-void VideoInput_Protected_Report_No_Signal(void);
 
-/// Have we been notified of having a signal?
-bool VideoInput_Protected_Get_Status(void);
+/// Call from within a VideoInput implementation when you know you have a video signal.
+/// Updates status and sets events accordingly.
+void VideoInput_Protected_Report_Signal(void);
+/// Call from within a VideoInput implementation when you know you do not have a video signal.
+/// Updates status and sets events accordingly.
+void VideoInput_Protected_Report_No_Signal(void);
 
 #endif /* VIDEOINPUT_PROTECTED_H_ */

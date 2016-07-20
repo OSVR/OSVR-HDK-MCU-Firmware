@@ -979,7 +979,7 @@
     </Compile>
     <Compile Include="src\DeviceDrivers\bno-hostif\src\sensorhub.c">
       <SubType>compile</SubType>
-      <CustomCompilationSetting>-O0</CustomCompilationSetting>
+      <CustomCompilationSetting>-O1</CustomCompilationSetting>
     </Compile>
     <Compile Include="src\DeviceDrivers\bno-hostif\src\sensorhub.h">
       <SubType>compile</SubType>
@@ -998,7 +998,7 @@
     </Compile>
     <Compile Include="src\DeviceDrivers\BNO070_using_hostif.c">
       <SubType>compile</SubType>
-      <CustomCompilationSetting>-O0</CustomCompilationSetting>
+      <CustomCompilationSetting>-O1</CustomCompilationSetting>
     </Compile>
     <None Include="src\Variants\HDK_OLED\VariantOptions.h">
       <SubType>compile</SubType>

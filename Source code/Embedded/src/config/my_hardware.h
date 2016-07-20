@@ -76,17 +76,22 @@
 #ifdef SVR_HAVE_NXP1
 #define NXP_1_ADDR 0x48  // current comp - was 0x90 and 0x92
 #define CEC_1_ADDR 0x34
-uint8_t actualNXP_1_ADDR;  /// @todo should this be extern?
-uint8_t actualCEC_1_ADDR;  /// @todo should this be extern?
+extern uint8_t
+    actualNXP_1_ADDR;  //< @todo extern added on a hunch that we want this to be global, not replicated everywhere.
+extern uint8_t
+    actualCEC_1_ADDR;  //< @todo extern added on a hunch that we want this to be global, not replicated everywhere.
 
 #endif  // SVR_HAVE_NXP1
 
 #ifdef SVR_HAVE_NXP2
-#define NXP_2_ADDR 0x49    // this is fake. In reality, NXP2 and NXP1 are same
-#define CEC_2_ADDR 0x36    // this is fake. In reality, CEC2 and CEC1 are same  $$$
-uint8_t actualNXP_2_ADDR;  /// @todo should this be extern?
-uint8_t actualCEC_2_ADDR;  /// @todo should this be extern?
-#endif                     // SVR_HAVE_NXP2
+#define NXP_2_ADDR 0x49  // this is fake. In reality, NXP2 and NXP1 are same
+#define CEC_2_ADDR 0x36  // this is fake. In reality, CEC2 and CEC1 are same  $$$
+extern uint8_t
+    actualNXP_2_ADDR;  //< @todo extern added on a hunch that we want this to be global, not replicated everywhere.
+extern uint8_t
+    actualCEC_2_ADDR;  //< @todo extern added on a hunch that we want this to be global, not replicated everywhere.
+
+#endif  // SVR_HAVE_NXP2
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 #define TC358870_Reset_Pin IOPORT_CREATE_PIN(PORTD, 5)  // out, active low, >12ms.

@@ -544,7 +544,7 @@ bslTDA1997XWriteI2C
                     actualNXP_1_ADDR=RxHdmiConfig[unit].uHwAddress;
                     actualCEC_1_ADDR=RxHdmiConfig[unit].uCECAddress;
                 }
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
                 else if (unit==1)
                 {
                     actualNXP_2_ADDR=RxHdmiConfig[unit].uHwAddress;

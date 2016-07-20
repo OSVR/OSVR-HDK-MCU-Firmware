@@ -5,34 +5,36 @@
  *  Author: Sensics
  */
 
-#include "Display.h"
 #include "GlobalOptions.h"
 
 #if defined(SVR_HAVE_SOLOMON)
 
+#include "Display.h"
+
 #include "Solomon.h"
-#include "delay.h"
 #include "Console.h"
 #include "my_hardware.h"
+
+#include "SvrYield.h"
 
 void Display_System_Init() { init_solomon(); }
 void Display_Init(uint8_t id) { init_solomon_device(id); }
 void Display_On(uint8_t deviceID)
 {
 #ifdef H546DLT01  // AUO 5.46" OLED
-	// solomon_delay_ms(500);
+	// svr_yield_ms(500);
 	WriteLn("Turning display on");
 
 	// display power on
-	solomon_delay_ms(20);
+	svr_yield_ms(20);
 
 	// initial setting
 	write_solomon(deviceID, 0xBC, 0x0002);  // no of byte send
 
 	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
-	solomon_delay_ms(33);
+	svr_yield_ms(33);
 	write_solomon(deviceID, 0xB7, 0x0329);  // video signal on
-	solomon_delay_ms(166);                  //>10 frame
+	svr_yield_ms(166);                      //>10 frame
 	write_solomon(deviceID, 0xBF, 0x0029);  // display on
 
 #endif
@@ -45,11 +47,11 @@ void Display_Off(uint8_t deviceID)
 	WriteLn("Turing display off");
 
 	write_solomon(deviceID, 0xB7, 0x0321);  // video mode off
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x0028);  // display off
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x0010);  // sleep in
-	solomon_delay_ms(20);                   // delay > 1 frames
+	svr_yield_ms(20);                       // delay > 1 frames
 
 #endif
 }
@@ -58,13 +60,13 @@ void Display_Off(uint8_t deviceID)
 void Display_Powercycle(uint8_t deviceID)
 {
 	write_solomon(deviceID, 0xBF, 0x0028);  // display on
-	solomon_delay_ms(120);
+	svr_yield_ms(120);
 	write_solomon(deviceID, 0xBF, 0x0010);  // sleep out
 
-	solomon_delay_ms(1000);
+	svr_yield_ms(1000);
 
 	write_solomon(deviceID, 0xBF, 0x0029);  // display on
-	solomon_delay_ms(120);
+	svr_yield_ms(120);
 	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
 }
 

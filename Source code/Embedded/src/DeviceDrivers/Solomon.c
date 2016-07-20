@@ -11,17 +11,17 @@
 #ifdef SVR_HAVE_SOLOMON
 
 #include <asf.h>
-#include "stdio.h"
+
 #include "Solomon.h"
 #include "board.h"
 #include "spi_master.h"
 #include "my_hardware.h"
 #include "nxp/my_bit.h"  // for lo() and hi()
-#include "delay.h"
+
 #include "Console.h"
-#ifdef BNO070
-#include "BNO070.h"
-#endif
+#include "SvrYield.h"
+
+#include <stdio.h>
 
 #define Solomon_CLOCK_SPEED 1000000  // todo: consider increasing
 
@@ -53,24 +53,11 @@ bool init_solomon_spi(uint8_t deviceID)
 	return true;
 }
 
-void solomon_delay_ms(uint16_t ms)
-// delays for specified number of ms, while yielding to BNO
-{
-	while (ms > 0)
-	{
-		delay_ms(1);
-#ifdef BNO070
-		BNO_Yield();
-#endif
-		ms--;
-	}
-}
-
 bool init_solomon_device(uint8_t deviceID)
 {
 	// if (SolomonInitialized==true)
 	// return true;
-	solomon_delay_ms(500);
+	svr_yield_ms(500);
 	SolomonInitialized = true;
 
 	// check if Solomon returns ID. If not, can't initialize
@@ -111,7 +98,7 @@ bool init_solomon_device(uint8_t deviceID)
 	write_solomon(deviceID, 0xC4, 0x0001);  // auto BTA
 #endif
 
-	solomon_delay_ms(50);
+	svr_yield_ms(50);
 	// module panel initialization
 	write_solomon(deviceID, 0xB7, 0x0302);  // LP generic write
 	write_solomon(deviceID, 0xB8, 0x0000);  // VC
@@ -129,7 +116,7 @@ bool init_solomon_device(uint8_t deviceID)
 
 	write_solomon(deviceID, 0xBC, 0x0001);  //
 	write_solomon(deviceID, 0xBF, 0x0029);  // display on
-	solomon_delay_ms(120);
+	svr_yield_ms(120);
 	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
 #endif
 
@@ -149,7 +136,7 @@ bool init_solomon_device(uint8_t deviceID)
 	write_solomon(deviceID, 0xBF, 0x0453);  // cmd=53, data=04
 	write_solomon(deviceID, 0xBC, 0x0001);  //
 	write_solomon(deviceID, 0xBF, 0x0029);  // display on
-	solomon_delay_ms(120);
+	svr_yield_ms(120);
 	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
 
 // end of LS050T1SX01 data sheet
@@ -162,7 +149,7 @@ bool init_solomon_device(uint8_t deviceID)
 	write_solomon(deviceID, 0xB8, 0x0000);  // VC
 
 	// write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
-	solomon_delay_ms(100);
+	svr_yield_ms(100);
 
 #ifdef LOW_PERSISTENCE
 	write_solomon(deviceID, 0xBF, 0x08FE);  // cmd=FE, data=08
@@ -191,25 +178,25 @@ bool init_solomon_device(uint8_t deviceID)
 
 #else
 	write_solomon(deviceID, 0xBF, 0x04FE);  // cmd=FE, data=04
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x005E);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x4744);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x07FE);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x6AA9);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x0AFE);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x5214);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x00FE);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x0135);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 	write_solomon(deviceID, 0xBF, 0x0055);
-	solomon_delay_ms(16);
+	svr_yield_ms(16);
 #endif
 /*
 write_solomon(deviceID,0xBC,0x0001); //
@@ -232,9 +219,9 @@ delay_ms(16);*/
 
 #ifndef H546DLT01  // AUO 5.46" OLED
 	               // video mode on
-	solomon_delay_ms(250);
+	svr_yield_ms(250);
 	write_solomon(deviceID, 0xB7, 0x034B);  // video mode on
-	solomon_delay_ms(100);
+	svr_yield_ms(100);
 #endif
 
 	return true;
@@ -417,7 +404,7 @@ void Solomon_Reset(uint8_t SolomonNum)
 	{
 		WriteLn("reset Sol1");
 		ioport_set_pin_low(Solomon1_Reset);
-		solomon_delay_ms(10);
+		svr_yield_ms(10);
 		ioport_set_pin_high(Solomon1_Reset);
 	}
 #ifdef SVR_HAVE_SOLOMON2
@@ -425,7 +412,7 @@ void Solomon_Reset(uint8_t SolomonNum)
 	{
 		WriteLn("reset Sol2");
 		ioport_set_pin_low(Solomon2_Reset);
-		solomon_delay_ms(1);
+		svr_yield_ms(1);
 		ioport_set_pin_high(Solomon2_Reset);
 	}
 #endif

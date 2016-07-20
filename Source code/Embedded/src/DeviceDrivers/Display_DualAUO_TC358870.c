@@ -14,19 +14,21 @@
 
 #include "DeviceDrivers/Toshiba_TC358870.h"
 #include <libhdk20.h>
+static void tc358870_mystery_setup_commands();
+
+inline static void tc358870_mystery_setup_commands()
+{
+	/// This code was originally in "write_solomon()" in the Coretronic fork of the firmware. It would have gotten
+	/// triggered once: during init_solomon_device, the call to read_solomon_id starts with a write_solomon (which would
+	/// call this). The subsequent read was replaced with a dummy function returning 0, so the init_solomon_device would
+	/// always fail out at that point (not receiving the ID it expected), but these two writes would have taken place.
+	/// @todo why was this implementation included? what does it do?
+	TC358870_i2c_Write(0x0504, 0x0015, 2);
+	TC358870_i2c_Write(0x0504, 0x07FE, 2);
+}
 
 void Display_System_Init() { Toshiba_TC358870_Init(); }
-void Display_Init(DisplayId id) {}
-/// @todo why was this implementation included?
-#if 0
-void write_solomon(uint8_t channel, uint8_t address, uint16_t data)
-{
-	
-	TC358870_i2c_Write(0x0504,0x0015, 2);
-	TC358870_i2c_Write(0x0504,0x07FE, 2);
-}
-#endif
-
+void Display_Init(uint8_t deviceID) { tc358870_mystery_setup_commands(); }
 void Display_On(uint8_t deviceID)
 
 {

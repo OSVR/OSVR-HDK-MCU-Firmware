@@ -40,6 +40,9 @@
 //#define Backlight				IOPORT_CREATE_PIN(PORTE,4) //
 
 #ifdef BNO070
+#define BNO070_ADDR 0x48
+// BNO070 will use INT0 vector of PORTD
+#define BNO070_ISR() ISR(PORTD_INT0_vect)
 #define BNO_070_Reset_Pin IOPORT_CREATE_PIN(PORTA, 5)
 #define Int_BNO070 IOPORT_CREATE_PIN(PORTD, 3)
 #endif  // BNO070
@@ -51,16 +54,19 @@
 
 #ifdef SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 #define FPGA_unlocked IOPORT_CREATE_PIN(PORTF, 2)  // low:locked; high:not locked
-#endif                                             // SVR_HAVE_FPGA_VIDEO_LOCK_PIN
+
+#endif  // SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 
 #ifdef SVR_HAVE_PWM_OUTPUTS
 #define PWM_A IOPORT_CREATE_PIN(PORTE, 3)  // high:on; low:off
 #define PWM_B IOPORT_CREATE_PIN(PORTF, 2)  // high:on; low:off
-#endif                                     // SVR_HAVE_PWM_OUTPUTS
+
+#endif  // SVR_HAVE_PWM_OUTPUTS
 
 #ifdef SVR_HAVE_FPGA
 #define FPGA_Reset_Pin IOPORT_CREATE_PIN(PORTB, 0)  // low holds the FPGA in reset, high releases it
-#endif                                              // SVR_HAVE_FPGA
+
+#endif  // SVR_HAVE_FPGA
 
 #define USB_Hub_Reset_Pin IOPORT_CREATE_PIN(PORTF, 6)
 #define USB_Hub_Power_Pin IOPORT_CREATE_PIN(PORTF, 7)
@@ -70,7 +76,8 @@
 #define CEC_1_ADDR 0x34
 uint8_t actualNXP_1_ADDR;  /// @todo should this be extern?
 uint8_t actualCEC_1_ADDR;  /// @todo should this be extern?
-#endif                     // SVR_HAVE_NXP1
+
+#endif  // SVR_HAVE_NXP1
 
 #ifdef SVR_HAVE_NXP2
 #define NXP_2_ADDR 0x49    // this is fake. In reality, NXP2 and NXP1 are same
@@ -79,9 +86,6 @@ uint8_t actualNXP_2_ADDR;  /// @todo should this be extern?
 uint8_t actualCEC_2_ADDR;  /// @todo should this be extern?
 #endif                     // SVR_HAVE_NXP2
 
-#ifdef BNO070
-#define BNO070_ADDR 0x48
-#endif  // BNO070
 
 void custom_board_init(void);                             // Sensics-specific initialization of the hardware
 void set_pwm_values(uint8_t Display1, uint8_t Display2);  // sets pwm values for each display
@@ -93,19 +97,18 @@ extern uint8_t HDK_Version_Minor;
 extern char ProductName[];
 #endif
 
-#ifdef BNO070
-// BNO070 will use INT0 vector of PORTD
-#define BNO070_ISR() ISR(PORTD_INT0_vect)
-#endif  // BNO070
-
 #define SIGNATURE_PAGE 0  // EEPROM page where Sensics signature is stored
 
 #define CONFIGURATION_PAGE 1  // EEPROM page where configuration is stored
 
-#define SBSOffset 0                 // Side-by-side settings
+#if 0
+/// @todo redundant and not used anywhere?
+#define SBSOffset 0  // Side-by-side settings
+#endif
+
 #define PersistenceOffset 4         // Persistence refresh rate
 #define PersistencePercentOffset 8  // Persistence percent
-#define SideBySideOffset 12         // Persistence percent
+#define SideBySideOffset 12         // Side-by-side settings
 #define GRVOffset 16                // BNO game rotation vector mode
 
 void set_buffer(uint8_t *buffer, uint8_t value);

@@ -212,8 +212,9 @@ ifeq ($(strip $(VERBOSE)),)
 endif
 	$(QUIETRULE)$(CC) $(ASFLAGS) $(patsubst %, -I"%",$(REL_SRC)/Variants/$(VARIANT) $(COMMON_INCLUDE_DIRS)) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
 
-# This file needs optimization turned off (set to -O0) - hopefully this will do it.
+# These files needs optimization turned off (set to -O0) - hopefully this will do it.
 $(call for_each_variant,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := -O0
+$(call for_each_variant,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := -O0
 
 # Makes the elf file
 $(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))

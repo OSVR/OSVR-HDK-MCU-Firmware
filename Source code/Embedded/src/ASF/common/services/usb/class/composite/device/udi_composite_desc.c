@@ -60,6 +60,7 @@ UDC_DESC_STORAGE usb_dev_desc_t udc_device_desc = {
 	.bLength                   = sizeof(usb_dev_desc_t),
 	.bDescriptorType           = USB_DT_DEVICE,
 	.bcdUSB                    = LE16(USB_V2_0),
+	/// Sensics modified for compatibility
 	.bDeviceClass              = 0xEF,
 	.bDeviceSubClass           = 0x02,
 	.bDeviceProtocol           = 0x01,

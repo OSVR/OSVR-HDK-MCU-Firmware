@@ -3,7 +3,7 @@
  *
  * \brief USB Device Communication Device Class (CDC) interface.
  *
- * Copyright (c) 2009 - 2013 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,6 +40,9 @@
  * \asf_license_stop
  *
  */
+/*
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
 
 #include "conf_usb.h"
 #include "usb_protocol.h"
@@ -49,29 +52,31 @@
 #include "udi_cdc.h"
 #include <string.h>
 
+/// Sensics addition
 #include "uart.h"
 #include "usb.h"
+/// End Sensics addition
 
 #ifdef UDI_CDC_LOW_RATE
-    #ifdef USB_DEVICE_HS_SUPPORT
-        #define UDI_CDC_TX_BUFFERS     (UDI_CDC_DATA_EPS_HS_SIZE)
-        #define UDI_CDC_RX_BUFFERS     (UDI_CDC_DATA_EPS_HS_SIZE)
+#  ifdef USB_DEVICE_HS_SUPPORT
+#    define UDI_CDC_TX_BUFFERS     (UDI_CDC_DATA_EPS_HS_SIZE)
+#    define UDI_CDC_RX_BUFFERS     (UDI_CDC_DATA_EPS_HS_SIZE)
+#  else
+#    define UDI_CDC_TX_BUFFERS     (UDI_CDC_DATA_EPS_FS_SIZE)
+#    define UDI_CDC_RX_BUFFERS     (UDI_CDC_DATA_EPS_FS_SIZE)
+#  endif
     #else
-        #define UDI_CDC_TX_BUFFERS     (UDI_CDC_DATA_EPS_FS_SIZE)
-        #define UDI_CDC_RX_BUFFERS     (UDI_CDC_DATA_EPS_FS_SIZE)
-    #endif
-#else
-    #ifdef USB_DEVICE_HS_SUPPORT
-        #define UDI_CDC_TX_BUFFERS     (UDI_CDC_DATA_EPS_HS_SIZE)
-        #define UDI_CDC_RX_BUFFERS     (UDI_CDC_DATA_EPS_HS_SIZE)
-    #else
-        #define UDI_CDC_TX_BUFFERS     (5*UDI_CDC_DATA_EPS_FS_SIZE)
-        #define UDI_CDC_RX_BUFFERS     (5*UDI_CDC_DATA_EPS_FS_SIZE)
-    #endif
+#  ifdef USB_DEVICE_HS_SUPPORT
+#    define UDI_CDC_TX_BUFFERS     (UDI_CDC_DATA_EPS_HS_SIZE)
+#    define UDI_CDC_RX_BUFFERS     (UDI_CDC_DATA_EPS_HS_SIZE)
+#  else
+#    define UDI_CDC_TX_BUFFERS     (5*UDI_CDC_DATA_EPS_FS_SIZE)
+#    define UDI_CDC_RX_BUFFERS     (5*UDI_CDC_DATA_EPS_FS_SIZE)
+#  endif
 #endif
 
 #ifndef UDI_CDC_TX_EMPTY_NOTIFY
-    #define UDI_CDC_TX_EMPTY_NOTIFY(port)
+#  define UDI_CDC_TX_EMPTY_NOTIFY(port)
 #endif
 
 /**
@@ -217,7 +222,8 @@ static void udi_cdc_tx_send(uint8_t port);
  * \name Information about configuration of communication line
  */
 //@{
-static usb_cdc_line_coding_t udi_cdc_line_coding[UDI_CDC_PORT_NB];
+COMPILER_WORD_ALIGNED
+		static usb_cdc_line_coding_t udi_cdc_line_coding[UDI_CDC_PORT_NB];
 static bool udi_cdc_serial_state_msg_ongoing[UDI_CDC_PORT_NB];
 static volatile le16_t udi_cdc_state[UDI_CDC_PORT_NB];
 COMPILER_WORD_ALIGNED static usb_cdc_notify_serial_state_t uid_cdc_state_msg[UDI_CDC_PORT_NB];
@@ -238,7 +244,7 @@ static volatile bool udi_cdc_data_running = false;
 //! Buffer to receive data
 COMPILER_WORD_ALIGNED static uint8_t udi_cdc_rx_buf[UDI_CDC_PORT_NB][2][UDI_CDC_RX_BUFFERS];
 //! Data available in RX buffers
-static uint16_t udi_cdc_rx_buf_nb[UDI_CDC_PORT_NB][2];
+static volatile uint16_t udi_cdc_rx_buf_nb[UDI_CDC_PORT_NB][2];
 //! Give the current RX buffer used (rx0 if 0, rx1 if 1)
 static volatile uint8_t udi_cdc_rx_buf_sel[UDI_CDC_PORT_NB];
 //! Read position in current RX buffer
@@ -345,6 +351,7 @@ bool udi_cdc_data_enable(void)
     udi_cdc_rx_trans_ongoing[port] = false;
     udi_cdc_rx_buf_sel[port] = 0;
     udi_cdc_rx_buf_nb[port][0] = 0;
+	udi_cdc_rx_buf_nb[port][1] = 0;
     udi_cdc_rx_pos[port] = 0;
     if (!udi_cdc_rx_start(port)) {
         return false;
@@ -365,7 +372,6 @@ void udi_cdc_comm_disable(void)
 void udi_cdc_data_disable(void)
 {
     uint8_t port;
-    UNUSED(port);
 
     Assert(udi_cdc_nb_data_enabled != 0);
     udi_cdc_nb_data_enabled--;
@@ -872,6 +878,7 @@ int udi_cdc_multi_getc(uint8_t port)
     bool b_databit_9;
     uint16_t pos;
     uint8_t buf_sel;
+	bool again;
 
 #if UDI_CDC_PORT_NB == 1 // To optimize code
     port = 0;
@@ -884,8 +891,9 @@ udi_cdc_getc_process_one_byte:
     flags = cpu_irq_save();
     pos = udi_cdc_rx_pos[port];
     buf_sel = udi_cdc_rx_buf_sel[port];
+	again = pos >= udi_cdc_rx_buf_nb[port][buf_sel];
     cpu_irq_restore(flags);
-    while (pos >= udi_cdc_rx_buf_nb[port][buf_sel]) {
+	while (again) {
         if (!udi_cdc_data_running) {
             return 0;
         }
@@ -919,6 +927,7 @@ iram_size_t udi_cdc_multi_read_buf(uint8_t port, void* buf, iram_size_t size)
     iram_size_t copy_nb;
     uint16_t pos;
     uint8_t buf_sel;
+	bool again;
 
 #if UDI_CDC_PORT_NB == 1 // To optimize code
     port = 0;
@@ -929,8 +938,9 @@ udi_cdc_read_buf_loop_wait:
     flags = cpu_irq_save();
     pos = udi_cdc_rx_pos[port];
     buf_sel = udi_cdc_rx_buf_sel[port];
+	again = pos >= udi_cdc_rx_buf_nb[port][buf_sel];
     cpu_irq_restore(flags);
-    while (pos >= udi_cdc_rx_buf_nb[port][buf_sel]) {
+	while (again) {
         if (!udi_cdc_data_running) {
             return size;
         }
@@ -954,6 +964,52 @@ udi_cdc_read_buf_loop_wait:
     return 0;
 }
 
+static iram_size_t udi_cdc_multi_read_no_polling(uint8_t port, void* buf, iram_size_t size)
+{
+	uint8_t *ptr_buf = (uint8_t *)buf;
+	iram_size_t nb_avail_data;
+	uint16_t pos;
+	uint8_t buf_sel;
+	irqflags_t flags;
+
+#if UDI_CDC_PORT_NB == 1 // To optimize code
+	port = 0;
+#endif
+
+	//Data interface not started... exit
+	if (!udi_cdc_data_running) {
+		return 0;
+	}
+	
+	//Get number of available data
+	// Check available data
+	flags = cpu_irq_save(); // to protect udi_cdc_rx_pos & udi_cdc_rx_buf_sel
+	pos = udi_cdc_rx_pos[port];
+	buf_sel = udi_cdc_rx_buf_sel[port];
+	nb_avail_data = udi_cdc_rx_buf_nb[port][buf_sel] - pos;
+	cpu_irq_restore(flags);
+	//If the buffer contains less than the requested number of data,
+	//adjust read size
+	if(nb_avail_data<size) {
+		size = nb_avail_data;
+	}
+	if(size>0) {
+		memcpy(ptr_buf, &udi_cdc_rx_buf[port][buf_sel][pos], size);
+		flags = cpu_irq_save(); // to protect udi_cdc_rx_pos
+		udi_cdc_rx_pos[port] += size;
+		cpu_irq_restore(flags);
+		
+		ptr_buf += size;
+		udi_cdc_rx_start(port);
+	}
+	return(nb_avail_data);
+}
+
+iram_size_t udi_cdc_read_no_polling(void* buf, iram_size_t size)
+{
+	return udi_cdc_multi_read_no_polling(0, buf, size);
+}
+
 iram_size_t udi_cdc_read_buf(void* buf, iram_size_t size)
 {
     return udi_cdc_multi_read_buf(0, buf, size);
@@ -962,7 +1018,7 @@ iram_size_t udi_cdc_read_buf(void* buf, iram_size_t size)
 iram_size_t udi_cdc_multi_get_free_tx_buffer(uint8_t port)
 {
     irqflags_t flags;
-    iram_size_t buf_sel_nb, buf_nosel_nb;
+	iram_size_t buf_sel_nb, retval;
     uint8_t buf_sel;
 
 #if UDI_CDC_PORT_NB == 1 // To optimize code
@@ -972,7 +1028,6 @@ iram_size_t udi_cdc_multi_get_free_tx_buffer(uint8_t port)
     flags = cpu_irq_save();
     buf_sel = udi_cdc_tx_buf_sel[port];
     buf_sel_nb = udi_cdc_tx_buf_nb[port][buf_sel];
-    buf_nosel_nb = udi_cdc_tx_buf_nb[port][(buf_sel == 0)? 1 : 0];
     if (buf_sel_nb == UDI_CDC_TX_BUFFERS) {
         if ((!udi_cdc_tx_trans_ongoing[port])
                 && (!udi_cdc_tx_both_buf_to_send[port])) {
@@ -982,12 +1037,12 @@ iram_size_t udi_cdc_multi_get_free_tx_buffer(uint8_t port)
             udi_cdc_tx_both_buf_to_send[port] = true;
             udi_cdc_tx_buf_sel[port] = (buf_sel == 0)? 1 : 0;
             buf_sel_nb = 0;
-            buf_nosel_nb = UDI_CDC_TX_BUFFERS;
         }
     }
+	retval = UDI_CDC_TX_BUFFERS - buf_sel_nb;  
     cpu_irq_restore(flags);
 
-    return (UDI_CDC_TX_BUFFERS - buf_sel_nb) + (UDI_CDC_TX_BUFFERS - buf_nosel_nb);
+	return retval;
 }
 
 iram_size_t udi_cdc_get_free_tx_buffer(void)

@@ -3,7 +3,7 @@
  *
  * \brief Global interrupt management for 8-bit AVR
  *
- * Copyright (C) 2010-2013 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2010-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,6 +40,9 @@
  * \asf_license_stop
  *
  */
+/*
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
 #ifndef UTILS_INTERRUPT_INTERRUPT_H
 #define UTILS_INTERRUPT_INTERRUPT_H
 
@@ -53,31 +56,31 @@
  */
 
 #ifdef ISR_CUSTOM_H
-    #include ISR_CUSTOM_H
+#  include ISR_CUSTOM_H
 #else
 
-    /**
-    * \def ISR
-    * \brief Define service routine for specified interrupt vector
-    *
-    * Usage:
-    * \code
-    * ISR(FOO_vect)
-    * {
-    *     ...
-    * }
-    * \endcode
-    *
-    * \param vect Interrupt vector name as found in the device header files.
-    */
-    #if defined(__DOXYGEN__)
-        #define ISR(vect)
-    #elif defined(__GNUC__)
-        #include <avr/interrupt.h>
-    #elif defined(__ICCAVR__)
-        #define __ISR(x) _Pragma(#x)
-        #define ISR(vect) __ISR(vector=vect) __interrupt void handler_##vect(void)
-    #endif
+/**
+ * \def ISR
+ * \brief Define service routine for specified interrupt vector
+ *
+ * Usage:
+ * \code
+	ISR(FOO_vect)
+	{
+	    ...
+	}
+\endcode
+ *
+ * \param vect Interrupt vector name as found in the device header files.
+ */
+#if defined(__DOXYGEN__)
+#  define ISR(vect)
+#elif defined(__GNUC__)
+#  include <avr/interrupt.h>
+#elif defined(__ICCAVR__)
+#  define __ISR(x) _Pragma(#x)
+#  define ISR(vect) __ISR(vector=vect) __interrupt void handler_##vect(void)
+#endif
 #endif // ISR_CUSTOM_H
 
 #if XMEGA
@@ -93,38 +96,38 @@
 #endif
 
 #ifdef __GNUC__
-    #define cpu_irq_enable()     sei()
-    #define cpu_irq_disable()    cli()
+#  define cpu_irq_enable()     sei()
+#  define cpu_irq_disable()    cli()
 #else
-    #define cpu_irq_enable()     __enable_interrupt()
-    #define cpu_irq_disable()    __disable_interrupt()
+#  define cpu_irq_enable()     __enable_interrupt()
+#  define cpu_irq_disable()    __disable_interrupt()
 #endif
 
 typedef uint8_t irqflags_t;
 
 static inline irqflags_t cpu_irq_save(void)
 {
-    irqflags_t flags = SREG;
-    cpu_irq_disable();
-    return flags;
+	volatile irqflags_t flags = SREG;
+	cpu_irq_disable();
+	return flags;
 }
 
 static inline void cpu_irq_restore(irqflags_t flags)
 {
-    barrier();
-    SREG = flags;
+	barrier();
+	SREG = flags;
 }
 
 static inline bool cpu_irq_is_enabled_flags(irqflags_t flags)
 {
 #if XMEGA
 #  ifdef __GNUC__
-    return flags & CPU_I_bm;
+	return flags & CPU_I_bm;
 #  else
-    return flags & I_bm;
+	return flags & I_bm;
 #  endif
 #elif MEGA || TINY
-    return flags & (1 << SREG_I);
+	return flags & (1 << SREG_I);
 #endif
 }
 

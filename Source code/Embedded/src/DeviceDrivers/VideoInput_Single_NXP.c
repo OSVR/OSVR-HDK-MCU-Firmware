@@ -29,6 +29,7 @@ void VideoInput_Task(void)
 void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
 void VideoInput_Suspend(void) { NXP_Suspend(); }
 void VideoInput_Resume(void) { NXP_Resume(); }
+void VideoInput_Report_Status(void) { NXP_Report_HDMI_status(); }
 #if 0
 uint8_t VideoInput_Get_Detail_Status(void) { return Get_HDMI_Status(); }
 #endif

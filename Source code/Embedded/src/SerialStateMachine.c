@@ -44,7 +44,33 @@
 #include "SerialStateMachine.h"
 #include "config/my_hardware.h"
 
-#ifndef DISABLE_NXP
+#include "stdio.h"
+#include "DeviceDrivers/Display.h"
+#include "DeviceDrivers/VideoInput.h"
+#include "boot.h"
+#include "Console.h"
+#include "main.h"
+#include "TimingDebug.h"
+#include <util/delay.h>
+#include "my_hardware.h"
+
+#ifdef SVR_HAVE_SOLOMON
+#include "DeviceDrivers/Solomon.h"
+#endif
+
+#ifdef SVR_HAVE_FPGA
+#include "FPGA.h"
+#endif
+
+#ifdef SVR_HAVE_TMDS422
+#include "DeviceDrivers/TI-TMDS442.h"
+#endif
+
+#ifdef BNO070
+#include "DeviceDrivers/BNO070.h"
+#endif
+
+#ifdef SVR_USING_NXP
 #include "nxp/AVRHDMI.h"
 #include "nxp/tmbslHdmiRx_types.h"
 #include "nxp/tmdlHdmiRx.h"
@@ -54,18 +80,6 @@
 #include "nxp/i2c.h"
 #include "nxp/my_bit.h"
 #endif
-
-#include "stdio.h"
-#include "DeviceDrivers/Solomon.h"
-#include "boot.h"
-#include "FPGA.h"
-#include "DeviceDrivers/TI-TMDS442.h"
-#include "DeviceDrivers/BNO070.h"
-#include "Console.h"
-#include "main.h"
-#include "TimingDebug.h"
-#include <util/delay.h>
-#include "my_hardware.h"
 
 #ifdef SVR_IS_HDK_20
 #include <libhdk20.h>
@@ -885,7 +899,7 @@ void ProcessI2CCommand(void)
 		break;
 	}
 
-#ifndef DISABLE_NXP
+#ifdef SVR_USING_NXP
 
 	case 'f':
 	case 'F':  // find available I2C addresses
@@ -923,7 +937,7 @@ void ProcessI2CCommand(void)
 
 #endif
 
-#ifndef DISABLE_NXP
+#ifdef SVR_USING_NXP
 
 	case 'N':  // NXP commands
 	case 'n':
@@ -937,7 +951,7 @@ void ProcessI2CCommand(void)
 			TxByte = HexPairToDecimal(5);  // byte to send
 			if (NXPLeftSide == false)
 				Result = i2cWriteRegister(NXP_1_ADDR, Num, TxByte);
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
 			else
 				Result = i2cWriteRegister(NXP_2_ADDR, Num, TxByte);
 #endif
@@ -952,7 +966,7 @@ void ProcessI2CCommand(void)
 			Num = HexPairToDecimal(3);  // Register number
 			if (NXPLeftSide == false)
 				RxByte = NXPReadRegister(NXP_1_ADDR, Num);
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
 			else
 				RxByte = NXPReadRegister(NXP_2_ADDR, Num);
 #endif
@@ -963,7 +977,7 @@ void ProcessI2CCommand(void)
 		case 'X':  // read register through NXP library
 		case 'x':
 		{
-#define ACC_REG(a, p) (UInt16)(((p) << 8) | (a))
+			//#define ACC_REG(a, p) (UInt16)(((p) << 8) | (a))
 			UInt32 errCode;
 
 			Num = HexPairToDecimal(3);  // Register number
@@ -1031,6 +1045,7 @@ void ProcessI2CCommand(void)
 	WriteLn("");
 }
 
+#ifdef SVR_HAVE_FPGA
 void ProcessFPGACommand(void)
 
 // #FnRxx reads address XX from FPGA n
@@ -1092,53 +1107,39 @@ void ProcessFPGACommand(void)
 	case 'l':
 	case 'L':
 	{
-#ifdef OSVRHDK
+#ifdef SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 		if (ioport_get_pin_level(FPGA_unlocked))
 			WriteLn("FPGA unlocked");
 		else
 			WriteLn("FPGA locked");
-#endif
+#endif  // SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 		break;
 	}
 	}
 }
+#endif  // SVR_HAVE_FPGA
 
-#ifndef DISABLE_NXP
+#ifdef SVR_ENABLE_VIDEO_INPUT
 
 void ProcessHDMICommand(void)
 
 {
 	switch (CommandToExecute[1])
 	{
+	// Vendor-independent commands - routed through VideoInput interface.
 	case 'I':
 	case 'i':
 	{
 		WriteLn(";Init HDMI");
-		NXP_Init_HDMI();
+		VideoInput_Init();
 		WriteLn(";End init");
-		break;
-	}
-	case 'E':
-	case 'e':
-	{
-		WriteLn("Pulse HPD");
-		tmdlHdmiRxManualHPD(0, BSLHDMIRX_HPD_PULSE);
-		break;
-	}
-	case 'H':
-	case 'h':
-	{
-		WriteLn("Pulse HPD 1sec");
-		tmdlHdmiRxManualHPD(0, TMDL_HDMIRX_HPD_HIGH);
-		_delay_ms(1000);
-		tmdlHdmiRxManualHPD(0, TMDL_HDMIRX_HPD_LOW);
 		break;
 	}
 
 	case 'R':
 	case 'r':
 	{
-		NXP_Report_HDMI_status();
+		VideoInput_Report_Status();
 		break;
 	}
 	case 'T':
@@ -1155,27 +1156,44 @@ void ProcessHDMICommand(void)
 			WriteLn("Shadow on");
 		break;
 	}
+	case '0':
+	{
+		VideoInput_Reset(HexDigitToDecimal(2));
+		break;
+	}
+#ifdef SVR_HAVE_NXP
+	case 'E':
+	case 'e':
+	{
+		WriteLn("Pulse HPD");
+		tmdlHdmiRxManualHPD(0, TMDL_HDMIRX_HPD_PULSE);
+		break;
+	}
+	case 'H':
+	case 'h':
+	{
+		WriteLn("Pulse HPD 1sec");
+		tmdlHdmiRxManualHPD(0, TMDL_HDMIRX_HPD_HIGH);
+		_delay_ms(1000);
+		tmdlHdmiRxManualHPD(0, TMDL_HDMIRX_HPD_LOW);
+		break;
+	}
 	case 'V':
 	case 'v':
 	{
 		uint8_t i;
 		// move both NXP to page 0
 		i2cWriteRegister(NXP_1_ADDR, 0xff, 0);
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
 		i2cWriteRegister(NXP_2_ADDR, 0xff, 0);
 #endif
 		for (i = 0; i < 10; i++)
 		{
 			NXPReadRegister(NXP_1_ADDR, 0);
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
 			NXPReadRegister(NXP_2_ADDR, 0);
 #endif
 		}
-		break;
-	}
-	case '0':
-	{
-		NXP_HDMI_Reset(HexDigitToDecimal(2));
 		break;
 	}
 	case 'M':
@@ -1187,7 +1205,7 @@ void ProcessHDMICommand(void)
 			_delay_ms(50);
 			NXP_Program_MTP0();
 		}
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
 		if (CommandBuffer[2] == '1')
 		{
 			WriteLn(";Program MTP1");
@@ -1197,6 +1215,7 @@ void ProcessHDMICommand(void)
 #endif
 		break;
 	}
+#endif  // SVR_HAVE_NXP
 	}
 }
 

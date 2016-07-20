@@ -41,6 +41,7 @@ void VideoInput_Poll_Status(void)
 {
 	// We don't poll on this hardware.
 }
+void VideoInput_Report_Status(void) { NXP_Report_HDMI_status(); }
 
 #if 0
 uint8_t VideoInput_Get_Detail_Status(void) { return Get_HDMI_Status(); }

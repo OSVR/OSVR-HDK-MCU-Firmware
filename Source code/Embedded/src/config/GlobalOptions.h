@@ -16,6 +16,21 @@
 //#define SkipNXP1 // ignore first NXP during HDMI task.
 //#define BYPASS_FIRST_NXP
 
+#if defined(DISABLE_NXP) && !defined(SVR_DISABLE_VIDEO_INPUT)
+/// This is the canonical, new way of disabling the video input code
+#define SVR_DISABLE_VIDEO_INPUT
+#elif defined(SVR_DISABLE_VIDEO_INPUT) && defined(SVR_HAVE_NXP) && !defined(DISABLE_NXP)
+/// @todo remove once other references to DISABLE_NXP are gone - compatibility shim only
+#define DISABLE_NXP
+#endif
+
+#ifndef SVR_DISABLE_VIDEO_INPUT
+/// Automatically-defined opposite of SVR_DISABLE_VIDEO_INPUT (and the deprecated DISABLE_NXP)
+#define SVR_ENABLE_VIDEO_INPUT
+#else
+#undef SVR_ENABLE_VIDEO_INPUT
+#endif
+
 #ifndef SENSICS_DISPLAY_CONFIGURED
 #define LS050T1SX01  // Sharp 5" LCD screen
 #define SENSICS_DISPLAY_CONFIGURED
@@ -61,8 +76,13 @@
 #endif  // SVR_HAVE_NXP
 
 // DISABLE_NXP is a flag passed to disable HDMI receiver functionality in some specialized firmware builds.
-#if defined(SVR_HAVE_NXP) && !defined(DISABLE_NXP)
+// It is being replaced by SVR_DISABLE_VIDEO_INPUT
+#if defined(SVR_HAVE_NXP) && !defined(SVR_DISABLE_VIDEO_INPUT)
 #define SVR_USING_NXP
+#endif
+
+#if defined(SVR_HAVE_TOSHIBA_TC358870) && !defined(SVR_DISABLE_VIDEO_INPUT)
+#define SVR_USING_TOSHIBA_TC358870
 #endif
 
 #ifdef SVR_HAVE_SOLOMON
@@ -89,8 +109,6 @@ extern char Msg[];
 //#define MeasurePerformance // if defined, performance is being recorded for BNO work, with some performance impact
 #define BNO_TWI_SPEED 400000  //!< TWI data transfer rate
 #endif
-
-//#define DISABLE_NXP // for debug - disables access to HDMI chips
 
 #define USB_REPORT_SIZE 16
 

@@ -16,10 +16,10 @@
 
 extern bool CDCWriteInProgress;  // true if USB is being used to write console messages
 
-void Write(char *const Data);
-void dWrite(char *const Data, uint8_t DebugMask);
-void WriteLn(char *const Data);
-void dWriteLn(char *const Data, uint8_t DebugMask);
+void Write(const char *const Data);
+void dWrite(const char *const Data, uint8_t DebugMask);
+void WriteLn(const char *const Data);
+void dWriteLn(const char *const Data, uint8_t DebugMask);
 void SetDebugLevel(uint8_t NewLevel);
 void UpdateCDCBusyStatus(void);
 

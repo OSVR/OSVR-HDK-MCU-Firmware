@@ -15,7 +15,7 @@ bool CDCWriteInProgress = false;  // true if USB is being used to write console 
 uint8_t DebugLevel = 0xff;  // start by opening all debug messages
 
 int MaxTimerCounter = 0;
-void Write(char *const Data)
+void Write(const char *const Data)
 
 {
 	{
@@ -35,17 +35,17 @@ void Write(char *const Data)
 	}
 }
 
-void dWrite(char *const Data, uint8_t DebugMask)
+void dWrite(const char *const Data, uint8_t DebugMask)
 
 {
 	if ((DebugLevel & DebugMask) != 0)
 		Write(Data);
 }
 
-void WriteLn(char *const Data)
+void WriteLn(const char *const Data)
 
 {
-	char *CR = "\n\r";
+	static const char *CR = "\n\r";
 
 	Write(Data);
 	Write(CR);
@@ -55,7 +55,7 @@ void WriteLn(char *const Data)
 	}
 }
 
-void dWriteLn(char *const Data, uint8_t DebugMask)
+void dWriteLn(const char *const Data, uint8_t DebugMask)
 
 {
 	if ((DebugLevel & DebugMask) != 0)

@@ -18,7 +18,20 @@ int MaxTimerCounter = 0;
 void Write(const char *const Data)
 
 {
+	if (!Data)
 	{
+		// Given a null pointer - that's not very polite.
+		return;
+	}
+	if (!(*Data))
+	{
+		// Empty string: Just don't print it, nothing to print!
+		// If this was from a WriteLn("") - consider WriteEndl instead...
+		return;
+	}
+	{
+/// @todo this seems redundant, the logic in udi_cdc_[multi_]write_buf already waits on the tx buffer being ready.
+#if 0
 		int TimeoutCounter = 0;
 		// ATOMIC_BLOCK(ATOMIC_FORCEON)
 		//{
@@ -30,6 +43,7 @@ void Write(const char *const Data)
 		} while (!udi_cdc_multi_is_tx_ready(0) && (TimeoutCounter < 100));
 		if (TimeoutCounter > MaxTimerCounter)
 			MaxTimerCounter = TimeoutCounter;
+#endif
 		CDCWriteInProgress = true;
 		udi_cdc_write_buf(Data, strlen(Data));
 	}

@@ -42,24 +42,26 @@ void set_pwm_values(uint8_t Display1, uint8_t Display2)
 void custom_board_init(void)
 
 {
-#ifdef Solomon1_SPI
+#ifdef SVR_HAVE_SOLOMON1
 	ioport_configure_pin(AT86RFX_SPI_SCK, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(AT86RFX_SPI_MOSI, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(AT86RFX_SPI_MISO, IOPORT_DIR_INPUT);
 
 	ioport_configure_pin(Solomon1_CSN, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(Solomon1_AddrData, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+#endif  // SVR_HAVE_SOLOMON1
 
-#ifndef OSVRHDK
+#if defined(SVR_HAVE_SOLOMON1) && defined(SVR_HAVE_SOLOMON2)
 	ioport_configure_pin(SPI_Mux_OE, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 	ioport_configure_pin(SPI_Mux_Select, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-#endif
+#endif  // SVR_HAVE_SOLOMON1 && SVR_HAVE_SOLOMON2
 
+#ifdef SVR_HAVE_SOLOMON1
 	ioport_configure_pin(Solomon1_VOUT_Shutdown, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 	ioport_configure_pin(Solomon1_Reset, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 #endif
 
-#ifdef Solomon2_SPI
+#ifdef SVR_HAVE_SOLOMON2
 	ioport_configure_pin(Solomon2_VOUT_Shutdown, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 	ioport_configure_pin(Solomon2_Reset, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(Solomon2_AddrData, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
@@ -67,8 +69,10 @@ void custom_board_init(void)
 
 	ioport_configure_pin(Debug_LED, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 
+#ifdef SVR_HAVE_NXP1
 	ioport_configure_pin(NXP1_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(Int_HDMI_A, IOPORT_DIR_INPUT);
+#endif
 
 #ifdef OSVRHDK
 

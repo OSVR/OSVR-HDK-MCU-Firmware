@@ -34,4 +34,6 @@
 // Two displays independently controlled
 #define SVR_NUM_LOGICAL_DISPLAYS 2
 
+#define SVR_HAVE_PWM_OUTPUTS
+
 #endif /* VARIANTOPTIONS_H_ */

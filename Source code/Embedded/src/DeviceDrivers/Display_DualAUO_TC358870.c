@@ -15,7 +15,7 @@
 
 static uint8_t tc_data;
 
-void DisplaySystemInit()
+void Display_System_Init()
 {
 	// Dennis Yeh 2016/03/14 : for TC358870
 	TC358870_i2c_Init();
@@ -24,7 +24,7 @@ void DisplaySystemInit()
 	PowerOnSeq();
 }
 
-void DisplayInit(DisplayId /*id*/) {}
+void Display_Init(DisplayId id) {}
 /// @todo why was this implementation included?
 #if 0
 void write_solomon(uint8_t channel, uint8_t address, uint16_t data)
@@ -35,7 +35,7 @@ void write_solomon(uint8_t channel, uint8_t address, uint16_t data)
 }
 #endif
 
-void DisplayOn(uint8_t /*deviceID*/)
+void Display_On(uint8_t deviceID)
 
 {
 	// delay_ms(500);
@@ -63,7 +63,7 @@ void DisplayOn(uint8_t /*deviceID*/)
 	TC358870_i2c_Write(0x0504, 0x0029, 2);
 }
 
-void DisplayOff(uint8_t /*deviceID*/)
+void Display_Off(uint8_t deviceID)
 {
 #if 0  // Not for SSD2848
 	// video mode off
@@ -94,7 +94,7 @@ void DisplayOff(uint8_t /*deviceID*/)
 #endif
 }
 
-void Display_Powercycle(uint8_t /*deviceID*/)
+void Display_Powercycle(uint8_t deviceID)
 {
 	// Display Off
 	TC358870_i2c_Write(0x0504, 0x0015, 2);

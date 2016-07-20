@@ -203,10 +203,7 @@ void ProcessBNO070Commands(void);
 void ProcessSPICommand(void);
 void ProcessI2CCommand(void);
 void ProcessFPGACommand(void);
-
-#ifdef SVR_USING_NXP
 void ProcessHDMICommand(void);
-#endif
 
 #ifdef SVR_HAVE_TMDS422
 void ProcessTMDSCommand(void);
@@ -335,7 +332,7 @@ void ProcessCommand(void)
 #endif
 			break;
 		}
-#ifdef SVR_USING_NXP
+#ifdef SVR_ENABLE_VIDEO_INPUT
 
 		case 'H':  // HDMI commands
 		case 'h':

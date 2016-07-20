@@ -13,6 +13,26 @@
 #include <stdint.h>
 #include <libhdk20.h>
 
+/// @todo Despite this function being empty in the Coretronic fork (and the original contents since being renamed to be
+/// namespaced in the mainline), we need to define it libhdk20.a can link against it circularly...
+/// (IsVideoExistingPolling contains a reference to it)
+void UpdateResolutionDetection(void);
+void UpdateResolutionDetection() {}
+/// @todo We actually need to export this function as bool HDMI_IsVideoExisting(void) so libhdk20.a can link against it
+/// circularly... (IsVideoExistingPolling contains a reference to it)
+bool HDMI_IsVideoExisting(void);
+bool HDMI_IsVideoExisting()
+{
+	uint8_t tc_data;
+
+	if (TC358870_i2c_Read(0x8520, &tc_data) != TC358870_OK)  // get SYS_STATUS
+		return false;
+
+	if (tc_data != 0x9F)
+		return false;
+
+	return true;
+}
 /*
     Function : Toshiba_TC358870_HDMI_IsVideoExisting
     IN : void

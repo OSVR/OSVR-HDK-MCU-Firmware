@@ -245,15 +245,7 @@ void init_solomon(void)
 	// Solomon_CSN[Solomon2]=Solomon2_CSN;
 
 	init_solomon_spi(Solomon1);  // no need to do repeat for Solomon2 because both
-                                 // share the same SPI port
-
-#ifdef Solomon1_SPI
-	init_solomon_device(Solomon1);
-#endif
-
-#ifdef Solomon2_SPI
-	init_solomon_device(Solomon2);
-#endif
+	                             // share the same SPI port
 }
 
 /* write data to solomon

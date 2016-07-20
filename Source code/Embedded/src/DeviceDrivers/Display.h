@@ -12,9 +12,15 @@
 
 typedef enum { Display1 = 0, Display2 = 1 } DisplayId;
 
+/// Initializes the display system/controller, not including individual displays or per-display circuitry.
 void Display_System_Init(void);
 
+/// Initializes per-display/device controllers and panels.
 void Display_Init(uint8_t id);
+
+/// A convenience method that calls Display_System_Init(), then Display_Init() for each available display. Shared
+/// implementation: Does not need to be implemented by custom implementations of this interface.
+void Display_System_Full_Init(void);
 
 void Display_On(uint8_t deviceID);
 

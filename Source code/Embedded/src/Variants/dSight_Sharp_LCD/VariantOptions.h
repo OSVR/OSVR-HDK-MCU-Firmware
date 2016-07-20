@@ -9,16 +9,29 @@
 #ifndef VARIANTOPTIONS_H_
 #define VARIANTOPTIONS_H_
 
+// Product: Sensics dSight professional HMD
 #define DSIGHT
-#define SENSICS_DISPLAY_CONFIGURED
-#define LS050T1SX01  // sharp 5" LCD
 
+// sharp 5" LCD
+#define LS050T1SX01
+#define SENSICS_DISPLAY_CONFIGURED
+
+// TI TMDS422 HDMI switch preceding the HDMI receivers in the signal path and providing connect/disconnect notification.
 #define SVR_HAVE_TMDS422
+
+// Dual NXP TDA-19971 HDMI receiver
 #define SVR_HAVE_NXP 2
+
+// Dual Solomon SSD2828 MIPI bridge chip
 #define SVR_HAVE_SOLOMON 2
+
+// Video-processing FPGA in the signal path between each HDMI receiver and MIPI bridge
 #define SVR_HAVE_FPGA
+
+// Side-by-side video transform functionality provided by FPGA
 #define SVR_HAVE_SIDEBYSIDE
 
+// Two displays independently controlled
 #define SVR_NUM_LOGICAL_DISPLAYS 2
 
 #endif /* VARIANTOPTIONS_H_ */

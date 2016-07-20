@@ -57,6 +57,7 @@
 #endif
 
 #include "DeviceDrivers/Display.h"
+#include "DeviceDrivers/VideoInput.h"
 #include "DeviceDrivers/TI-TMDS442.h"
 #include "DeviceDrivers/BNO070.h"
 #include "Console.h"
@@ -147,26 +148,26 @@ int main(void)
 #ifdef TMDS422
 	InitHDMISwitch();
 	TMDS_422_Task();
-#endif
+#endif  // TMDS422
 
 #ifdef OSVRHDK
 // ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
 #ifdef MeasurePerformance
 	TimingDebug_init();
-#endif
-#endif
+#endif  // MeasurePerformance
+#endif  // OSVRHDK
 
 #ifdef SVR_USING_NXP
 
-	NXP_Init_HDMI();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
-	                  // already been initizliaed
+	VideoInput_Init();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
+	                    // already been initialized
 
 	if (NewVideoDetected)
 	{
 		WriteLn("Video at start");
 #ifdef SVR_HAVE_DISPLAY1
 		Display_On(Display1);
-		NXP_Update_Resolution_Detection();
+		VideoInput_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
 #endif  // BNO070
@@ -184,28 +185,30 @@ int main(void)
 
 	if (VideoLost)
 	{
-#ifdef Solomon1_SPI
-		Display_Off(Solomon1);
-		NXP_Update_Resolution_Detection();
+#ifdef SVR_HAVE_DISPLAY1
+		Display_Off(Display1);
+		VideoInput_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
-#endif
+#endif  // BNO070
 
-#endif
-#ifdef Solomon2_SPI
-		Display_Off(Solomon2);
-#endif
+#endif  // SVR_HAVE_DISPLAY1
+#ifdef SVR_HAVE_DISPLAY2
+		Display_Off(Display2);
+#endif  // SVR_HAVE_DISPLAY1
 		VideoLost = false;
 	}
 
 #ifdef DSIGHT
+	/// @todo isn't this redundant with the NewVideoDetected check above? or is the waiting for 1 second important for
+	/// dSight specifically?
 	if (NewVideoDetected)
 	{
 		delay_ms(1000);
-		init_solomon_device(Solomon1);
-		init_solomon_device(Solomon2);
+		Display_Init(Display1);
+		Display_Init(Display2);
 	}
-#endif
+#endif  // DSIGHT
 
 	// ProgramMTP0();
 
@@ -215,9 +218,12 @@ int main(void)
 
 #ifdef BNO070
 	BNO070Active = init_BNO070();
+#if defined(OSVRHDK) && !defined(HDK_20)
 	if (BNO070Active)
 	{
-		if (BNO070id.swVersionMajor * 100 + BNO070id.swVersionMinor * 10 + BNO070id.swVersionPatch >= 184)
+		/// If tracker version is 1.8.4 or greater...
+		if (1 < BNO070id.swVersionMajor || (1 == BNO070id.swVersionMajor && 8 < BNO070id.swVersionMinor) ||
+		    (1 == BNO070id.swVersionMajor && 8 == BNO070id.swVersionMinor && 4 <= BNO070id.swVersionPatch))
 		{
 			HDK_Version_Major = 1;
 			HDK_Version_Minor = 3;
@@ -225,6 +231,7 @@ int main(void)
 			                                      /// than original name defined in udc.h and in my_hardware.c
 		}
 	}
+#endif  // OSVRHDK && !HDK_20
 #endif
 
 	// Start USB stack to authorize VBus monitoring
@@ -278,21 +285,20 @@ int main(void)
 			{
 				if (LastFPGALockStatus != NewFPGALockStatus)
 				{
-// WriteLn("Video signal lost");
-#ifdef OSVRHDK
+					// WriteLn("Video signal lost");
+
 					LastFPGALockStatus = NewFPGALockStatus;
-#endif
 
 #ifdef Solomon1_SPI
 					Display_Off(Solomon1);
 					NXP_Update_Resolution_Detection();
 #ifdef BNO070
 					Update_BNO_Report_Header();
-#endif
-#endif
+#endif  // BNO070
+#endif  // Solomon1_SPI
 #ifdef Solomon2_SPI
 					Display_Off(Solomon2);
-#endif
+#endif  // Solomon2_SPI
 				}
 			}
 			else  // FPGA is locked
@@ -318,14 +324,14 @@ int main(void)
 					NXP_Update_Resolution_Detection();
 #ifdef BNO070
 					Update_BNO_Report_Header();
-#endif
-#endif
+#endif  // BNO070
+#endif  // Solomon1_SPI
 #ifdef Solomon2_SPI
 					Display_On(Solomon2);
-#endif
+#endif  // Solomon2_SPI
 				}
 			}
-#else  // dSight
+#else  // OSVR_HDK ^ / v dSight
 			HandleHDMI();
 #endif
 		}

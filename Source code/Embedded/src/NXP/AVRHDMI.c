@@ -1440,7 +1440,7 @@ void NXP_HDMI_Task(void)
 
 
 
-    return; // this disables the HDMI task. Should be removed after debug
+    return; /// @todo this disables the HDMI task. Should be removed after debug
 
     tmErrorCode_t errCode = TM_OK;
 
@@ -1559,7 +1559,7 @@ void NXP_Report_HDMI_status()
 	#endif
 };
 
-uint8_t Get_HDMI_Status()
+static uint8_t Get_HDMI_Status()
 // returns byte showing HDMI status. This is used for reporting video mode in USB reports
 {
 	uint8_t Result=0;
@@ -1571,6 +1571,7 @@ uint8_t Get_HDMI_Status()
 			Result+=2;
 	}
 	#else
+	/// @todo Why does portrait return 2 here and 3 above (on HDK)?
 	if (PortraitMode)
 		Result+=2;
 	#endif

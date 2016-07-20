@@ -64,7 +64,10 @@ src/NXP/tmdlHdmiRx_IW_RTX.c \
 src/NXP/tmdlHdmiRx_cfg.c \
 src/DeviceDrivers/Display.c \
 src/DeviceDrivers/Display_Solomon.c \
-src/DeviceDrivers/VideoInput_NXP.c \
+src/DeviceDrivers/VideoInput.c \
+src/DeviceDrivers/VideoInput_FPGALockPin.c \
+src/DeviceDrivers/VideoInput_Single_NXP.c \
+src/DeviceDrivers/VideoInput_TMDS422_NXP.c \
 src/DeviceDrivers/BNO070_using_hostif.c \
 src/DeviceDrivers/Solomon.c \
 src/DeviceDrivers/TI-TMDS442.c \

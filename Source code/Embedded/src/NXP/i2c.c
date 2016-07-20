@@ -3,6 +3,7 @@
 Implements I2C communications for NXP HDMI controllers */
 
 #include "GlobalOptions.h"
+#ifdef SVR_USING_NXP
 #include "Console.h"
 
 
@@ -21,7 +22,7 @@ Implements I2C communications for NXP HDMI controllers */
 #define I2C_TIMEOUT				1 	// msec
 
 
-bool HDMIShadow=true; // if true, a write to one HDMI causes a write to both
+bool NXP_HDMIShadow=true; // if true, a write to one HDMI causes a write to both
 
 #ifdef TMDS422
     bool TWI_TMDS422_PORT_initialized=false; // true if already initialized
@@ -71,7 +72,7 @@ bool i2cWriteRegister(uint8_t addr, uint8_t RegNum, uint8_t TxByte)
     {
         Success = (twi_master_write(TWI_NXP1_PORT, &packet) == TWI_SUCCESS);
 #ifndef OSVRHDK
-        if (HDMIShadow)
+        if (NXP_HDMIShadow)
 		{
 			//packet.chip=actualNXP_1_ADDR;
             Success = (twi_master_write(TWI_NXP2_PORT, &packet) == TWI_SUCCESS);
@@ -85,7 +86,7 @@ bool i2cWriteRegister(uint8_t addr, uint8_t RegNum, uint8_t TxByte)
         packet.chip=actualCEC_1_ADDR;
         Success = (twi_master_write(TWI_NXP1_PORT, &packet) == TWI_SUCCESS);
 #ifndef OSVRHDK
-        if (HDMIShadow)
+        if (NXP_HDMIShadow)
 		{
 			//packet.chip=actualCEC_1_ADDR;
             Success = (twi_master_write(TWI_NXP2_PORT, &packet) == TWI_SUCCESS);
@@ -289,7 +290,7 @@ tmErrorCode_t  i2cWrite(i2cRegisterType_t type_register,tmbslHdmiSysArgs_t *pSys
             i2cWriteRegister(NXP_1_ADDR, first, *pdat);
 
 #ifndef OSVRHDK
-            if (HDMIShadow)
+            if (NXP_HDMIShadow)
             {
                 //i2cWriteRegister(NXP_2_ADDR, first, *pdat);
             }
@@ -309,7 +310,7 @@ tmErrorCode_t  i2cWrite(i2cRegisterType_t type_register,tmbslHdmiSysArgs_t *pSys
             i2cWriteRegister(slave, first, *pdat);
 //#ifndef OSVRHDK
 //
-            //if (HDMIShadow)
+            //if (NXP_HDMIShadow)
             //{
 	            //i2cWriteRegister(NXP_2_ADDR, first, *pdat);
             //}
@@ -370,5 +371,4 @@ uint8_t I2CReadRegister(uint8_t addr, uint8_t RegNum)
         return false;
 }
 
-
-
+#endif // SVR_USING_NXP

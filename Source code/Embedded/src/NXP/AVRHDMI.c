@@ -799,7 +799,7 @@ static void digitalActivityCallback0 (tmdlHdmiRxEvent_t event,
         //WriteLn("AD0 1");
         ActivityDetected0=false;
         KnownResolution0=false;
-        if (HDMIShadow)
+        if (NXP_HDMIShadow)
         {
         }
 
@@ -1272,7 +1272,7 @@ void NXP_Video_On(void)
 	
     // FPGA_reset();
 
-    //if (HDMIShadow)
+    //if (NXP_HDMIShadow)
 //			Lower_VideoB;
     _delay_ms(1);
 }

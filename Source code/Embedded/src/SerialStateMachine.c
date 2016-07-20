@@ -1148,20 +1148,20 @@ void ProcessHDMICommand(void)
 		HDMI_task = true;
 		break;
 	}
-	case 'S':
-	case 's':
-	{
-		HDMIShadow = (CommandToExecute[2] == '1');
-		if (HDMIShadow)
-			WriteLn("Shadow on");
-		break;
-	}
 	case '0':
 	{
 		VideoInput_Reset(HexDigitToDecimal(2));
 		break;
 	}
 #ifdef SVR_HAVE_NXP
+	case 'S':
+	case 's':
+	{
+		NXP_HDMIShadow = (CommandToExecute[2] == '1');
+		if (NXP_HDMIShadow)
+			WriteLn("Shadow on");
+		break;
+	}
 	case 'E':
 	case 'e':
 	{

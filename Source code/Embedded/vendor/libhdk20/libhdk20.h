@@ -23,7 +23,7 @@ WriteLn (part of Console)
 DebugLevel (part of Console)
 HDMI_IsVideoExisting (was added in Coretronic fork of firmware, referenced by library export IsVideoExistingPolling)
 UpdateResolutionDetection (Coretronic fork has an empty implementation: referenced twice by library export IsVideoExistingPolling)
-Update_BNO_Report_Header (normally called by main() upon a display event)
+Update_BNO_Report_Header (normally called by main() upon a display event, referenced by library export IsVideoExistingPolling)
 CommandToExecute (part of SerialStateMachine)
 
 -- Ryan A. Pavlik, Ph.D.

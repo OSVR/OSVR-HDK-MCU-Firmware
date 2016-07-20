@@ -1538,7 +1538,7 @@ void NXP_Report_HDMI_status()
     sprintf(Msg,"L %d P %d I %d",pLines,pPixels,pInterlaced);
     WriteLn(Msg);
 		
-	#ifdef OSVRHDK
+	#ifdef SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 		if (ioport_get_pin_level(FPGA_unlocked))
 			WriteLn("No Video detected");
 		else

@@ -62,7 +62,7 @@ void solomon_delay_ms(uint16_t ms)
 	}
 }
 
-void powercycle_display(uint8_t deviceID)
+void Display_Powercycle(uint8_t deviceID)
 
 // power cycles display connected to the specific device
 
@@ -80,7 +80,7 @@ void powercycle_display(uint8_t deviceID)
 
 bool SolomonInitialized = false;
 
-void set_strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
+void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 {
 	Strobing_rate = refresh;
 	SetConfigValue(PersistenceOffset, Strobing_rate);
@@ -289,7 +289,7 @@ bool init_solomon_device(uint8_t deviceID)
 	// write_solomon(deviceID,0xBF,0x8E8a);
 	// write_solomon(deviceID,0xBF,0x118b);
 
-	set_strobing(deviceID, Strobing_rate, Strobing_percent);
+	Display_Set_Strobing(deviceID, Strobing_rate, Strobing_percent);
 
 	write_solomon(deviceID, 0xBF, 0xFF51);  // cmd=FE, data=08
 
@@ -344,7 +344,7 @@ delay_ms(16);*/
 	return true;
 }
 
-void DisplayOn(uint8_t deviceID)
+void Display_On(uint8_t deviceID)
 
 {
 #ifdef H546DLT01  // AUO 5.46" OLED
@@ -366,7 +366,7 @@ void DisplayOn(uint8_t deviceID)
 #endif
 }
 
-void DisplayOff(uint8_t deviceID)
+void Display_Off(uint8_t deviceID)
 
 {
 #ifdef H546DLT01  // AUO 5.46" OLED

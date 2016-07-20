@@ -95,7 +95,7 @@ void my_callback_generic_report_out(uint8_t *report)
 {
 	if ((report[0] == 0) && (report[1] == 1))
 	{
-		DisplayOff(Solomon1);
+		Display_Off(Solomon1);
 		// The report is correct
 	}
 }

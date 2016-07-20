@@ -164,14 +164,14 @@ int main(void)
 	{
 		WriteLn("Video at start");
 #ifdef Solomon1_SPI
-		DisplayOn(Solomon1);
+		Display_On(Solomon1);
 		NXP_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
 #endif
 #endif
 #ifdef Solomon2_SPI
-		DisplayOn(Solomon2);
+		Display_On(Solomon2);
 #endif
 		NewVideoDetected = false;
 	};
@@ -184,7 +184,7 @@ int main(void)
 	if (VideoLost)
 	{
 #ifdef Solomon1_SPI
-		DisplayOff(Solomon1);
+		Display_Off(Solomon1);
 		NXP_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
@@ -192,7 +192,7 @@ int main(void)
 
 #endif
 #ifdef Solomon2_SPI
-		DisplayOff(Solomon2);
+		Display_Off(Solomon2);
 #endif
 		VideoLost = false;
 	}
@@ -283,14 +283,14 @@ int main(void)
 #endif
 
 #ifdef Solomon1_SPI
-					DisplayOff(Solomon1);
+					Display_Off(Solomon1);
 					NXP_Update_Resolution_Detection();
 #ifdef BNO070
 					Update_BNO_Report_Header();
 #endif
 #endif
 #ifdef Solomon2_SPI
-					DisplayOff(Solomon2);
+					Display_Off(Solomon2);
 #endif
 				}
 			}
@@ -302,10 +302,10 @@ int main(void)
 					NXPEverLocked = true;
 					// Init_HDMI();
 					//#ifdef Solomon1_SPI
-					// DisplayOn(Solomon1);
+					// Display_On(Solomon1);
 					//#endif
 					//#ifdef Solomon2_SPI
-					// DisplayOn(Solomon2);
+					// Display_On(Solomon2);
 					//#endif
 				}
 				if (LastFPGALockStatus != NewFPGALockStatus)
@@ -313,14 +313,14 @@ int main(void)
 					// WriteLn("Video signal detected");
 					LastFPGALockStatus = NewFPGALockStatus;
 #ifdef Solomon1_SPI
-					DisplayOn(Solomon1);
+					Display_On(Solomon1);
 					NXP_Update_Resolution_Detection();
 #ifdef BNO070
 					Update_BNO_Report_Header();
 #endif
 #endif
 #ifdef Solomon2_SPI
-					DisplayOn(Solomon2);
+					Display_On(Solomon2);
 #endif
 				}
 			}
@@ -346,7 +346,7 @@ void HandleHDMI()
 #ifndef H546DLT01
 		init_solomon_device(Solomon1);  // todo: add back after debug of board
 #endif
-		DisplayOn(Solomon1);
+		Display_On(Solomon1);
 		NXP_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
@@ -360,7 +360,7 @@ void HandleHDMI()
 #ifndef H546DLT01
 		init_solomon_device(Solomon2);
 #endif
-		DisplayOn(Solomon2);  // added to make it same process as solomon 1
+		Display_On(Solomon2);  // added to make it same process as solomon 1
 #ifndef H546DLT01
 		init_solomon_device(Solomon2);
 #endif
@@ -372,14 +372,14 @@ void HandleHDMI()
 // WriteLn("Video lost");
 
 #ifdef Solomon1_SPI
-		DisplayOff(Solomon1);
+		Display_Off(Solomon1);
 		NXP_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
 #endif
 #endif
 #ifdef Solomon2_SPI
-		DisplayOff(Solomon2);
+		Display_Off(Solomon2);
 #endif
 	}
 #endif

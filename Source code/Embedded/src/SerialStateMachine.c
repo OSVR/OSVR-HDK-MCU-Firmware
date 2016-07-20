@@ -748,7 +748,7 @@ void ProcessSPICommand(void)
 	case 'N':
 	{
 		WriteLn("Display on");
-		DisplayOn(Solomon1);
+		Display_On(Solomon1);
 #ifndef DISABLE_NXP
 		NXP_Update_Resolution_Detection();
 #endif
@@ -782,7 +782,7 @@ void ProcessSPICommand(void)
 	case 'F':
 	{
 		WriteLn("Display off");
-		DisplayOff(Solomon1);
+		Display_Off(Solomon1);
 #ifndef DISABLE_NXP
 		NXP_Update_Resolution_Detection();
 #endif
@@ -815,7 +815,7 @@ void ProcessSPICommand(void)
 	case 'p':  // persistance settings
 	case 'P':
 	{
-		set_strobing(HexDigitToDecimal(2), HexPairToDecimal(3), HexPairToDecimal(5));
+		Display_Set_Strobing(HexDigitToDecimal(2), HexPairToDecimal(3), HexPairToDecimal(5));
 		break;
 	}
 	case '0':  // solomon reset
@@ -827,13 +827,13 @@ void ProcessSPICommand(void)
 	{
 		if (HexDigitToDecimal(2) == 1)
 		{
-			powercycle_display(Solomon1);
+			Display_Powercycle(Solomon1);
 			// init_solomon_device(Solomon1);
 		}
 #ifndef OSVRHDK
 		else if (HexDigitToDecimal(2) == 2)
 		{
-			powercycle_display(Solomon2);
+			Display_Powercycle(Solomon2);
 			// init_solomon_device(Solomon2);
 		}
 #endif

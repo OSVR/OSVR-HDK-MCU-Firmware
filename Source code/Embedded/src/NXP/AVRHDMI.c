@@ -791,7 +791,7 @@ static void digitalActivityCallback0 (tmdlHdmiRxEvent_t event,
         ResolutionID0=-1;
 		#ifdef Solomon1_SPI
 			#ifdef H546DLT01
-				DisplayOn(Solomon1);
+				Display_On(Solomon1);
 				NXP_Update_Resolution_Detection();
 				#ifdef BNO070
 					Update_BNO_Report_Header();

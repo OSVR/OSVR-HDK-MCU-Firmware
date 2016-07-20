@@ -872,6 +872,12 @@
     <Compile Include="src\DeviceDrivers\Display_Solomon.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\DeviceDrivers\VideoInput.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\DeviceDrivers\VideoInput_NXP.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\NXP\NXP_AVR_Internal.c">
       <SubType>compile</SubType>
     </Compile>

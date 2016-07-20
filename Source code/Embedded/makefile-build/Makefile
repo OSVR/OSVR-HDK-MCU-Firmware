@@ -1,5 +1,8 @@
+# Part of the HMD MCU build system by Sensics, Inc.
+# Copyright 2016 Sensics, Inc.
+# All rights reserved.
 
-all: hdk_oled hdk_lcd dsight
+all:
 
 DEFINES :=
 
@@ -29,12 +32,6 @@ SUFFIX := -$(subst $(eval) ,-,$(subst =,_,$(strip $(DEFINES))))
 FN_SUFFIX := $(subst =,_,$(SUFFIX))
 endif
 
-VARIANTS := \
-    HDK_20 \
-    HDK_OLED \
-    HDK_Sharp_LCD \
-    dSight_Sharp_LCD
-
 LIBS :=
 
 OUTPUT_STEM := HMD_MCU
@@ -42,9 +39,39 @@ OUTPUT_FILE_PATH := $(OUTPUT_STEM).elf
 OUTPUT_MAP := $(OUTPUT_STEM).map
 OUTPUT_HEX := $(OUTPUT_STEM).hex
 
-MCU=atxmega256a3bu
+# Relative path from makefile to source root
 REL_ROOT := ..
-REL_SRC := $(REL_ROOT)/src
+
+# Set up the variables that add_variant.mk will populate.
+FINAL_GENERATED :=
+CONVENIENCE_TARGETS :=
+BUILT_BY_ALL :=
+VARIANTS :=
+
+SHORT_NAME := hdk2
+VARIANT_NAME := HDK_20
+SKIP_ALL_TARGET := true
+# Per-variant libs and includes
+LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.a
+INCLUDE_DIRS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/
+include add_variant.mk
+
+SHORT_NAME := hdk_oled
+VARIANT_NAME := HDK_OLED
+include add_variant.mk
+
+SHORT_NAME := hdk_lcd
+VARIANT_NAME := HDK_Sharp_LCD
+include add_variant.mk
+
+SHORT_NAME := dsight
+VARIANT_NAME := dSight_Sharp_LCD
+include add_variant.mk
+
+# Done with variants.
+
+MCU=atxmega256a3bu
+
 
 
 C_SRCS :=  \
@@ -52,6 +79,7 @@ src/Boot.c \
 src/Console.c \
 src/FPGA.c \
 src/SerialStateMachine.c \
+src/SvrYield.c \
 src/TimingDebug.c \
 src/USB.c \
 src/main.c \
@@ -107,11 +135,6 @@ PREPROCESSING_SRCS :=  \
 src/ASF/xmega/drivers/cpu/ccp.s \
 src/ASF/xmega/drivers/nvm/nvm_asm.s
 
-# Per-variant additional includes and libs
-LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.a
-INCLUDE_DIRS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/
-
-
 # Simple lists without a variant subdirectory at the beginning
 BASE_OBJS :=  $(C_SRCS:%.c=%.o) $(PREPROCESSING_SRCS:%.s=%.o)
 BASE_C_DEPS := $(C_SRCS:%.c=%.d)
@@ -120,48 +143,50 @@ BASE_C_DEPS := $(C_SRCS:%.c=%.d)
 OBJS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_OBJS)))
 C_DEPS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_C_DEPS)))
 
+variant_include_dir=$(REL_ROOT)/src/Variants/$1
+
 # These are the include dirs that come after the variant include dir.
 COMMON_INCLUDE_DIRS = \
-	$(REL_SRC)/ASF/xmega/boards/xmega_a3bu_xplained \
-	$(REL_SRC) \
-	$(REL_SRC)/config \
-	$(REL_SRC)/ASF/xmega/boards \
-	$(REL_SRC)/ASF/common/boards \
-	$(REL_SRC)/ASF/xmega/drivers/cpu \
-	$(REL_SRC)/ASF/xmega/drivers/nvm \
-	$(REL_SRC)/ASF/xmega/drivers/pmic \
-	$(REL_SRC)/ASF/xmega/drivers/sleep \
-	$(REL_SRC)/ASF/xmega/drivers/spi \
-	$(REL_SRC)/ASF/common/services/clock \
-	$(REL_SRC)/ASF/common/services/delay \
-	$(REL_SRC)/ASF/common/services/gpio \
-	$(REL_SRC)/ASF/common/services/ioport \
-	$(REL_SRC)/ASF/common/services/sleepmgr \
-	$(REL_SRC)/ASF/common/services/spi/xmega_spi \
-	$(REL_SRC)/ASF/common/services/spi \
-	$(REL_SRC)/ASF/common/services/twi \
-	$(REL_SRC)/ASF/common/services/usb \
-	$(REL_SRC)/ASF/common/services/usb/class/cdc \
-	$(REL_SRC)/ASF/common/services/usb/class/cdc/device \
-	$(REL_SRC)/ASF/common/services/usb/udc \
-	$(REL_SRC)/ASF/common/utils \
-	$(REL_SRC)/ASF/xmega/drivers/twi \
-	$(REL_SRC)/ASF/xmega/drivers/usart \
-	$(REL_SRC)/ASF/xmega/drivers/usb \
-	$(REL_SRC)/ASF/xmega/utils/preprocessor \
-	$(REL_SRC)/ASF/xmega/utils \
-	$(REL_SRC)/ASF/common/services/serial/xmega_usart \
-	$(REL_SRC)/ASF/common/services/serial \
-	$(REL_SRC)/ASF/xmega/drivers/rtc \
-	$(REL_SRC)/ASF/xmega/drivers/tc \
-	$(REL_SRC)/ASF/xmega/services/pwm \
-	$(REL_SRC)/ASF/xmega/drivers/rtc32 \
-	$(REL_SRC)/ASF/xmega/services/timeout \
-	$(REL_SRC)/ASF/common/services/usb/class/composite/device \
-	$(REL_SRC)/ASF/common/services/usb/class/hid \
-	$(REL_SRC)/ASF/common/services/usb/class/hid/device \
-	$(REL_SRC)/ASF/common/services/usb/class/hid/device/generic \
-	$(REL_SRC)/DeviceDrivers/bno-hostif/src
+	$(REL_ROOT)/src/ASF/xmega/boards/xmega_a3bu_xplained \
+	$(REL_ROOT)/src \
+	$(REL_ROOT)/src/config \
+	$(REL_ROOT)/src/ASF/xmega/boards \
+	$(REL_ROOT)/src/ASF/common/boards \
+	$(REL_ROOT)/src/ASF/xmega/drivers/cpu \
+	$(REL_ROOT)/src/ASF/xmega/drivers/nvm \
+	$(REL_ROOT)/src/ASF/xmega/drivers/pmic \
+	$(REL_ROOT)/src/ASF/xmega/drivers/sleep \
+	$(REL_ROOT)/src/ASF/xmega/drivers/spi \
+	$(REL_ROOT)/src/ASF/common/services/clock \
+	$(REL_ROOT)/src/ASF/common/services/delay \
+	$(REL_ROOT)/src/ASF/common/services/gpio \
+	$(REL_ROOT)/src/ASF/common/services/ioport \
+	$(REL_ROOT)/src/ASF/common/services/sleepmgr \
+	$(REL_ROOT)/src/ASF/common/services/spi/xmega_spi \
+	$(REL_ROOT)/src/ASF/common/services/spi \
+	$(REL_ROOT)/src/ASF/common/services/twi \
+	$(REL_ROOT)/src/ASF/common/services/usb \
+	$(REL_ROOT)/src/ASF/common/services/usb/class/cdc \
+	$(REL_ROOT)/src/ASF/common/services/usb/class/cdc/device \
+	$(REL_ROOT)/src/ASF/common/services/usb/udc \
+	$(REL_ROOT)/src/ASF/common/utils \
+	$(REL_ROOT)/src/ASF/xmega/drivers/twi \
+	$(REL_ROOT)/src/ASF/xmega/drivers/usart \
+	$(REL_ROOT)/src/ASF/xmega/drivers/usb \
+	$(REL_ROOT)/src/ASF/xmega/utils/preprocessor \
+	$(REL_ROOT)/src/ASF/xmega/utils \
+	$(REL_ROOT)/src/ASF/common/services/serial/xmega_usart \
+	$(REL_ROOT)/src/ASF/common/services/serial \
+	$(REL_ROOT)/src/ASF/xmega/drivers/rtc \
+	$(REL_ROOT)/src/ASF/xmega/drivers/tc \
+	$(REL_ROOT)/src/ASF/xmega/services/pwm \
+	$(REL_ROOT)/src/ASF/xmega/drivers/rtc32 \
+	$(REL_ROOT)/src/ASF/xmega/services/timeout \
+	$(REL_ROOT)/src/ASF/common/services/usb/class/composite/device \
+	$(REL_ROOT)/src/ASF/common/services/usb/class/hid \
+	$(REL_ROOT)/src/ASF/common/services/usb/class/hid/device \
+	$(REL_ROOT)/src/ASF/common/services/usb/class/hid/device/generic \
+	$(REL_ROOT)/src/DeviceDrivers/bno-hostif/src
 
 BASE_DEFINES := CONFIG_NVM_IGNORE_XMEGA_A3_D3_REVB_ERRATA \
            IOPORT_XMEGA_COMPAT \
@@ -180,8 +205,9 @@ ALL_ASFLAGS := -Wa,-gdwarf2 -x assembler-with-cpp -c $(COMMON_FLAGS) $(ASFLAGS) 
 
 for_each_variant = $(foreach variant,$(VARIANTS),$(variant)/$1)
 get_variant=$(word 1,$(subst /, ,$1))
+set_variant_variable = $(eval VARIANT ?= $(call get_variant,$1))
 
-make_include_dirs = $(patsubst %, -I"%",$(REL_SRC)/Variants/$1 $(COMMON_INCLUDE_DIRS) $(INCLUDE_DIRS_$(1)))
+make_include_dirs = $(patsubst %, -I"%",$(call variant_include_dir,$1) $(COMMON_INCLUDE_DIRS) $(INCLUDE_DIRS_$(1)))
 DEBUG_VARIANT = @echo Variant: $(VARIANT)
 
 ifeq ($(strip $(VERBOSE)),)
@@ -190,71 +216,23 @@ else
 $(info Building in verbose mode - all meaningful command lines will be echoed)
 endif
 
-
-ifeq ($(OS),Windows_NT)
-# this is Windows
-
-PATH_SEPARATOR = \
-PATH_CONVERT = $(subst /,$(PATH_SEPARATOR),$1)
-
-ifdef ProgramFiles(x86)
-ATMEL_STUDIO_ROOT := ${subst \,/,${ProgramFiles(x86)}}/Atmel/Studio/7.0
-else
-ATMEL_STUDIO_ROOT := $(subst \,/,${ProgramFiles})/Atmel/Studio/7.0
-endif
-TOOLCHAIN_ROOT := $(ATMEL_STUDIO_ROOT)/toolchain/avr8/avr8-gnu-toolchain
-TOOL_EXTENSION := .exe
-
-ifeq ($(strip $(NO_ATMEL_STUDIO)),)
-# Can use "shellutils" folder of utilities.
-RM := "$(ATMEL_STUDIO_ROOT)/shellutils/rm.exe" -f
-CP := "$(ATMEL_STUDIO_ROOT)/shellutils/cp.exe"
-# must be recursively evaluated - it's a function
-MKDIR_P = "$(ATMEL_STUDIO_ROOT)/shellutils/mkdir.exe" -p "$1"
-else
-
-# fall back to cmd...
-CP := copy
-RM := del /q
-# must be recursively evaluated - it's a function
-MKDIR_P = if not exist "$(call PATH_CONVERT,$1)" mkdir "$(call PATH_CONVERT,$1)"
-endif
-
-
-else
-# not Windows
-TOOLCHAIN_ROOT ?= /usr
-TOOL_EXTENSION :=
-PATH_SEPARATOR = /
-PATH_CONVERT = $1
-RM := rm -f
-CP := cp
-MKDIR_P = mkdir -p "$1"
-
-endif
-
-CC := "$(TOOLCHAIN_ROOT)/bin/avr-gcc$(TOOL_EXTENSION)"
-OBJCOPY := "$(TOOLCHAIN_ROOT)/bin/avr-objcopy$(TOOL_EXTENSION)"
-OBJDUMP := "$(TOOLCHAIN_ROOT)/bin/avr-objdump$(TOOL_EXTENSION)"
-AVRSIZE := "$(TOOLCHAIN_ROOT)/bin/avr-size$(TOOL_EXTENSION)"
-
 # No implicit rules, please.
 SUFFIXES :=
 
-#GET_PATH = $(subst /,$(call PATH_CONVERT,$1),$(dir $1))
+include atmel_build.mk
 
 # Pattern for building object files from c
 $(call for_each_variant,%.o): $(REL_ROOT)/%.c
-	$(eval VARIANT?=$(call get_variant,$@))
+	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] ($(OPTIMIZATION)) $< : $@
-	$(QUIETRULE)$(call MKDIR_P,$(@D))
+	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) $(OPTIMIZATION) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
 
 # Pattern for building object files from .s
 $(call for_each_variant,%.o): $(REL_ROOT)/%.s
-	$(eval VARIANT?=$(call get_variant,$@))
+	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] $< : $@
-	$(QUIETRULE)$(call MKDIR_P,$(@D))
+	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
 
 # These files needs optimization turned off (set to -O0) - hopefully this will do it.
@@ -269,7 +247,7 @@ $(call for_each_variant,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-ou
 
 # Makes the elf file
 $(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))
-	$(eval VARIANT?=$(call get_variant,$@))
+	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] Linking $@
 	$(QUIETRULE)$(CC) -o"$@" $(addprefix $(VARIANT)/,$(BASE_OBJS)) $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
@@ -277,6 +255,7 @@ $(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefi
 
 # Makes the hex file
 $(call for_each_variant,$(OUTPUT_HEX)): %/$(OUTPUT_HEX) : %/$(OUTPUT_FILE_PATH)
+	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] Generating $@
 	$(QUIETRULE)$(OBJCOPY) -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "$<" "$@"
 
@@ -287,11 +266,6 @@ ifneq ($(strip $(C_DEPS)),)
 endif
 endif
 
-define VARIANT_TOPLEVEL
-	$(QUIETRULE)$(CP) "$(call PATH_CONVERT,$<)" "$@$(FN_SUFFIX).hex"
-	@echo Generated "$@$(FN_SUFFIX).hex"
-$(eval FINAL_GENERATED += $1$(FN_SUFFIX).hex)
-endef
 
 #	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures  "HMD-MCU.elf" "HMD-MCU.hex"
 #	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex "HMD-MCU.elf" "HMD-MCU.eep" || exit 0
@@ -299,25 +273,21 @@ endef
 #	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -j .user_signatures --set-section-flags=.user_signatures=alloc,load --change-section-lma .user_signatures=0 --no-change-warnings -O ihex "HMD-MCU.elf" "HMD-MCU.usersignatures" || exit 0
 #	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-size.exe" "HMD-MCU.elf"
 
-FINAL_GENERATED :=
-
-hdk20: HDK_20/$(OUTPUT_HEX)
-$(call VARIANT_TOPLEVEL,hdk20,HDK_20)
-hdk_oled: HDK_OLED/$(OUTPUT_HEX)
-$(call VARIANT_TOPLEVEL,hdk_oled,HDK_OLED)
-hdk_lcd: HDK_Sharp_LCD/$(OUTPUT_HEX)
-$(call VARIANT_TOPLEVEL,hdk_lcd,HDK_Sharp_LCD)
-dsight: dSight_Sharp_LCD/$(OUTPUT_HEX)
-$(call VARIANT_TOPLEVEL,dsight,dSight_Sharp_LCD)
-
-
-#	-$(foreach variant,$(VARIANTS),$(RM) $(addprefix $(variant)/,$(BASE_OBJS));)
 clean:
 	-$(RM) $(OBJS)
 	-$(RM) $(C_DEPS)
 	-$(RM) $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX)))
+.PHONY: clean
 
 distclean: clean
 	-$(RM) $(FINAL_GENERATED)
+.PHONY: distclean
 
-.PHONY: all hdk_oled hdk_lcd dsight clean distclean
+help:
+	@echo make clean will delete build intermediate files.
+	@echo make distclean will do make clean and also delete the final output hex files
+	@echo ($(FINAL_GENERATED))
+	@echo Build targets:
+	@echo These targets exist to build variants: $(CONVENIENCE_TARGETS)
+	@echo By default (or by make all), this subset is built: $(BUILT_BY_ALL)
+.PHONY: help

@@ -5,10 +5,30 @@
  *  Author: dennis.yeh
  */
 
-// This has been stripped down to be just the header required to use the libhdk20.a
-// binary blob without duplicating code found or better located elsewhere in the
-// firmware. It has also been re-organized to be in alphabetical symbol order and
-// roughly grouped. - Ryan Pavlik, Sensics.
+
+
+/*
+This has been stripped down to be just the header required to use the libhdk20.a
+binary blob without duplicating code found or better located elsewhere in the
+firmware. It has also been re-organized to be in alphabetical symbol order and
+roughly grouped.
+
+Note that the libhdk20.a library is not self-sufficient: it contains undefined
+symbols that it expects to be able to resolve from this project, some of which
+are implementation details, not just ASF methods. In particular, these symbols
+are undefined and are not obviously either standard library/runtime symbols or
+ASF symbols:
+
+WriteLn (part of Console)
+DebugLevel (part of Console)
+HDMI_IsVideoExisting (was added in Coretronic fork of firmware, referenced by library export IsVideoExistingPolling)
+UpdateResolutionDetection (Coretronic fork has an empty implementation: referenced twice by library export IsVideoExistingPolling)
+Update_BNO_Report_Header (normally called by main() upon a display event)
+CommandToExecute (part of SerialStateMachine)
+
+-- Ryan A. Pavlik, Ph.D.
+   Sensics, Inc.
+*/
 
 #ifndef HDKV15_H_
 #define HDKV15_H_

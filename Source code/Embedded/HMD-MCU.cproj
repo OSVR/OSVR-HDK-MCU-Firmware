@@ -843,11 +843,6 @@
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputPath>bin\HDK_20\</OutputPath>
   </PropertyGroup>
-  <!--
-  <PropertyGroup>
-    <PostBuildEvent>copy "$(OutputDirectory)\$(OutputFileName).hex" "$(SolutionDir)$(OutputFileName)-$(Configuration).hex"</PostBuildEvent>
-  </PropertyGroup>
-  -->
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="src\ASF\" />

@@ -114,8 +114,15 @@ void SetConfigValue(uint8_t offset, uint8_t value);
 uint8_t GetConfigValue(uint8_t offset);
 bool IsConfigOffsetValid(uint8_t offset);
 
-// return value is true if it was valid and if we updated the outValue, false if it was not valid and we just stored the
-// default value.
+// return value is true if it was valid and if we retrieved into outValue, false if it was not valid and we did nothing.
+bool GetValidConfigValue(uint8_t offset, uint8_t *outValue);
+
+// returns the stored config value if it's valid, otherwise it returns the given default value (which is not stored into
+// eeprom, just returned to you.)
+uint8_t GetValidConfigValueOrDefault(uint8_t offset, uint8_t defaultValue);
+
+// return value is true if it was valid and if we retrieved into outValue, false if it was not valid and we just stored
+// the default value.
 bool GetValidConfigValueOrWriteDefault(uint8_t offset, uint8_t defaultValue, uint8_t *outValue);
 
 #endif /* MY_HARDWARE_H_ */

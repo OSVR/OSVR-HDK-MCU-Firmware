@@ -241,13 +241,35 @@ void SetConfigValue(uint8_t offset, uint8_t value)
 	eeprom_write_byte(CONFIGURATION_PAGE, offset + 3, 65);
 }
 
-bool GetValidConfigValueOrWriteDefault(uint8_t offset, uint8_t defaultValue, uint8_t *outValue)
+bool GetValidConfigValue(uint8_t offset, uint8_t *outValue)
 {
 	if (IsConfigOffsetValid(offset))
 	{
 		// Value was valid, return it in outValue
 		*outValue = GetConfigValue(offset);
 		// and tell caller that they got a live one.
+		return true;
+	}
+	// Otherwise, return false without touching outValue.
+	return false;
+}
+
+uint8_t GetValidConfigValueOrDefault(uint8_t offset, uint8_t defaultValue)
+{
+	if (IsConfigOffsetValid(offset))
+	{
+		// Value was valid, return it
+		return GetConfigValue(offset);
+	}
+	// Not a valid config value found, so return the default instead.
+	return defaultValue;
+}
+
+bool GetValidConfigValueOrWriteDefault(uint8_t offset, uint8_t defaultValue, uint8_t *outValue)
+{
+	if (GetValidConfigValue(offset, outValue))
+	{
+		// Value was valid, return true right away
 		return true;
 	}
 	// Otherwise, write the default value to eeprom and return false accordingly.

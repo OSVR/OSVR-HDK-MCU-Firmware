@@ -8,11 +8,13 @@
 #include "VideoInput.h"
 #include "VideoInput_Protected.h"
 
+#include "main.h"  // for HDMI_task
+
+void VideoInput_Protected_Init_Succeeded() { HDMI_task = true; }
 static bool s_everSignal = false;
 static bool s_lastStatus = false;
 VideoInputEvents_t VideoInput_Events = {false, false, false};
 
-///
 static void internal_report_detected_event(void);
 static void internal_report_lost_event(void);
 static inline void internal_report_detected_event()

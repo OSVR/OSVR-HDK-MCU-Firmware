@@ -2,19 +2,29 @@
  * Display_DualAUO_TC358870.c
  *
  * Created: 7/19/2016 9:40:29 AM
- *  Author: Sensics
+ *  Author: Sensics - based on Coretronic modifications
  */
 
-#include "Display.h"
 #include "GlobalOptions.h"
 
 #if defined(SVR_IS_HDK_20)
+#include "Display.h"
 
 #include <delay.h>
 #include <libhdk20.h>
 
-void DisplaySystemInit() {}
-void DisplayInit(DisplayId id) {}
+static uint8_t tc_data;
+
+void DisplaySystemInit()
+{
+	// Dennis Yeh 2016/03/14 : for TC358870
+	TC358870_i2c_Init();
+	TC358870_i2c_Read(0x0000, &tc_data);
+
+	PowerOnSeq();
+}
+
+void DisplayInit(DisplayId /*id*/) {}
 /// @todo why was this implementation included?
 #if 0
 void write_solomon(uint8_t channel, uint8_t address, uint16_t data)
@@ -25,7 +35,7 @@ void write_solomon(uint8_t channel, uint8_t address, uint16_t data)
 }
 #endif
 
-void DisplayOn(uint8_t deviceID)
+void DisplayOn(uint8_t /*deviceID*/)
 
 {
 	// delay_ms(500);
@@ -53,7 +63,7 @@ void DisplayOn(uint8_t deviceID)
 	TC358870_i2c_Write(0x0504, 0x0029, 2);
 }
 
-void DisplayOff(uint8_t deviceID)
+void DisplayOff(uint8_t /*deviceID*/)
 {
 #if 0  // Not for SSD2848
 	// video mode off
@@ -84,8 +94,7 @@ void DisplayOff(uint8_t deviceID)
 #endif
 }
 
-// power cycles display connected to the specific device
-void powercycle_display(uint8_t deviceID)
+void Display_Powercycle(uint8_t /*deviceID*/)
 {
 	// Display Off
 	TC358870_i2c_Write(0x0504, 0x0015, 2);

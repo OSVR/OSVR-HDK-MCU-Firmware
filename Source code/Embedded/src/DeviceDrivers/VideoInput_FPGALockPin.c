@@ -14,10 +14,9 @@
 #include "my_hardware.h"
 #include <ioport.h>
 
-bool VideoInput_Poll_Status()
+void VideoInput_Poll_Status(void)
 {
 	bool newStatus = !ioport_get_pin_level(FPGA_unlocked);
 	VideoInput_Protected_Report_Status(newStatus);
-	return newStatus;
 }
 #endif  // SVR_HAVE_FPGA_VIDEO_LOCK_PIN

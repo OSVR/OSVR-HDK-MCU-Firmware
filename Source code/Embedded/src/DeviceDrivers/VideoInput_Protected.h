@@ -10,6 +10,9 @@
 
 #include "VideoInput.h"
 
+/// Call at the end of VideoInput_Init - sets the HDMItask flag indicating that it's safe to run your task.
+void VideoInput_Protected_Init_Succeeded(void);
+
 /// This is equivalent to calling report_signal or report_no_signal in an if-else
 void VideoInput_Protected_Report_Status(bool signalStatus);
 

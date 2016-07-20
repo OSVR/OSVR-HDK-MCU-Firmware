@@ -1020,7 +1020,16 @@
     <Compile Include="src\DeviceDrivers\Display.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\DeviceDrivers\Display_DualAUO_TC358870.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\DeviceDrivers\Display_Solomon.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\DeviceDrivers\Toshiba_TC358870.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\DeviceDrivers\Toshiba_TC358870.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\DeviceDrivers\VideoInput.c">
@@ -1041,6 +1050,9 @@
     <Compile Include="src\DeviceDrivers\VideoInput_TMDS422_NXP.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\DeviceDrivers\VideoInput_Toshiba_TC358870.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\MacroUtils.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1048,6 +1060,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\NXP\NXP_AVR_Internal.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SvrYield.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SvrYield.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\TimingDebug.c">

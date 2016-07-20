@@ -37,10 +37,9 @@ void VideoInput_Task(void)
 void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
 void VideoInput_Suspend(void) { NXP_Suspend(); }
 void VideoInput_Resume(void) { NXP_Resume(); }
-bool VideoInput_Poll_Status()
+void VideoInput_Poll_Status(void)
 {
-	// We don't poll on this hardware, but we can return the latest status.
-	return VideoInput_Get_Status();
+	// We don't poll on this hardware.
 }
 
 #if 0

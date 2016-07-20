@@ -59,6 +59,15 @@ void set_pwm_values(uint8_t Display1, uint8_t Display2)
 void custom_board_init(void)
 
 {
+#ifdef SVR_IS_HDK_20
+/// @todo Is this an MCU feature that just the HDK20 needs, or is this effectively dead code?
+#define MCU_LEVEL_SHIFT_OE IOPORT_CREATE_PIN(PORTA, 1)  // out, level shift enable, low enable. U55
+	ioport_configure_pin(
+	    MCU_LEVEL_SHIFT_OE,
+	    IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // I/O level shift gate enable. (i2c, hdmi_rst, 2848_reset).
+#endif
+
+// Solomon SSD2848 IO Init.
 #ifdef SVR_HAVE_SOLOMON1
 	ioport_configure_pin(AT86RFX_SPI_SCK, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(AT86RFX_SPI_MOSI, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);

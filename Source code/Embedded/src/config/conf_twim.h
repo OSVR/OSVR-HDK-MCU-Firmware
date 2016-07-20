@@ -50,18 +50,25 @@
 
 #include "GlobalOptions.h"
 
-#define TWI_NXP1_PORT			(&TWIE) // j4 on ATMega Xplained for A3BU
-
 #ifdef BNO070
-    #define TWI_BNO070_PORT			(&TWIC)
+	#define TWI_BNO070_PORT			(&TWIC)
+#endif
+
+#ifdef SVR_HAVE_NXP1
+	#define TWI_NXP1_PORT			(&TWIE) // j4 on ATMega Xplained for A3BU
 #endif
 
 #ifdef SVR_HAVE_TMDS422
     #define TWI_TMDS422_PORT        (&TWIC)
 #endif
+
 #ifdef SVR_HAVE_NXP2
     #define TWI_NXP2_PORT			(&TWIC) // same port as the TMDS one
 #endif
 
+#ifdef SVR_HAVE_TOSHIBA_TC358870
+	/// @todo Defined, but not used anywhere because all interaction was hidden in libhdk2
+	#define TWI_TC358870_PORT		(&TWIE) // Dennis Yeh 2016/03/14 : for TC358870
+#endif
 
 #endif // _CONF_TWIM_H_

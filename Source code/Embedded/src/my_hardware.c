@@ -91,15 +91,14 @@ void custom_board_init(void)
 
 #ifdef OSVRHDK
 
-	if (IsConfigOffsetValid(SideBySideOffset))
+	uint8_t sideBySideConfig;
+	if (GetValidConfigValueOrWriteDefault(SideBySideOffset, 0, &sideBySideConfig))
 	{
-		if (GetConfigValue(PersistenceOffset) == 0)
+		if (sideBySideConfig == 0)
 			ioport_set_pin_low(Side_by_side_B);  // normal mode
 		else
 			ioport_set_pin_high(Side_by_side_B);  // SBS mode
 	}
-	else
-		SetConfigValue(SideBySideOffset, 0);
 #endif
 
 #ifndef OSVRHDK
@@ -238,4 +237,18 @@ void SetConfigValue(uint8_t offset, uint8_t value)
 	eeprom_write_byte(CONFIGURATION_PAGE, offset + 1, (value + 37) & 0xff);
 	eeprom_write_byte(CONFIGURATION_PAGE, offset + 2, value ^ 0xff);
 	eeprom_write_byte(CONFIGURATION_PAGE, offset + 3, 65);
+}
+
+bool GetValidConfigValueOrWriteDefault(uint8_t offset, uint8_t defaultValue, uint8_t *outValue)
+{
+	if (IsConfigOffsetValid(offset))
+	{
+		// Value was valid, return it in outValue
+		*outValue = GetConfigValue(offset);
+		// and tell caller that they got a live one.
+		return true;
+	}
+	// Otherwise, write the default value to eeprom and return false accordingly.
+	SetConfigValue(offset, defaultValue);
+	return false;
 }

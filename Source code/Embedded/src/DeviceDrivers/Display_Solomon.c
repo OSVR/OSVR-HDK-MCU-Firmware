@@ -44,7 +44,7 @@ void Display_Off(uint8_t deviceID)
 {
 #ifdef H546DLT01  // AUO 5.46" OLED
 
-	WriteLn("Turing display off");
+	WriteLn("Turning display off");
 
 	write_solomon(deviceID, 0xB7, 0x0321);  // video mode off
 	svr_yield_ms(16);

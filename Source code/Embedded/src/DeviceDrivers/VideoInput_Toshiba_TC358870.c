@@ -74,9 +74,9 @@ void VideoInput_Init(void)
 	// No separate init required - all done in Display_System_Init() since it's just one chip.
 	if (haveInitOnce)
 	{
-		// This is a repeat init - presumably from serial console - so we'll actually call over to Display_System_Init()
-		// since that's where the meat of initializing the chip happens.
-		Display_System_Init();
+		// This is a repeat init - presumably from serial console - so we'll actually call over to the TC358870 driver
+		// (used in Display_System_Init()) since that's where the meat of initializing the chip happens.
+		Toshiba_TC358870_Init();
 	}
 	else
 	{
@@ -85,6 +85,7 @@ void VideoInput_Init(void)
 
 	VideoInput_Protected_Init_Succeeded();
 }
+
 void VideoInput_Update_Resolution_Detection(void)
 {
 	// Using the latest received status (instead of polling the chip again) to determine the status.
@@ -98,6 +99,7 @@ void VideoInput_Task(void)
 	// VideoInput_Protected_Report_No_Signal() and VideoInput_Protected_Report_Signal()
 	IsVideoExistingPolling();
 }
+
 void VideoInput_Reset(uint8_t inputId)
 {
 	if (inputId == 1)

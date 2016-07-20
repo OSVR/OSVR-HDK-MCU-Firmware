@@ -4,7 +4,9 @@ all: hdk_oled hdk_lcd dsight
 DEFINES :=
 
 CFLAGS := -g3 -Wall \
-		  -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith
+          -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith \
+          -fdiagnostics-show-option
+# -Wstrict-prototypes
 EXTRA_CFLAGS :=
 
 OPTIMIZATION := -O3
@@ -163,7 +165,7 @@ ALL_DEFINES := $(BASE_DEFINES) $(DEFINES)
 
 COMMON_FLAGS := -mmcu=$(MCU) -mrelax $(patsubst %, -D%,$(ALL_DEFINES))
 
-ALL_CFLAGS := -x c $(COMMON_FLAGS) -c -std=gnu99 \
+ALL_CFLAGS = -x c $(COMMON_FLAGS) -c -std=gnu99 \
               -ffunction-sections -fdata-sections \
               -fpack-struct -fshort-enums -fno-strict-aliasing \
               $(CFLAGS) $(EXTRA_CFLAGS)
@@ -251,6 +253,12 @@ $(call for_each_variant,%.o): $(REL_ROOT)/%.s
 # These files needs optimization turned off (set to -O0) - hopefully this will do it.
 $(call for_each_variant,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := -O0
 $(call for_each_variant,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := -O0
+
+# These files are terribly full of warnings. We really just want to disable the shift overflow ones, but the flag
+# below seems insufficient, thus -w disables all warnings...
+$(call for_each_variant,src/NXP/tmbslTDA1997X_functions.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
+$(call for_each_variant,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
+
 
 # Makes the elf file
 $(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))

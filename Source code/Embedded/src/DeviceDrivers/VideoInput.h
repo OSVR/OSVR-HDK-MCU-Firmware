@@ -61,4 +61,7 @@ enum VideoInput_VideoDetailStatus
 uint8_t VideoInput_Get_Detail_Status(void);
 #endif
 
+extern bool PortraitMode;   // true if incoming video is in portrait mode
+extern uint8_t HDMIStatus;  // shows whether we have video and also video mode
+
 #endif /* VIDEOINPUT_H_ */

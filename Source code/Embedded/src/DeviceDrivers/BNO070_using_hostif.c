@@ -12,7 +12,7 @@
 #include "my_hardware.h"
 #include "TimingDebug.h"
 #include "Console.h"
-#include "nxp/AVRHDMI.h"  // for video mode status to be fed into BNO report
+#include "VideoInput.h"  // for video mode status to be fed into BNO report
 
 #include <ioport.h>
 #include "BNO070.h"

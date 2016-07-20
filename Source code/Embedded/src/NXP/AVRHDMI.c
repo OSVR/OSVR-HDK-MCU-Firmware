@@ -75,8 +75,6 @@ bool InstanceOpened0=false; // indicates whether HDMI instance already created
 bool KnownResolution0=false; // true once a known resolution is detected on port A
 bool ActivityDetected0=false; // true if activity is detected on port A
 tmdlHdmiRxResolutionID_t ResolutionID0=-1; // identifies detected resolution of port A
-bool PortraitMode=false; // true if incoming video is in portrait mode
-uint8_t HDMIStatus=0; // shows whether we have video and also video mode
 
 /* int _tmain(int argc, _TCHAR* argv[])
 {

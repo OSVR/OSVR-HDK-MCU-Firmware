@@ -11,6 +11,9 @@
 #include "main.h"  // for HDMI_task
 
 void VideoInput_Protected_Init_Succeeded() { HDMI_task = true; }
+bool PortraitMode = false;  // true if incoming video is in portrait mode
+uint8_t HDMIStatus = 0;     // shows whether we have video and also video mode
+
 static bool s_everSignal = false;
 static bool s_lastStatus = false;
 VideoInputEvents_t VideoInput_Events = {false, false, false};

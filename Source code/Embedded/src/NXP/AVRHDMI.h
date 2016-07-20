@@ -31,7 +31,5 @@ void NXP_Program_MTP1(void);
 
 void NXP_Update_Resolution_Detection(void);
 
-extern bool PortraitMode; // true if incoming video is in portrait mode
-extern uint8_t HDMIStatus; // shows whether we have video and also video mode
 
 #endif

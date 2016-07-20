@@ -49,7 +49,5 @@
 // status of the various periodic tasks
 bool HDMI_task;
 bool HDMISwitch_task;
-bool NewVideoDetected;
-bool VideoLost;
 
 #endif  // _MAIN_H_

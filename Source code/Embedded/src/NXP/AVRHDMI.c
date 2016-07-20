@@ -5,6 +5,7 @@
 //#include "stdafx.h"
 #include "GlobalOptions.h"
 #include "Console.h"
+#include "DeviceDrivers/VideoInput_Protected.h"
 #include "NXP_AVR_Internal.h"
 
 
@@ -803,7 +804,7 @@ static void digitalActivityCallback0 (tmdlHdmiRxEvent_t event,
         //HDMI_debug_progmem(cDigitalActivityLost);
 		WriteLn_progmem(cDigitalActivityLost);
         ResolutionID0=-1;
-		VideoLost=true;
+		VideoInput_Protected_Report_No_Signal();
         //WriteLn("AD0 1");
         ActivityDetected0=false;
         KnownResolution0=false;
@@ -988,7 +989,7 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
         //resolutionID=TMDL_HDMIRX_VIDEORES_1920_1080p_60HZ; 
         //resolutionID=TMDL_HDMIRX_VIDEORES_1080_1920p_60HZ; 
 		
-		NewVideoDetected=true; // tell main that it might need to reconfigure Solomon
+		VideoInput_Protected_Report_Signal(); // tell main that it might need to reconfigure Solomon
         storeResolution0(resolutionID);
 
 
@@ -1563,18 +1564,18 @@ static uint8_t Get_HDMI_Status()
 // returns byte showing HDMI status. This is used for reporting video mode in USB reports
 {
 	uint8_t Result=0;
-	#ifdef OSVRHDK
+#ifdef SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 	if (!ioport_get_pin_level(FPGA_unlocked))
 	{
 		Result+=1;
 		if (PortraitMode)
 			Result+=2;
 	}
-	#else
+#else
 	/// @todo Why does portrait return 2 here and 3 above (on HDK)?
 	if (PortraitMode)
 		Result+=2;
-	#endif
+#endif
 	return Result;
 }
 

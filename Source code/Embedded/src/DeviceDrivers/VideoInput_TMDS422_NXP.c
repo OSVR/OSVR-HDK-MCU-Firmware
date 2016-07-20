@@ -30,6 +30,7 @@ void VideoInput_Task(void)
 	}
 	if (HDMI_task)
 	{
+		/// @todo Do we need to poll the NXP every time through the mainloop, or can we depend on the interrupts?
 		NXP_HDMI_Task();
 	}
 }

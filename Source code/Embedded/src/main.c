@@ -48,17 +48,11 @@
 #include "ui.h"
 #include "uart.h"
 #include "SerialStateMachine.h"
-#include "DeviceDrivers/Solomon.h"
 #include "my_hardware.h"
 #include "bno_callbacks.h"
 
-#ifndef DISABLE_NXP
-#include "nxp/AVRHDMI.h"
-#endif
-
 #include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/VideoInput.h"
-#include "DeviceDrivers/TI-TMDS442.h"
 #include "DeviceDrivers/BNO070.h"
 #include "Console.h"
 
@@ -75,8 +69,6 @@
 
 bool HDMI_task = false;
 bool HDMISwitch_task = true;
-bool NewVideoDetected = false;
-bool VideoLost = false;
 bool NXPEverLocked = false;  // true if HDMI receiver was ever locked on incoming video signal
 
 #ifdef OSVRHDK
@@ -123,6 +115,7 @@ int main(void)
 
 	load_configuration();
 
+	// Sets up video display part of data path: MIPI bridge (Solomon) or other output device
 	Display_System_Init();
 
 	// init the incoming serial state machine
@@ -145,11 +138,6 @@ int main(void)
 // The main loop manages only the power mode
 // because the USB management is done by interrupt
 
-#ifdef TMDS422
-	InitHDMISwitch();
-	TMDS_422_Task();
-#endif  // TMDS422
-
 #ifdef OSVRHDK
 // ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
 #ifdef MeasurePerformance
@@ -157,13 +145,17 @@ int main(void)
 #endif  // MeasurePerformance
 #endif  // OSVRHDK
 
-#ifdef SVR_USING_NXP
+#ifndef DISABLE_NXP
 
+	// Sets up video input part of data path: switch (if present), HDMI receiver.
 	VideoInput_Init();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
 	                    // already been initialized
 
-	if (NewVideoDetected)
+	if (VideoInput_Events.videoDetected)
 	{
+		// Clear the event flag.
+		VideoInput_Events.videoDetected = false;
+
 		WriteLn("Video at start");
 #ifdef SVR_HAVE_DISPLAY1
 		Display_On(Display1);
@@ -175,16 +167,18 @@ int main(void)
 #ifdef SVR_HAVE_DISPLAY2
 		Display_On(Display2);
 #endif  // SVR_HAVE_DISPLAY2
-		NewVideoDetected = false;
-	};
-#ifdef OSVRHDK
+	}
 
+#if 0
+	/// @todo disabled because we already read above.
 	if (!(ioport_get_pin_level(FPGA_unlocked)))
 		NXPEverLocked = true;
 #endif  // OSVRHDK
 
-	if (VideoLost)
+	if (VideoInput_Events.videoLost)
 	{
+		// Clear the event flag.
+		VideoInput_Events.videoLost = false;
 #ifdef SVR_HAVE_DISPLAY1
 		Display_Off(Display1);
 		VideoInput_Update_Resolution_Detection();
@@ -196,13 +190,12 @@ int main(void)
 #ifdef SVR_HAVE_DISPLAY2
 		Display_Off(Display2);
 #endif  // SVR_HAVE_DISPLAY1
-		VideoLost = false;
 	}
 
 #ifdef DSIGHT
-	/// @todo isn't this redundant with the NewVideoDetected check above? or is the waiting for 1 second important for
+	/// @todo isn't this redundant with the videoDetected check above? or is the waiting for 1 second important for
 	/// dSight specifically?
-	if (NewVideoDetected)
+	if (VideoInput_Events.videoDetected)
 	{
 		delay_ms(1000);
 		Display_Init(Display1);
@@ -212,6 +205,7 @@ int main(void)
 
 	// ProgramMTP0();
 
+	/// @todo This also gets set to true in VideoInput_Init - remove this line?
 	HDMI_task = true;
 
 #endif
@@ -232,21 +226,20 @@ int main(void)
 		}
 	}
 #endif  // OSVRHDK && !HDK_20
-#endif
+#endif  // BNO070
 
 	// Start USB stack to authorize VBus monitoring
 	udc_start();
 
-	uint16_t slower = 0;
+#ifdef SVR_VIDEO_INPUT_POLL_INTERVAL
+	uint16_t videoPollCounter = 0;
+#endif
 
 #ifdef OSVRHDK
 // ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
 #endif
 
-#ifdef OSVRHDK
-	LastFPGALockStatus = ioport_get_pin_level(FPGA_unlocked);  // last state of FPGA_unlocked pin
-#endif
-
+	// Main loop
 	while (true)
 	{
 		// sleepmgr_enter_sleep(); // todo - probably remove this since the board has to work without USB
@@ -259,134 +252,90 @@ int main(void)
 		delay_us(50);  // Some delay is required to allow USB interrupt to process
 
 #ifdef BNO070
+/// @todo why is this guarded to be just OSVRHDK? BNO should be sufficient.
 #ifdef OSVRHDK
 		BNO_Yield();
 #endif
 #endif
 
-#ifdef TMDS422
-		if (HDMISwitch_task)  //(timeout_test_and_clear_expired(TMDS_422_Timeout))
-		{
-			// check status of HDMI switch
-			TMDS_422_Task();
-		}
-#endif
-
-//#ifndef OSVRHDK // disable checking the NXP here; video changes will be picked up by interrupts anyway
 #ifndef DISABLE_NXP
-		slower++;  // used to slow down the rate of checking HDMI
-		if ((HDMI_task) && (slower > 1000))
+#ifdef SVR_VIDEO_INPUT_POLL_INTERVAL
+		if (HDMI_task)
 		{
-			slower = 0;
-#ifdef OSVRHDK
-			bool NewFPGALockStatus;
-			NewFPGALockStatus = ioport_get_pin_level(FPGA_unlocked);
-			if (NewFPGALockStatus)
+			videoPollCounter++;
+			if (videoPollCounter > SVR_VIDEO_INPUT_POLL_INTERVAL)
 			{
-				if (LastFPGALockStatus != NewFPGALockStatus)
-				{
-					// WriteLn("Video signal lost");
-
-					LastFPGALockStatus = NewFPGALockStatus;
-
-#ifdef Solomon1_SPI
-					Display_Off(Solomon1);
-					NXP_Update_Resolution_Detection();
-#ifdef BNO070
-					Update_BNO_Report_Header();
-#endif  // BNO070
-#endif  // Solomon1_SPI
-#ifdef Solomon2_SPI
-					Display_Off(Solomon2);
-#endif  // Solomon2_SPI
-				}
+				videoPollCounter = 0;
+				VideoInput_Poll_Status();
+				/// @todo Because of interrupts, do we really need to put this inside the poll interval?
+				HandleHDMI();
 			}
-			else  // FPGA is locked
-			{
-				if (!NXPEverLocked)
-				{
-					// WriteLn("First lock");
-					NXPEverLocked = true;
-					// Init_HDMI();
-					//#ifdef Solomon1_SPI
-					// Display_On(Solomon1);
-					//#endif
-					//#ifdef Solomon2_SPI
-					// Display_On(Solomon2);
-					//#endif
-				}
-				if (LastFPGALockStatus != NewFPGALockStatus)
-				{
-					// WriteLn("Video signal detected");
-					LastFPGALockStatus = NewFPGALockStatus;
-#ifdef Solomon1_SPI
-					Display_On(Solomon1);
-					NXP_Update_Resolution_Detection();
-#ifdef BNO070
-					Update_BNO_Report_Header();
-#endif  // BNO070
-#endif  // Solomon1_SPI
-#ifdef Solomon2_SPI
-					Display_On(Solomon2);
-#endif  // Solomon2_SPI
-				}
-			}
-#else  // OSVR_HDK ^ / v dSight
-			HandleHDMI();
-#endif
 		}
-#endif
-		//#endif // #ifndef OSVRHDK
+#else   // SVR_VIDEO_INPUT_POLL_INTERVAL ^ / v !SVR_VIDEO_INPUT_POLL_INTERVAL
+		HandleHDMI();
+#endif  // SVR_VIDEO_INPUT_POLL_INTERVAL
+#endif  // !DISABLE_NXP
 	}
 }
 
+static void local_display_on(uint8_t id);
+static void local_display_off(uint8_t id);
+inline static void local_display_on(uint8_t id)
+{
+#if !defined(H546DLT01) && !defined(OSVRHDK)
+	Display_Init(id);  // todo: add back after debug of board
+#endif
+	Display_On(id);
+	if (id == 1)
+	{
+		VideoInput_Update_Resolution_Detection();
+#ifdef BNO070
+		Update_BNO_Report_Header();
+#endif
+	}
+
+#if !defined(H546DLT01) && !defined(OSVRHDK)
+	Display_Init(id);  // todo: add back after debug of board
+#endif
+}
+inline static void local_display_off(uint8_t id)
+{
+	Display_Off(id);
+	if (id == 1)
+	{
+		VideoInput_Update_Resolution_Detection();
+#ifdef BNO070
+		Update_BNO_Report_Header();
+#endif
+	}
+}
 void HandleHDMI()
 
 {
 #ifndef DISABLE_NXP
-	NXP_HDMI_Task();
-	if (NewVideoDetected)
+	VideoInput_Task();
+	bool videoLost = VideoInput_Events.videoLost;
+	VideoInput_Events.videoLost = false;
+	bool videoDetected = VideoInput_Events.videoDetected;
+	VideoInput_Events.videoDetected = false;
+	if (videoDetected)
 	{
-		NewVideoDetected = false;
 // WriteLn("New video detected");
-#ifdef Solomon1_SPI
-#ifndef H546DLT01
-		init_solomon_device(Solomon1);  // todo: add back after debug of board
+#ifdef SVR_HAVE_DISPLAY1
+		local_display_on(Display1);
 #endif
-		Display_On(Solomon1);
-		NXP_Update_Resolution_Detection();
-#ifdef BNO070
-		Update_BNO_Report_Header();
-#endif
-
-#ifndef H546DLT01
-		init_solomon_device(Solomon1);  // todo: add back after debug of board
-#endif
-#endif
-#ifdef Solomon2_SPI
-#ifndef H546DLT01
-		init_solomon_device(Solomon2);
-#endif
-		Display_On(Solomon2);  // added to make it same process as solomon 1
-#ifndef H546DLT01
-		init_solomon_device(Solomon2);
-#endif
+#ifdef SVR_HAVE_DISPLAY2
+		local_display_on(Display2);
 #endif
 	}
-	if (VideoLost)
+	if (videoLost)
 	{
-		VideoLost = false;
 // WriteLn("Video lost");
-
-#ifdef Solomon1_SPI
-		Display_Off(Solomon1);
-		NXP_Update_Resolution_Detection();
-#ifdef BNO070
-		Update_BNO_Report_Header();
+#ifdef SVR_HAVE_DISPLAY1
+		local_display_off(Display1);
 #endif
-#endif
-#ifdef Solomon2_SPI
-		Display_Off(Solomon2);
+#ifdef SVR_HAVE_DISPLAY2
+		local_display_off(Display2);
 #endif
 	}
 #endif

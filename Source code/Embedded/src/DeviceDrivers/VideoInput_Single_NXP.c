@@ -17,11 +17,15 @@ void VideoInput_Init() { NXP_Init_HDMI(); }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
 void VideoInput_Task(void)
 {
+/// Don't need to poll the NXP every time, we get interrupts and can check the FPGA pin.
+#if 0
 	if (HDMI_task)
 	{
 		NXP_HDMI_Task();
 	}
+#endif
 }
+
 void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
 void VideoInput_Suspend(void) { NXP_Suspend(); }
 void VideoInput_Resume(void) { NXP_Resume(); }

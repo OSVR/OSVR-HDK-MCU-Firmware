@@ -14,6 +14,7 @@
 #endif
 
 #include "Console.h"
+#include "MacroUtils.h"
 
 #include <asf.h>
 #include <ioport.h>
@@ -21,9 +22,11 @@
 
 #include <stdio.h>
 
-uint8_t HDK_Version_Major = 1;
-uint8_t HDK_Version_Minor = 2;  // set 1.2 as default version
-char ProductName[] = "OSVR HDK 1.2";
+#ifdef OSVRHDK
+uint8_t HDK_Version_Major = SVR_HDK_DEFAULT_MAJOR_VER;
+uint8_t HDK_Version_Minor = SVR_HDK_DEFAULT_MINOR_VER;  // set 1.2 as default version
+char ProductName[] = "OSVR HDK " SVR_STRINGIFY(SVR_HDK_DEFAULT_MAJOR_VER) "." SVR_STRINGIFY(SVR_HDK_DEFAULT_MINOR_VER);
+#endif
 
 #ifdef SVR_HAVE_NXP1
 uint8_t actualNXP_1_ADDR = NXP_1_ADDR;

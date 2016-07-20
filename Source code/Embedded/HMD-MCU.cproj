@@ -903,6 +903,9 @@
     <Compile Include="src\DeviceDrivers\VideoInput_TMDS422_NXP.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\MacroUtils.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\NXP\NXP_AVR_Internal.c">
       <SubType>compile</SubType>
     </Compile>

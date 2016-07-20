@@ -90,10 +90,12 @@
 #define ReceivingCommand 2
 #define AwaitingCommandCompletion 3  // for commands that take a long time to complete such as contrast
 
-uint8_t SerialState = USBNotConnected;
-char CommandBuffer[MaxCommandLength + 1];
+static uint8_t SerialState = USBNotConnected;
+static char CommandBuffer[MaxCommandLength + 1];
 
 bool CommandReady = false;  // true if a command is ready to be executed
+
+/// @todo Can't make this static because libhdk20 expects it to be exported: it links against it.
 char CommandToExecute[MaxCommandLength + 1];
 
 char Msg[20];  // todo: remove after debug
@@ -110,29 +112,29 @@ typedef struct
 	};
 } EEPROM_type;
 
-EEPROM_type EEPROM;
+static EEPROM_type EEPROM;
 
 // todo: is this required?
-uint8_t I2CAddress = 0;   // selected I2C address
-bool NXPLeftSide = true;  // selected eye (left or right)
+static uint8_t I2CAddress = 0;   // selected I2C address
+static bool NXPLeftSide = true;  // selected eye (left or right)
 
 // todo: move USBActive as well as TRUE and FALSE
-bool USBActive = false;  // trueif USB is connected
+static bool USBActive = false;  // true if USB is connected
 
-uint8_t BufferPos = 0;       /* position of character to be received in new buffer. When command is completed,
+static uint8_t BufferPos = 0;       /* position of character to be received in new buffer. When command is completed,
                               this also shows the length of the command */
-uint8_t ReadyBufferPos = 0;  // copy of BufferPos for command being executed
+static uint8_t ReadyBufferPos = 0;  // copy of BufferPos for command being executed
 
-uint8_t HexDigitToDecimal(uint8_t CommandBufferIndex);
-uint8_t HexPairToDecimal(uint8_t startIndex);
-void Display_software_version(void);
+static uint8_t HexDigitToDecimal(uint8_t CommandBufferIndex);
+static uint8_t HexPairToDecimal(uint8_t startIndex);
+static void Display_software_version(void);
 
 // called once to reset state machine
 void InitSerialState(void)
 {
 	SerialState = AwaitingCommand;  // Ready to receive chars right now;
 	CommandReady = false;
-};
+}
 
 void ProcessIncomingChar(char CharReceived)
 
@@ -152,7 +154,7 @@ void ProcessIncomingChar(char CharReceived)
 		{
 			WriteLn("");
 			Write(">");
-		};
+		}
 		break;
 	}
 	case ReceivingCommand:  // process normal character
@@ -186,7 +188,7 @@ void ProcessIncomingChar(char CharReceived)
 			}
 		}
 		break;
-	};
+	}
 	// todo: is this state really required?
 	case AwaitingCommandCompletion:
 	{
@@ -194,9 +196,9 @@ void ProcessIncomingChar(char CharReceived)
 		SerialState = AwaitingCommand;  // ready for new command
 		                                // todo: do we need PollStateMachine?
 		                                // PollStateMachine=False;
-	};
-	};
-};
+	}
+	}
+}
 
 void ProcessInfoCommands(void);
 void ProcessBNO070Commands(void);
@@ -206,7 +208,7 @@ void ProcessFPGACommand(void);
 void ProcessHDMICommand(void);
 void ProcessTMDSCommand(void);
 
-bool is_sensics_id_equal_to_buffer(uint8_t addr, uint8_t *buffer, int leng)
+static bool is_sensics_id_equal_to_buffer(uint8_t addr, uint8_t *buffer, int leng)
 {
 	uint8_t i;
 	char Msg[10];
@@ -230,8 +232,7 @@ bool is_sensics_id_equal_to_buffer(uint8_t addr, uint8_t *buffer, int leng)
 // converts hex digit to decimal equivalent. Works for upper and lower case. If not found, returns 0.
 // accepts index of digit in command buffer as parameter
 
-uint8_t HexDigitToDecimal(uint8_t CommandBufferIndex)
-
+static uint8_t HexDigitToDecimal(uint8_t CommandBufferIndex)
 {
 	static const char Digits[] = "0123456789ABCDEF0000abcdef";
 	uint8_t i;
@@ -246,16 +247,14 @@ uint8_t HexDigitToDecimal(uint8_t CommandBufferIndex)
 				return i - 10;
 		}
 	return 0;
-};
+}
 
-uint8_t HexPairToDecimal(uint8_t startIndex)
-
+static uint8_t HexPairToDecimal(uint8_t startIndex)
 {
 	return HexDigitToDecimal(startIndex) * 16 + HexDigitToDecimal(startIndex + 1);
 }
 
-void Display_software_version(void)
-
+static void Display_software_version(void)
 {
 	char OutString[12];
 
@@ -276,7 +275,6 @@ void Display_software_version(void)
 }
 
 void ProcessCommand(void)
-
 {
 	const char SENSICS[] = "SENSICS\0";
 	char OutString[12];
@@ -290,44 +288,44 @@ void ProcessCommand(void)
 		{
 			ProcessInfoCommands();
 			break;
-		};
+		}
 #ifdef BNO070
 		case 'B':
 		case 'b':
 		{
 			ProcessBNO070Commands();
 			break;
-		};
+		}
 #endif
 		case 'S':
 		case 's':
 		{
 			ProcessSPICommand();
 			break;
-		};
+		}
 
 		case 'I':
 		case 'i':
 		{
 			ProcessI2CCommand();
 			break;
-		};
+		}
 #ifdef SVR_HAVE_FPGA
 		case 'F':
 		case 'f':
 		{
 			ProcessFPGACommand();
 			break;
-		};
+		}
 #endif
+#ifdef SVR_HAVE_TMDS422
 		case 't':  // test commands for TMDS 422 switch
 		case 'T':
 		{
-#ifdef SVR_HAVE_TMDS422
 			ProcessTMDSCommand();
-#endif
 			break;
 		}
+#endif
 #ifdef SVR_ENABLE_VIDEO_INPUT
 
 		case 'H':  // HDMI commands
@@ -415,8 +413,8 @@ void ProcessCommand(void)
 				}
 				WriteLn("");
 				break;
-			};
-			};
+			}
+			}
 			break;
 		}
 		case 'd':
@@ -429,12 +427,22 @@ void ProcessCommand(void)
 			}
 			break;
 		}
+
+#ifdef SVR_IS_HDK_20
+		case 'f':  // 20160520, fctu, factory service command.
+		case 'F':
+		{
+			ProcessFactoryCommand();
+			break;
+		}
+#endif  // SVR_IS_HDK_20
+
 		default:
 			WriteLn(";Unrecognized command");
 		}
 	}
 	SerialState = AwaitingCommand;  // todo: should this be here?
-};
+}
 
 void ProcessInfoCommands(void)
 
@@ -458,7 +466,7 @@ void ProcessInfoCommands(void)
 		// sprintf(OutString, "%2.2d:%2.2d:%2.2d:%2.2d", day,hour,minute,second);
 		WriteLn(OutString);
 		break;
-	};
+	}
 	case 'b':  // bootloader
 	case 'B':
 	{
@@ -964,7 +972,7 @@ void ProcessI2CCommand(void)
 			sprintf(OutString, "%x ", RxByte);
 			Write(OutString);
 			break;
-		};
+		}
 		case 'X':  // read register through NXP library
 		case 'x':
 		{
@@ -1009,13 +1017,13 @@ void ProcessI2CCommand(void)
 				sprintf(OutString, "%x ", RxByte);
 			Write(OutString);
 			break;
-		};
+		}
 		case 'S':  // side
 		case 's':
 		{
 			NXPLeftSide = (CommandBuffer[3] == '0');
 			break;
-		};
+		}
 		case '0':
 		{
 			NXP_Suspend();
@@ -1026,9 +1034,9 @@ void ProcessI2CCommand(void)
 			NXP_Resume();
 			break;
 		}
-		};
+		}
 		break;
-	};
+	}
 
 #endif
 	}

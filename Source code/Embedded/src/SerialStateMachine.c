@@ -208,6 +208,8 @@ void ProcessFPGACommand(void);
 void ProcessHDMICommand(void);
 void ProcessTMDSCommand(void);
 
+#ifdef SVR_IS_HDK_20
+/// Used only by HDK 2.0 code right now.
 static bool is_sensics_id_equal_to_buffer(uint8_t addr, uint8_t *buffer, int leng)
 {
 	uint8_t i;
@@ -226,6 +228,7 @@ static bool is_sensics_id_equal_to_buffer(uint8_t addr, uint8_t *buffer, int len
 
 	return true;
 }
+#endif
 
 // To do: move this to a util module
 

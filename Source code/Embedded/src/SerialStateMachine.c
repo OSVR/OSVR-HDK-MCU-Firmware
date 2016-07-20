@@ -204,10 +204,7 @@ void ProcessSPICommand(void);
 void ProcessI2CCommand(void);
 void ProcessFPGACommand(void);
 void ProcessHDMICommand(void);
-
-#ifdef SVR_HAVE_TMDS422
 void ProcessTMDSCommand(void);
-#endif
 
 bool is_sensics_id_equal_to_buffer(uint8_t addr, uint8_t *buffer, int leng)
 {
@@ -236,7 +233,7 @@ bool is_sensics_id_equal_to_buffer(uint8_t addr, uint8_t *buffer, int leng)
 uint8_t HexDigitToDecimal(uint8_t CommandBufferIndex)
 
 {
-	char Digits[] = "0123456789ABCDEF0000abcdef";
+	static const char Digits[] = "0123456789ABCDEF0000abcdef";
 	uint8_t i;
 	char CharToConvert = CommandToExecute[CommandBufferIndex];
 
@@ -302,14 +299,13 @@ void ProcessCommand(void)
 			break;
 		};
 #endif
-#ifdef SVR_HAVE_SOLOMON
 		case 'S':
 		case 's':
 		{
 			ProcessSPICommand();
 			break;
 		};
-#endif
+
 		case 'I':
 		case 'i':
 		{
@@ -659,9 +655,8 @@ void ProcessBNO070Commands(void)
 #endif
 
 // send one or more bytes to the SPI interface and prints the received bytes
-#ifdef SVR_HAVE_SOLOMON
+// (and/or interact with displays, conventionally attached to a Solomon controller on SPI)
 void ProcessSPICommand(void)
-
 {
 	uint16_t SolID, SolRegister;
 	char OutString[12];
@@ -673,100 +668,28 @@ void ProcessSPICommand(void)
 	{
 		if (CommandToExecute[2] == '1')
 		{
-			WriteLn("Init Sol1");
-			init_solomon_device(Solomon1);
+			WriteLn("Init Display1");
+			Display_Init(Display1);
 		}
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_DISPLAY2
 		else if (CommandToExecute[2] == '2')
 		{
-			WriteLn("Init Sol2");
-			init_solomon_device(Solomon2);
+			WriteLn("Init Display2");
+			Display_Init(Display2);
 		}
-#endif
+#endif  // SVR_HAVE_DISPLAY2
 		else
-			WriteLn("Bad sol ID");
+			WriteLn("Bad display ID");
 		break;
 	}
-	case 'w':  // Write Solomon register
-	case 'W':
-	{
-		WriteLn("Write");
-		uint16_t data;
-		data = HexPairToDecimal(5);
-		data = (data << 8) + HexPairToDecimal(7);
-		if (CommandToExecute[2] == '1')
-			write_solomon(Solomon1, HexPairToDecimal(3), data);
-#ifndef OSVRHDK
-		else if (CommandToExecute[2] == '2')
-			write_solomon(Solomon2, HexPairToDecimal(3), data);
-#endif
-		else
-			WriteLn("Wrong Solomon ID");
-		break;
-	}
-	case 'r':  // read Solomon ID or read register
-	case 'R':
-	{
-		if (CommandToExecute[2] == '1')
-		{
-			if (ReadyBufferPos < 4)  // no register number, just read ID
-			{
-				WriteLn("Read ID");
-				SolID = read_Solomon_ID(Solomon1);
-				sprintf(OutString, "Id %x", SolID);
-			}
-			else
-			{
-				write_solomon(Solomon1, 0xd4, 0xfa);  // about to read register
-				SolRegister = read_solomon(Solomon1, HexPairToDecimal(3));
-				sprintf(OutString, "Read: %x", SolRegister);
-			}
-		}
-#ifndef OSVRHDK
-		else if (CommandToExecute[2] == '2')
-		{
-			if (ReadyBufferPos < 4)  // no register number, just read ID
-			{
-				WriteLn("Read ID");
-				SolID = read_Solomon_ID(Solomon2);
-				sprintf(OutString, "Id %x", SolID);
-			}
-			else
-			{
-				write_solomon(Solomon2, 0xd4, 0xfa);  // about to read register
-				SolRegister = read_solomon(Solomon2, HexPairToDecimal(3));
-				sprintf(OutString, "Read: %x", SolRegister);
-			}
-		}
-#endif
-		else
-		{
-			WriteLn("Wrong Solomon ID");
-			return;
-		}
-		WriteLn(OutString);
-		break;
-	}
-	case 'u':
-	case 'U':
-	{
-		if (CommandToExecute[2] == '1')
-			raise_sdc(Solomon1);
-#ifndef OSVRHDK
-		else if (CommandToExecute[2] == '2')
-			raise_sdc(Solomon2);
-#endif
-		else
-			WriteLn("Wrong Solomon ID");
-		break;
-	}
+
 	case 'n':
 	case 'N':
 	{
 		WriteLn("Display on");
-		Display_On(Solomon1);
-#ifndef DISABLE_NXP
-		NXP_Update_Resolution_Detection();
+		Display_On(Display1);
+#ifdef SVR_ENABLE_VIDEO_INPUT
+		VideoInput_Update_Resolution_Detection();
 #endif
 #ifdef BNO070
 		Update_BNO_Report_Header();
@@ -798,13 +721,111 @@ void ProcessSPICommand(void)
 	case 'F':
 	{
 		WriteLn("Display off");
-		Display_Off(Solomon1);
-#ifndef DISABLE_NXP
-		NXP_Update_Resolution_Detection();
+		Display_Off(Display1);
+#ifdef SVR_ENABLE_VIDEO_INPUT
+		VideoInput_Update_Resolution_Detection();
 #endif
 #ifdef BNO070
 		Update_BNO_Report_Header();
 #endif
+		break;
+	}
+
+	case '0':  // solomon reset
+	{
+		Display_Reset(HexDigitToDecimal(2));
+		break;
+	}
+	case '1':  // display power cycle
+	{
+		if (HexDigitToDecimal(2) == 1)
+		{
+			Display_Powercycle(Display1);
+			// init_solomon_device(Solomon1);
+		}
+#ifdef SVR_HAVE_DISPLAY2
+		else if (HexDigitToDecimal(2) == 2)
+		{
+			Display_Powercycle(Display2);
+			// init_solomon_device(Solomon2);
+		}
+#endif  // SVR_HAVE_DISPLAY2
+		else
+			WriteLn("Wrong ID");
+		break;
+	}
+#ifdef SVR_HAVE_SOLOMON
+	case 'w':  // Write Solomon register
+	case 'W':
+	{
+		WriteLn("Write");
+		uint16_t data;
+		data = HexPairToDecimal(5);
+		data = (data << 8) + HexPairToDecimal(7);
+		if (CommandToExecute[2] == '1')
+			write_solomon(Solomon1, HexPairToDecimal(3), data);
+#ifdef SVR_HAVE_SOLOMON2
+		else if (CommandToExecute[2] == '2')
+			write_solomon(Solomon2, HexPairToDecimal(3), data);
+#endif  // SVR_HAVE_SOLOMON2
+		else
+			WriteLn("Wrong Solomon ID");
+		break;
+	}
+	case 'r':  // read Solomon ID or read register
+	case 'R':
+	{
+		if (CommandToExecute[2] == '1')
+		{
+			if (ReadyBufferPos < 4)  // no register number, just read ID
+			{
+				WriteLn("Read ID");
+				SolID = read_Solomon_ID(Solomon1);
+				sprintf(OutString, "Id %x", SolID);
+			}
+			else
+			{
+				write_solomon(Solomon1, 0xd4, 0xfa);  // about to read register
+				SolRegister = read_solomon(Solomon1, HexPairToDecimal(3));
+				sprintf(OutString, "Read: %x", SolRegister);
+			}
+		}
+#ifdef SVR_HAVE_SOLOMON2
+		else if (CommandToExecute[2] == '2')
+		{
+			if (ReadyBufferPos < 4)  // no register number, just read ID
+			{
+				WriteLn("Read ID");
+				SolID = read_Solomon_ID(Solomon2);
+				sprintf(OutString, "Id %x", SolID);
+			}
+			else
+			{
+				write_solomon(Solomon2, 0xd4, 0xfa);  // about to read register
+				SolRegister = read_solomon(Solomon2, HexPairToDecimal(3));
+				sprintf(OutString, "Read: %x", SolRegister);
+			}
+		}
+#endif  // SVR_HAVE_SOLOMON2
+		else
+		{
+			WriteLn("Wrong Solomon ID");
+			return;
+		}
+		WriteLn(OutString);
+		break;
+	}
+	case 'u':
+	case 'U':
+	{
+		if (CommandToExecute[2] == '1')
+			raise_sdc(Solomon1);
+#ifdef SVR_HAVE_SOLOMON2
+		else if (CommandToExecute[2] == '2')
+			raise_sdc(Solomon2);
+#endif  // SVR_HAVE_SOLOMON2
+		else
+			WriteLn("Wrong Solomon ID");
 		break;
 	}
 	case 'd':
@@ -834,34 +855,11 @@ void ProcessSPICommand(void)
 		Display_Set_Strobing(HexDigitToDecimal(2), HexPairToDecimal(3), HexPairToDecimal(5));
 		break;
 	}
-	case '0':  // solomon reset
-	{
-		Solomon_Reset(HexDigitToDecimal(2));
-		break;
-	}
-	case '1':  // display reset
-	{
-		if (HexDigitToDecimal(2) == 1)
-		{
-			Display_Powercycle(Solomon1);
-			// init_solomon_device(Solomon1);
-		}
-#ifndef OSVRHDK
-		else if (HexDigitToDecimal(2) == 2)
-		{
-			Display_Powercycle(Solomon2);
-			// init_solomon_device(Solomon2);
-		}
-#endif
-		else
-			WriteLn("Wrong ID");
-		break;
-	};
+#endif  // SVR_HAVE_SOLOMON
 	}
 
 	WriteLn("");
 }
-#endif
 
 // send one or more bytes to the I2C interface and prints the received bytes
 
@@ -875,45 +873,6 @@ void ProcessI2CCommand(void)
 
 	switch (CommandToExecute[1])
 	{
-	case 'D':  // Select I2C device
-	case 'd':
-	{
-		I2CAddress = HexPairToDecimal(2);  // since command type is in index 1, start at 2
-		WriteLn(";Address received");
-		break;
-	}
-
-	case 'R':  // Receive Data Command
-	case 'r':
-	{
-		Num = HexPairToDecimal(2);  // num of bytes to receive
-
-		// todo: replace with real stuff
-		RxByte = 0;
-		// RxByte=I2CReadRegister(I2CAddress,Num);
-		sprintf(OutString, "R %x ", RxByte);
-		Write(OutString);
-		break;
-	}
-
-#ifdef SVR_USING_NXP
-
-	case 'f':
-	case 'F':  // find available I2C addresses
-	{
-		for (int i = 0x80; i < 0xA0; i = i + 2)
-		{
-			sprintf(Msg, "Trying %x", i);
-			WriteLn(Msg);
-			if (I2CReadRegister(i, 0))
-				WriteLn("Success");
-			_delay_ms(100);
-		}
-		break;
-	}
-
-#endif
-
 #ifdef BNO070
 	case 'B':
 	case 'b':  // BNO commands
@@ -935,6 +894,41 @@ void ProcessI2CCommand(void)
 #endif
 
 #ifdef SVR_USING_NXP
+
+	case 'D':  // Select I2C device
+	case 'd':
+	{
+		I2CAddress = HexPairToDecimal(2);  // since command type is in index 1, start at 2
+		WriteLn(";Address received");
+		break;
+	}
+
+	case 'R':  // Receive Data Command
+	case 'r':
+	{
+		Num = HexPairToDecimal(2);  // num of bytes to receive
+
+		// todo: replace with real stuff
+		RxByte = 0;
+		// RxByte=I2CReadRegister(I2CAddress,Num);
+		sprintf(OutString, "R %x ", RxByte);
+		Write(OutString);
+		break;
+	}
+
+	case 'f':
+	case 'F':  // find available I2C addresses
+	{
+		for (int i = 0x80; i < 0xA0; i = i + 2)
+		{
+			sprintf(Msg, "Trying %x", i);
+			WriteLn(Msg);
+			if (I2CReadRegister(i, 0))
+				WriteLn("Success");
+			_delay_ms(100);
+		}
+		break;
+	}
 
 	case 'N':  // NXP commands
 	case 'n':
@@ -1216,7 +1210,7 @@ void ProcessHDMICommand(void)
 	}
 }
 
-#endif
+#endif  // SVR_ENABLE_VIDEO_INPUT
 
 #ifdef TMDS422
 void ProcessTMDSCommand(void)

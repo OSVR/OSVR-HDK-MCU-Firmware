@@ -1,6 +1,22 @@
 
 all: hdk_oled hdk_lcd dsight
 
+DEFINES :=
+
+CFLAGS := -g3 -Wall \
+		  -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith
+EXTRA_CFLAGS :=
+
+OPTIMIZATION := -O3
+
+ASFLAGS :=
+EXTRA_ASFLAGS :=
+
+# Other useful things you could define on the command line:
+# ATMEL_STUDIO_ROOT
+# NO_ATMEL_STUDIO (for a Windows avrgcc toolchain without atmel studio - any value is true)
+# TOOLCHAIN_ROOT
+# VERBOSE (any value is true and causes the commands to not be hidden)
 
 # If the user passed additional DEFINES on the command line, we'll combine those
 # in a hopefully-safe way for display and for appending to the output filename.
@@ -11,28 +27,12 @@ SUFFIX := -$(subst $(eval) ,-,$(subst =,_,$(strip $(DEFINES))))
 FN_SUFFIX := $(subst =,_,$(SUFFIX))
 endif
 
-TOOLCHAIN_ROOT := C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain
-TOOL_EXTENSION := .exe
-CC := "$(TOOLCHAIN_ROOT)/bin/avr-gcc$(TOOL_EXTENSION)"
-OBJCOPY := "$(TOOLCHAIN_ROOT)/bin/avr-objcopy$(TOOL_EXTENSION)"
-OBJDUMP := "$(TOOLCHAIN_ROOT)/bin/avr-objdump$(TOOL_EXTENSION)"
-AVRSIZE := "$(TOOLCHAIN_ROOT)/bin/avr-size$(TOOL_EXTENSION)"
-
-PATH_SEPARATOR = \\
-
-PATH_CONVERT = $(subst /,\\,$1)
-MKDIR_P = @if not exist "$(call PATH_CONVERT,$1)" mkdir "$(call PATH_CONVERT,$1)"
-CP = copy
-
-GET_PATH = $(subst /,$(call PATH_CONVERT,$1),$(dir $1))
-
-USER_OBJS :=
-
-LIBS :=
 VARIANTS := \
     HDK_OLED \
-	HDK_Sharp_LCD \
-	dSight_Sharp_LCD
+    HDK_Sharp_LCD \
+    dSight_Sharp_LCD
+
+LIBS :=
 
 OUTPUT_STEM := HMD_MCU
 OUTPUT_FILE_PATH := $(OUTPUT_STEM).elf
@@ -43,7 +43,6 @@ MCU=atxmega256a3bu
 REL_ROOT := ..
 REL_SRC := $(REL_ROOT)/src
 
-for_each_variant = $(foreach variant,$(VARIANTS),$(variant)/$1)
 
 C_SRCS :=  \
 src/Boot.c \
@@ -112,16 +111,6 @@ BASE_C_DEPS := $(C_SRCS:%.c=%.d)
 OBJS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_OBJS)))
 C_DEPS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_C_DEPS)))
 
-#OBJ_DIRS := $(subst /,$(PATH_SEPARATOR),$(sort $(dir $(OBJS))))
-
-#ADDITIONAL_DEPENDENCIES:=
-
-#OUTPUT_FILE_DEP:= ./makedep.mk
-
-#LIB_DEP+=
-
-#LINKER_SCRIPT_DEP+=
-
 # These are the include dirs that come after the variant include dir.
 COMMON_INCLUDE_DIRS = \
 	$(REL_SRC)/ASF/xmega/boards/xmega_a3bu_xplained \
@@ -172,45 +161,92 @@ BASE_DEFINES := CONFIG_NVM_IGNORE_XMEGA_A3_D3_REVB_ERRATA \
 
 ALL_DEFINES := $(BASE_DEFINES) $(DEFINES)
 
-
 COMMON_FLAGS := -mmcu=$(MCU) -mrelax $(patsubst %, -D%,$(ALL_DEFINES))
-CFLAGS := -x c $(COMMON_FLAGS)\
-          -O3 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g3 -Wall \
-		  -c -std=gnu99 -fno-strict-aliasing \
-		  -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith
-ASFLAGS := -Wa,-gdwarf2 -x assembler-with-cpp -c $(COMMON_FLAGS)
-OPTIMIZATION := -O3
 
+ALL_CFLAGS := -x c $(COMMON_FLAGS) -c -std=gnu99 \
+              -ffunction-sections -fdata-sections \
+              -fpack-struct -fshort-enums -fno-strict-aliasing \
+              $(CFLAGS) $(EXTRA_CFLAGS)
+ALL_ASFLAGS := -Wa,-gdwarf2 -x assembler-with-cpp -c $(COMMON_FLAGS) $(ASFLAGS) $(EXTRA_ASFLAGS)
+
+for_each_variant = $(foreach variant,$(VARIANTS),$(variant)/$1)
 get_variant=$(word 1,$(subst /, ,$1))
 
+make_include_dirs = $(patsubst %, -I"%",$(REL_SRC)/Variants/$1 $(COMMON_INCLUDE_DIRS))
 DEBUG_VARIANT = @echo Variant: $(VARIANT)
 
 ifeq ($(strip $(VERBOSE)),)
 QUIETRULE := @
+else
+$(info Building in verbose mode - all meaningful command lines will be echoed)
 endif
 
 
-# Pattern for creating directories
-#$(OBJ_DIRS):
-#	-$(call MKDIR_P,$@)
+ifeq ($(OS),Windows_NT)
+# this is Windows
+
+PATH_SEPARATOR = \
+PATH_CONVERT = $(subst /,$(PATH_SEPARATOR),$1)
+
+ifdef ProgramFiles(x86)
+ATMEL_STUDIO_ROOT := ${subst \,/,${ProgramFiles(x86)}}/Atmel/Studio/7.0
+else
+ATMEL_STUDIO_ROOT := $(subst \,/,${ProgramFiles})/Atmel/Studio/7.0
+endif
+TOOLCHAIN_ROOT := $(ATMEL_STUDIO_ROOT)/toolchain/avr8/avr8-gnu-toolchain
+TOOL_EXTENSION := .exe
+
+ifeq ($(strip $(NO_ATMEL_STUDIO)),)
+# Can use "shellutils" folder of utilities.
+RM := "$(ATMEL_STUDIO_ROOT)/shellutils/rm.exe" -f
+CP := "$(ATMEL_STUDIO_ROOT)/shellutils/cp.exe"
+# must be recursively evaluated - it's a function
+MKDIR_P = "$(ATMEL_STUDIO_ROOT)/shellutils/mkdir.exe" -p "$1"
+else
+
+# fall back to cmd...
+CP := copy
+RM := del /q
+# must be recursively evaluated - it's a function
+MKDIR_P = if not exist "$(call PATH_CONVERT,$1)" mkdir "$(call PATH_CONVERT,$1)"
+endif
+
+
+else
+# not Windows
+TOOLCHAIN_ROOT ?= /usr
+TOOL_EXTENSION :=
+PATH_SEPARATOR = /
+PATH_CONVERT = $1
+RM := rm -f
+CP := cp
+MKDIR_P = mkdir -p "$1"
+
+endif
+
+CC := "$(TOOLCHAIN_ROOT)/bin/avr-gcc$(TOOL_EXTENSION)"
+OBJCOPY := "$(TOOLCHAIN_ROOT)/bin/avr-objcopy$(TOOL_EXTENSION)"
+OBJDUMP := "$(TOOLCHAIN_ROOT)/bin/avr-objdump$(TOOL_EXTENSION)"
+AVRSIZE := "$(TOOLCHAIN_ROOT)/bin/avr-size$(TOOL_EXTENSION)"
+
+# No implicit rules, please.
+SUFFIXES :=
+
+#GET_PATH = $(subst /,$(call PATH_CONVERT,$1),$(dir $1))
 
 # Pattern for building object files from c
 $(call for_each_variant,%.o): $(REL_ROOT)/%.c
-	@$(call MKDIR_P,$(@D))
 	$(eval VARIANT?=$(call get_variant,$@))
-ifeq ($(strip $(VERBOSE)),)
-	@echo [$(VARIANT)$(SUFFIX)] ($(OPTIMIZATION)) : $<
-endif
-	$(QUIETRULE)$(CC)  $(patsubst %, -I"%",$(REL_SRC)/Variants/$(VARIANT) $(COMMON_INCLUDE_DIRS)) $(CFLAGS) $(OPTIMIZATION) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+	@echo [$(VARIANT)$(SUFFIX)] ($(OPTIMIZATION)) $< : $@
+	$(QUIETRULE)$(call MKDIR_P,$(@D))
+	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) $(OPTIMIZATION) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
 
 # Pattern for building object files from .s
 $(call for_each_variant,%.o): $(REL_ROOT)/%.s
-	@$(call MKDIR_P,$(@D))
 	$(eval VARIANT?=$(call get_variant,$@))
-ifeq ($(strip $(VERBOSE)),)
-	@echo [$(VARIANT)$(SUFFIX)] : $<
-endif
-	$(QUIETRULE)$(CC) $(ASFLAGS) $(patsubst %, -I"%",$(REL_SRC)/Variants/$(VARIANT) $(COMMON_INCLUDE_DIRS)) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
+	@echo [$(VARIANT)$(SUFFIX)] $< : $@
+	$(QUIETRULE)$(call MKDIR_P,$(@D))
+	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
 
 # These files needs optimization turned off (set to -O0) - hopefully this will do it.
 $(call for_each_variant,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := -O0
@@ -218,20 +254,15 @@ $(call for_each_variant,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): ove
 
 # Makes the elf file
 $(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))
-	$(call MKDIR_P,$(@D))
 	$(eval VARIANT?=$(call get_variant,$@))
-ifeq ($(strip $(VERBOSE)),)
-	@echo [$(VARIANT)$(SUFFIX)] : Linking $@
-endif
-	$(QUIETRULE)$(CC) -o"$@" $(patsubst %,$(VARIANT)/%,$(BASE_OBJS)) $(USER_OBJS) $(LIBS) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
+	@echo [$(VARIANT)$(SUFFIX)] Linking $@
+	$(QUIETRULE)$(CC) -o"$@" $(addprefix $(VARIANT)/,$(BASE_OBJS)) $(LIBS) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
 
 
 # Makes the hex file
 $(call for_each_variant,$(OUTPUT_HEX)): %/$(OUTPUT_HEX) : %/$(OUTPUT_FILE_PATH)
-ifeq ($(strip $(VERBOSE)),)
-	@echo [$(VARIANT)$(SUFFIX)] : Generating $@
-endif
+	@echo [$(VARIANT)$(SUFFIX)] Generating $@
 	$(QUIETRULE)$(OBJCOPY) -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "$<" "$@"
 
 # Includes the deps files.
@@ -242,8 +273,9 @@ endif
 endif
 
 define VARIANT_TOPLEVEL
-	@$(CP) "$(call PATH_CONVERT,$<)" "$@$(FN_SUFFIX).hex"
+	$(QUIETRULE)$(CP) "$(call PATH_CONVERT,$<)" "$@$(FN_SUFFIX).hex"
 	@echo Generated "$@$(FN_SUFFIX).hex"
+$(eval FINAL_GENERATED += $1$(FN_SUFFIX).hex)
 endef
 
 #	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures  "HMD-MCU.elf" "HMD-MCU.hex"
@@ -252,11 +284,23 @@ endef
 #	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -j .user_signatures --set-section-flags=.user_signatures=alloc,load --change-section-lma .user_signatures=0 --no-change-warnings -O ihex "HMD-MCU.elf" "HMD-MCU.usersignatures" || exit 0
 #	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-size.exe" "HMD-MCU.elf"
 
-hdk_oled: HDK_OLED/$(OUTPUT_HEX)
-	$(call VARIANT_TOPLEVEL)
-hdk_lcd: HDK_Sharp_LCD/$(OUTPUT_HEX)
-	$(call VARIANT_TOPLEVEL)
-dsight: dSight_Sharp_LCD/$(OUTPUT_HEX)
-	$(call VARIANT_TOPLEVEL)
+FINAL_GENERATED :=
 
-.PHONY: all hdk_oled hdk_lcd dsight
+hdk_oled: HDK_OLED/$(OUTPUT_HEX)
+$(call VARIANT_TOPLEVEL,hdk_oled,HDK_OLED)
+hdk_lcd: HDK_Sharp_LCD/$(OUTPUT_HEX)
+$(call VARIANT_TOPLEVEL,hdk_lcd,HDK_Sharp_LCD)
+dsight: dSight_Sharp_LCD/$(OUTPUT_HEX)
+$(call VARIANT_TOPLEVEL,dsight,dSight_Sharp_LCD)
+
+
+#	-$(foreach variant,$(VARIANTS),$(RM) $(addprefix $(variant)/,$(BASE_OBJS));)
+clean:
+	-$(RM) $(OBJS)
+	-$(RM) $(C_DEPS)
+	-$(RM) $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX)))
+
+distclean: clean
+	-$(RM) $(FINAL_GENERATED)
+
+.PHONY: all hdk_oled hdk_lcd dsight clean distclean

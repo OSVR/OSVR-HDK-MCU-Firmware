@@ -42,11 +42,11 @@ void dWrite(const char *const Data, uint8_t DebugMask)
 		Write(Data);
 }
 
+static const char CR[] = "\n\r";
+
 void WriteLn(const char *const Data)
 
 {
-	static const char *CR = "\n\r";
-
 	Write(Data);
 	Write(CR);
 	if (strcmp(Data, "Release local") == 0)
@@ -55,11 +55,16 @@ void WriteLn(const char *const Data)
 	}
 }
 
+void WriteEndl(void) { Write(CR); }
 void dWriteLn(const char *const Data, uint8_t DebugMask)
-
 {
 	if ((DebugLevel & DebugMask) != 0)
 		WriteLn(Data);
+}
+void dWriteEndl(uint8_t DebugMask)
+{
+	if ((DebugLevel & DebugMask) != 0)
+		WriteEndl();
 }
 
 void SetDebugLevel(uint8_t NewLevel) { DebugLevel = NewLevel; }

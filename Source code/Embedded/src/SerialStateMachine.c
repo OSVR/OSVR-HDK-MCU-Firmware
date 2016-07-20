@@ -152,7 +152,7 @@ void ProcessIncomingChar(char CharReceived)
 		}
 		else if ((CharReceived == '\n') || (CharReceived == '\r'))  // show user that the program is ready
 		{
-			WriteLn("");
+			WriteEndl();
 			Write(">");
 		}
 		break;
@@ -175,7 +175,7 @@ void ProcessIncomingChar(char CharReceived)
 		{
 			if (BufferPos >= MaxCommandLength)
 			{
-				WriteLn("");
+				WriteEndl();
 				WriteLn(";Command too long");
 				Write(">");
 				SerialState = AwaitingCommand;
@@ -411,7 +411,7 @@ void ProcessCommand(void)
 					sprintf(OutString, "%d ", nvm_eeprom_read_byte(EEPROM_addr + i));
 					Write(OutString);
 				}
-				WriteLn("");
+				WriteEndl();
 				break;
 			}
 			}
@@ -1041,7 +1041,7 @@ void ProcessI2CCommand(void)
 #endif
 	}
 
-	WriteLn("");
+	WriteEndl();
 }
 
 #ifdef SVR_HAVE_FPGA

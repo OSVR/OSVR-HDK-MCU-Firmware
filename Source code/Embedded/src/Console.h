@@ -19,7 +19,10 @@ extern bool CDCWriteInProgress;  // true if USB is being used to write console m
 void Write(const char *const Data);
 void dWrite(const char *const Data, uint8_t DebugMask);
 void WriteLn(const char *const Data);
+// Just write an end of line.
+void WriteEndl(void);
 void dWriteLn(const char *const Data, uint8_t DebugMask);
+void dWriteEndl(uint8_t DebugMask);
 void SetDebugLevel(uint8_t NewLevel);
 void UpdateCDCBusyStatus(void);
 

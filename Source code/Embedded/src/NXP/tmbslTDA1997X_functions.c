@@ -37,6 +37,7 @@
 #include "tmbslTDA1997X_Functions.h"
 #include "tmbslTDA1997X_local.h"
 #include "Console.h"
+#include "DeviceDrivers/VideoInput.h" // for PortraitMode
 
 #include "i2c.h"
 

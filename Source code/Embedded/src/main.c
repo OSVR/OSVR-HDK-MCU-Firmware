@@ -157,13 +157,16 @@ int main(void)
 		VideoInput_Events.videoDetected = false;
 
 		WriteLn("Video at start");
+
 #ifdef SVR_HAVE_DISPLAY1
 		Display_On(Display1);
 		VideoInput_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
 #endif  // BNO070
+
 #endif  // SVR_HAVE_DISPLAY1
+
 #ifdef SVR_HAVE_DISPLAY2
 		Display_On(Display2);
 #endif  // SVR_HAVE_DISPLAY2
@@ -179,6 +182,7 @@ int main(void)
 	{
 		// Clear the event flag.
 		VideoInput_Events.videoLost = false;
+
 #ifdef SVR_HAVE_DISPLAY1
 		Display_Off(Display1);
 		VideoInput_Update_Resolution_Detection();
@@ -187,9 +191,10 @@ int main(void)
 #endif  // BNO070
 
 #endif  // SVR_HAVE_DISPLAY1
+
 #ifdef SVR_HAVE_DISPLAY2
 		Display_Off(Display2);
-#endif  // SVR_HAVE_DISPLAY1
+#endif  // SVR_HAVE_DISPLAY2
 	}
 
 #ifdef DSIGHT
@@ -212,7 +217,7 @@ int main(void)
 
 #ifdef BNO070
 	BNO070Active = init_BNO070();
-#if defined(OSVRHDK) && !defined(HDK_20)
+#ifdef SVR_IS_HDK_1_x
 	if (BNO070Active)
 	{
 		/// If tracker version is 1.8.4 or greater...
@@ -225,7 +230,7 @@ int main(void)
 			                                      /// than original name defined in udc.h and in my_hardware.c
 		}
 	}
-#endif  // OSVRHDK && !HDK_20
+#endif  // SVR_IS_HDK_1_x
 #endif  // BNO070
 
 	// Start USB stack to authorize VBus monitoring

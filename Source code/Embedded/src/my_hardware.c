@@ -6,22 +6,31 @@
  */
 
 #include "my_hardware.h"
-#include <ioport.h>
-#include "DeviceDrivers/Solomon.h"
-#include <asf.h>
-#include "Console.h"
+
 #include "GlobalOptions.h"
-#include "delay.h"
+
+#ifdef SVR_HAVE_SOLOMON
+#include "DeviceDrivers/Solomon.h"
+#endif
+
+#include "Console.h"
+
+#include <asf.h>
+#include <ioport.h>
+#include <delay.h>
+
 #include <stdio.h>
 
 uint8_t HDK_Version_Major = 1;
 uint8_t HDK_Version_Minor = 2;  // set 1.2 as default version
 char ProductName[] = "OSVR HDK 1.2";
 
+#ifdef SVR_HAVE_NXP1
 uint8_t actualNXP_1_ADDR = NXP_1_ADDR;
 uint8_t actualCEC_1_ADDR = CEC_1_ADDR;
+#endif
 
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
 uint8_t actualNXP_2_ADDR = NXP_2_ADDR;
 uint8_t actualCEC_2_ADDR = CEC_2_ADDR;
 #endif
@@ -74,23 +83,10 @@ void custom_board_init(void)
 	ioport_configure_pin(Int_HDMI_A, IOPORT_DIR_INPUT);
 #endif
 
+#ifdef SVR_HAVE_SIDEBYSIDE
 #ifdef OSVRHDK
-
-#ifdef H546DLT01
 	ioport_configure_pin(Side_by_side_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 	ioport_configure_pin(Side_by_side_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-#else  // LCD
-	ioport_configure_pin(Side_by_side_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-	ioport_configure_pin(Side_by_side_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-#endif
-
-#else
-	ioport_configure_pin(Side_by_side_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-	ioport_configure_pin(Side_by_side_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-#endif
-
-#ifdef OSVRHDK
-
 	uint8_t sideBySideConfig;
 	if (GetValidConfigValueOrWriteDefault(SideBySideOffset, 0, &sideBySideConfig))
 	{
@@ -99,10 +95,14 @@ void custom_board_init(void)
 		else
 			ioport_set_pin_high(Side_by_side_B);  // SBS mode
 	}
+#else
+	ioport_configure_pin(Side_by_side_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+	ioport_configure_pin(Side_by_side_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 #endif
 
-#ifndef OSVRHDK
+#endif  // SVR_HAVE_SIDEBYSIDE
 
+#ifdef SVR_HAVE_NXP2
 	ioport_configure_pin(NXP2_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(Int_HDMI_B, IOPORT_DIR_INPUT);
 #endif
@@ -110,19 +110,23 @@ void custom_board_init(void)
 	ioport_configure_pin(USB_Hub_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 	ioport_configure_pin(USB_Hub_Power_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 
-#ifdef OSVRHDK
+#ifdef SVR_IS_HDK_1_x
 	ioport_configure_pin(LCD_avdd_en, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(LCD_avdd_en_sw, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+#endif
+
+#ifdef SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 	ioport_configure_pin(FPGA_unlocked, IOPORT_DIR_INPUT | IOPORT_MODE_PULLUP);
 #endif
 
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_PWM_OUTPUTS
 	ioport_configure_pin(PWM_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(PWM_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 #endif
 
-	// ioport_configure_pin(Backlight,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
+// ioport_configure_pin(Backlight,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
 
+#ifdef SVR_HAVE_FPGA
 	// init both UARTs
 	static usart_rs232_options_t usart_options = {.baudrate = FPGA_USART_BAUD_RATE,
 	                                              .charlength = FPGA_USART_SERIAL_CHAR_LENGTH,
@@ -132,17 +136,19 @@ void custom_board_init(void)
 	if (!usart_init_rs232(FPGA1_USART, &usart_options))
 		WriteLn("FPGA1 init err");
 
-#ifndef OSVRHDK
+#if SVR_HAVE_FPGA == 2
 	if (!usart_init_rs232(FPGA2_USART, &usart_options))
 		WriteLn("FPGA2 init err");
-#endif
+#endif  // SVR_HAVE_FPGA == 2
 
 #ifdef OSVRHDK
 	ioport_configure_pin(FPGA_Reset_Pin,
 	                     IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // start FPGA in reset mode until there is video
 #else
 	ioport_configure_pin(FPGA_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-#endif
+#endif  // OSVRHDK
+
+#endif  // SVR_HAVE_FPGA
 
 // init PWM for display brightness and strobing
 
@@ -200,21 +206,17 @@ bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer)
 }
 
 void eeprom_write_byte(uint8_t page_addr, uint8_t offset, uint8_t value)
-
 {
 	nvm_eeprom_write_byte(EEPROM_PAGE_SIZE + offset, value);
 }
 
 uint8_t eeprom_read_byte(uint8_t page_addr, uint8_t offset)
-
 {
 	return nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + offset);
 }
 
 bool IsConfigOffsetValid(uint8_t offset)
-
 // determines if value at particular offset in config page is valid
-
 {
 	// for each value, next byte needs to be value+37, next byte reverse bitwise of value and next byte 65
 

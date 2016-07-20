@@ -21,6 +21,10 @@
 #define SENSICS_DISPLAY_CONFIGURED
 #endif
 
+#if defined(OSVRHDK) && !defined(HDK_20)
+#define SVR_IS_HDK_1_x
+#endif
+
 #if SVR_NUM_LOGICAL_DISPLAYS == 1
 #define SVR_HAVE_DISPLAY1
 #elif SVR_NUM_LOGICAL_DISPLAYS == 2

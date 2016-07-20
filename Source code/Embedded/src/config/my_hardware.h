@@ -44,7 +44,7 @@
 #define Int_BNO070 IOPORT_CREATE_PIN(PORTD, 3)
 #endif  // BNO070
 
-#if defined(OSVRHDK) && !defined(HDK_20)
+#ifdef SVR_IS_HDK_1_x
 #define LCD_avdd_en IOPORT_CREATE_PIN(PORTC, 2)
 #define LCD_avdd_en_sw IOPORT_CREATE_PIN(PORTC, 3)
 #endif

@@ -22,7 +22,7 @@
 #define SVR_HAVE_SOLOMON 1
 
 // Video-processing FPGA in the signal path between HDMI receiver and MIPI bridge
-#define SVR_HAVE_FPGA
+#define SVR_HAVE_FPGA 1
 
 // Input pin from FPGA indicating that it has a lock on a video signal
 #define SVR_HAVE_FPGA_VIDEO_LOCK_PIN

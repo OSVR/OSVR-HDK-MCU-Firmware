@@ -26,7 +26,7 @@
 #define SVR_HAVE_SOLOMON 2
 
 // Video-processing FPGA in the signal path between each HDMI receiver and MIPI bridge
-#define SVR_HAVE_FPGA
+#define SVR_HAVE_FPGA 2
 
 // Side-by-side video transform functionality provided by FPGA
 #define SVR_HAVE_SIDEBYSIDE

@@ -15,6 +15,7 @@
 
 #define SVR_HDK_DEFAULT_MAJOR_VER 2
 #define SVR_HDK_DEFAULT_MINOR_VER 0
+#define SVR_HDK_VARIANT_STRING "20"
 
 // BNO070 IMU (reporting over USB through this MCU)
 #define BNO070

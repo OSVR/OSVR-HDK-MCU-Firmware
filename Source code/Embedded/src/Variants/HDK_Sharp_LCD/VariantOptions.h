@@ -16,6 +16,7 @@
 #define OSVRHDK
 #define SVR_HDK_DEFAULT_MAJOR_VER 1
 #define SVR_HDK_DEFAULT_MINOR_VER 1
+#define SVR_HDK_VARIANT_STRING "1X-LCD"
 
 // BNO070 IMU (reporting over USB through this MCU)
 #define BNO070

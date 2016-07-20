@@ -38,6 +38,7 @@ OUTPUT_STEM := HMD_MCU
 OUTPUT_FILE_PATH := $(OUTPUT_STEM).elf
 OUTPUT_MAP := $(OUTPUT_STEM).map
 OUTPUT_HEX := $(OUTPUT_STEM).hex
+OUTPUT_LSS := $(OUTPUT_STEM).lss
 
 # Relative path from makefile to source root
 REL_ROOT := ..
@@ -261,6 +262,13 @@ $(call for_each_variant,$(OUTPUT_HEX)): %/$(OUTPUT_HEX) : %/$(OUTPUT_FILE_PATH)
 	@echo [$(VARIANT)$(SUFFIX)] Generating $@
 	$(QUIETRULE)$(OBJCOPY) -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "$<" "$@"
 
+# Makes the lss (assembly listing) file
+$(call for_each_variant,$(OUTPUT_LSS)): %/$(OUTPUT_LSS) : %/$(OUTPUT_FILE_PATH)
+	$(call set_variant_variable,$@)
+	@echo [$(VARIANT)$(SUFFIX)] Generating $@
+	$(QUIETRULE)$(OBJDUMP) -h -S "$<" > "$@"
+
+
 # Includes the deps files.
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C_DEPS)),)
@@ -278,7 +286,7 @@ endif
 clean:
 	-$(RM) $(OBJS)
 	-$(RM) $(C_DEPS)
-	-$(RM) $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX)))
+	-$(RM) $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX) $(OUTPUT_LSS)))
 .PHONY: clean
 
 distclean: clean

@@ -208,8 +208,15 @@ int main(void)
 		{
 			HDK_Version_Major = 1;
 			HDK_Version_Minor = 3;
-			strcpy(ProductName, "OSVR HDK 1.3");  /// important! make sure did length of this product name is not longer
-			                                      /// than original name defined in udc.h and in my_hardware.c
+			static const char HDK13_VER_STRING[] = "OSVR HDK 1.3+";
+			_Static_assert(
+			    sizeof(HDK13_VER_STRING) <= sizeof(USB_DEVICE_PRODUCT_NAME),
+			    "HDK 1.3 product name string exceeds the length of USB_DEVICE_PRODUCT_NAME (in conf_usb.h)!");
+			_Static_assert(sizeof(HDK13_VER_STRING) <= SVR_HDK_PRODUCT_NAME_STRING_LENGTH,
+			               "HDK 1.3 product name string exceeds the length of ProductName (in my_hardware.c)!");
+			strcpy(ProductName,
+			       HDK13_VER_STRING);  /// important! make sure did length of this product name is not longer
+			                           /// than original name defined in udc.h and in my_hardware.c
 		}
 	}
 #endif  // SVR_NEED_TO_COMPUTE_PRODUCT_FROM_BNO

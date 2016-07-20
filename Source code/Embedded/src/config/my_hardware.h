@@ -108,6 +108,14 @@ void set_pwm_values(uint8_t Display1, uint8_t Display2);  // sets pwm values for
 extern uint8_t HDK_Version_Major;
 extern uint8_t HDK_Version_Minor;
 extern char ProductName[];
+// Must be manually kept in sync with the string in my_hardware.c (and conf_usb.h), but a static assert ensures it is
+// so.
+#if SVR_HDK_DEFAULT_MAJOR_VER == 1 && SVR_HDK_DEFAULT_MINOR_VER == 2
+// these version have an extra space for a + since we can't determine what's a 1.3 vs 1.4
+#define SVR_HDK_PRODUCT_NAME_STRING_LENGTH 14
+#else
+#define SVR_HDK_PRODUCT_NAME_STRING_LENGTH 13
+#endif
 #endif
 
 #define SIGNATURE_PAGE 0  // EEPROM page where Sensics signature is stored

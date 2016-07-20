@@ -23,9 +23,14 @@
 #include <stdio.h>
 
 #ifdef OSVRHDK
+
 uint8_t HDK_Version_Major = SVR_HDK_DEFAULT_MAJOR_VER;
-uint8_t HDK_Version_Minor = SVR_HDK_DEFAULT_MINOR_VER;  // set 1.2 as default version
-char ProductName[] = "OSVR HDK " SVR_STRINGIFY(SVR_HDK_DEFAULT_MAJOR_VER) "." SVR_STRINGIFY(SVR_HDK_DEFAULT_MINOR_VER);
+uint8_t HDK_Version_Minor = SVR_HDK_DEFAULT_MINOR_VER;  // set default version from VariantOptions.h
+
+char ProductName[] = USB_DEVICE_PRODUCT_NAME;
+_Static_assert(sizeof(ProductName) == SVR_HDK_PRODUCT_NAME_STRING_LENGTH,
+               "SVR_HDK_PRODUCT_NAME_STRING_LENGTH needs to be updated to match the current length of ProductName");
+
 #endif
 
 #ifdef SVR_HAVE_NXP1

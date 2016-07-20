@@ -238,9 +238,9 @@ $(call for_each_variant,%.o): $(REL_ROOT)/%.s
 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
 
-# These files needs optimization turned off (set to -O0) - hopefully this will do it.
-$(call for_each_variant,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := -O0
-$(call for_each_variant,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := -O0
+# These files had optimization turned off before for some reason, turning it down now.
+$(call for_each_variant,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := -O1
+$(call for_each_variant,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := -O1
 
 # These files are terribly full of warnings. We really just want to disable the shift overflow ones, but the flag
 # below seems insufficient, thus -w disables all warnings...

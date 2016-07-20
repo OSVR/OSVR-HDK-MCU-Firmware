@@ -132,7 +132,7 @@ int main(void)
 #endif  // MeasurePerformance
 #endif  // OSVRHDK
 
-#ifndef DISABLE_NXP
+#ifdef SVR_ENABLE_VIDEO_INPUT
 
 	// Sets up video input part of data path: switch (if present), HDMI receiver.
 	VideoInput_Init();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
@@ -195,7 +195,7 @@ int main(void)
 	/// @todo This also gets set to true in VideoInput_Init - remove this line?
 	HDMI_task = true;
 
-#endif
+#endif  // SVR_ENABLE_VIDEO_INPUT
 
 #ifdef BNO070
 	BNO070Active = init_BNO070();
@@ -252,7 +252,7 @@ int main(void)
 #endif
 #endif
 
-#ifndef DISABLE_NXP
+#ifdef SVR_ENABLE_VIDEO_INPUT
 #ifdef SVR_VIDEO_INPUT_POLL_INTERVAL
 		if (HDMI_task)
 		{
@@ -268,7 +268,7 @@ int main(void)
 #else   // SVR_VIDEO_INPUT_POLL_INTERVAL ^ / v !SVR_VIDEO_INPUT_POLL_INTERVAL
 		HandleHDMI();
 #endif  // SVR_VIDEO_INPUT_POLL_INTERVAL
-#endif  // !DISABLE_NXP
+#endif  // SVR_ENABLE_VIDEO_INPUT
 	}
 }
 
@@ -276,6 +276,8 @@ static void local_display_on(uint8_t id);
 static void local_display_off(uint8_t id);
 inline static void local_display_on(uint8_t id)
 {
+/// @todo why display init every time display goes on here? is this a panel quirk that should be handled in
+/// panel-specific code?
 #if !defined(H546DLT01) && !defined(OSVRHDK)
 	Display_Init(id);  // todo: add back after debug of board
 #endif
@@ -287,7 +289,7 @@ inline static void local_display_on(uint8_t id)
 		Update_BNO_Report_Header();
 #endif
 	}
-
+/// @todo and similarly, why dipslay init again afterwards?
 #if !defined(H546DLT01) && !defined(OSVRHDK)
 	Display_Init(id);  // todo: add back after debug of board
 #endif
@@ -306,7 +308,7 @@ inline static void local_display_off(uint8_t id)
 void HandleHDMI()
 
 {
-#ifndef DISABLE_NXP
+#ifdef SVR_ENABLE_VIDEO_INPUT
 	VideoInput_Task();
 	bool videoLost = VideoInput_Events.videoLost;
 	VideoInput_Events.videoLost = false;
@@ -314,7 +316,7 @@ void HandleHDMI()
 	VideoInput_Events.videoDetected = false;
 	if (videoDetected)
 	{
-// WriteLn("New video detected");
+		WriteLn("New video detected");
 #ifdef SVR_HAVE_DISPLAY1
 		local_display_on(Display1);
 #endif
@@ -324,7 +326,7 @@ void HandleHDMI()
 	}
 	if (videoLost)
 	{
-// WriteLn("Video lost");
+		WriteLn("Video lost");
 #ifdef SVR_HAVE_DISPLAY1
 		local_display_off(Display1);
 #endif
@@ -332,5 +334,5 @@ void HandleHDMI()
 		local_display_off(Display2);
 #endif
 	}
-#endif
+#endif  // SVR_ENABLE_VIDEO_INPUT
 }

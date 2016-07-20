@@ -41,6 +41,8 @@
  *
  */
 
+#include "main.h"
+
 #include <asf.h>
 #include <pmic.h>
 #include "conf_usb.h"
@@ -49,7 +51,6 @@
 #include "uart.h"
 #include "SerialStateMachine.h"
 #include "my_hardware.h"
-#include "bno_callbacks.h"
 
 #include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/VideoInput.h"
@@ -58,37 +59,23 @@
 
 #include "TimingDebug.h"
 
-#ifdef OSVRHDK
-#include "nxp\i2c.h"
-#include "string.h"
-#endif
-
 #include "USB.h"
 
-#include "main.h"
+/// The HDK 1.x OLED firmware works across lots of hardware versions, so we determine a product string at runtime based
+/// on the BNO firmware version (loaded at the factory).
+#if defined(SVR_IS_HDK_1_x) && defined(H546DLT01) && defined(BNO070)
+#include "string.h"  // for strcpy
+#endif
 
 bool HDMI_task = false;
 bool HDMISwitch_task = true;
-bool NXPEverLocked = false;  // true if HDMI receiver was ever locked on incoming video signal
-
-#ifdef OSVRHDK
-bool LastFPGALockStatus = 0;  // last state of FPGA_unlocked pin
-#endif
 
 void HandleHDMI(void);
 
 void load_configuration(void)
-
 {
-	if (IsConfigOffsetValid(PersistenceOffset))
-		Display_Strobing_Rate = GetConfigValue(PersistenceOffset);
-	else
-		SetConfigValue(PersistenceOffset, Display_Strobing_Rate);
-
-	if (IsConfigOffsetValid(PersistencePercentOffset))
-		Display_Strobing_Percent = GetConfigValue(PersistencePercentOffset);
-	else
-		SetConfigValue(PersistencePercentOffset, Display_Strobing_Percent);
+	GetValidConfigValueOrWriteDefault(PersistenceOffset, Display_Strobing_Rate, &Display_Strobing_Rate);
+	GetValidConfigValueOrWriteDefault(PersistencePercentOffset, Display_Strobing_Percent, &Display_Strobing_Percent);
 }
 
 /*! \brief Main function. Execution starts here.
@@ -151,6 +138,7 @@ int main(void)
 	VideoInput_Init();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
 	                    // already been initialized
 
+	/// @todo can this be folded into HandleHDMI?
 	if (VideoInput_Events.videoDetected)
 	{
 		// Clear the event flag.
@@ -171,12 +159,6 @@ int main(void)
 		Display_On(Display2);
 #endif  // SVR_HAVE_DISPLAY2
 	}
-
-#if 0
-	/// @todo disabled because we already read above.
-	if (!(ioport_get_pin_level(FPGA_unlocked)))
-		NXPEverLocked = true;
-#endif  // OSVRHDK
 
 	if (VideoInput_Events.videoLost)
 	{
@@ -217,7 +199,7 @@ int main(void)
 
 #ifdef BNO070
 	BNO070Active = init_BNO070();
-#ifdef SVR_IS_HDK_1_x
+#ifdef SVR_NEED_TO_COMPUTE_PRODUCT_FROM_BNO
 	if (BNO070Active)
 	{
 		/// If tracker version is 1.8.4 or greater...
@@ -230,7 +212,7 @@ int main(void)
 			                                      /// than original name defined in udc.h and in my_hardware.c
 		}
 	}
-#endif  // SVR_IS_HDK_1_x
+#endif  // SVR_NEED_TO_COMPUTE_PRODUCT_FROM_BNO
 #endif  // BNO070
 
 	// Start USB stack to authorize VBus monitoring

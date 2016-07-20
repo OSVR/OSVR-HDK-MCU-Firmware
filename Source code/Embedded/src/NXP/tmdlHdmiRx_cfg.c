@@ -28,6 +28,9 @@
 /*                             INCLUDE FILES                                  */
 /*============================================================================*/
 #include "GlobalOptions.h"
+
+#ifdef SVR_HAVE_NXP
+
 #include <asf.h>
 #include "AVRHDMI.h"
 #include "tmdlHdmiRx_IW.h"
@@ -593,6 +596,8 @@ tmErrorCode_t tmdlHdmiRxCfgGetConfig
 
     return(TM_OK);
 };
+
+#endif // SVR_HAVE_NXP
 
 /*============================================================================*/
 /*                            END OF FILE                                     */

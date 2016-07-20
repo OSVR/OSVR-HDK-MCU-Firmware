@@ -14,15 +14,10 @@
 #include "ui.h"
 #include "uart.h"
 #include "SerialStateMachine.h"
-#include "DeviceDrivers/Solomon.h"
+#include "DeviceDrivers/Display.h"
 #include "my_hardware.h"
 #include "bno_callbacks.h"
 
-#ifndef DISABLE_NXP
-#include "nxp/AVRHDMI.h"
-#endif
-
-#include "DeviceDrivers/TI-TMDS442.h"
 #include "DeviceDrivers/BNO070.h"
 #include "Console.h"
 
@@ -95,7 +90,7 @@ void my_callback_generic_report_out(uint8_t *report)
 {
 	if ((report[0] == 0) && (report[1] == 1))
 	{
-		Display_Off(Solomon1);
+		Display_Off(Display1);
 		// The report is correct
 	}
 }

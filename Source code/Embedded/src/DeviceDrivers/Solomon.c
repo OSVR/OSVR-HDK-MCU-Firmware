@@ -6,6 +6,9 @@
  */
 
 // driver for Solomon MIPI bridge chip
+#include "GlobalOptions.h"
+
+#ifdef SVR_HAVE_SOLOMON
 
 #include <asf.h>
 #include "stdio.h"
@@ -429,3 +432,5 @@ void Solomon_Reset(uint8_t SolomonNum)
 	else
 		WriteLn("Wrong Sol num");
 }
+
+#endif  // SVR_HAVE_SOLOMON

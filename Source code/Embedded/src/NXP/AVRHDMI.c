@@ -4,6 +4,7 @@
 
 //#include "stdafx.h"
 #include "GlobalOptions.h"
+#ifdef SVR_HAVE_NXP
 #include "Console.h"
 #include "DeviceDrivers/VideoInput_Protected.h"
 #include "NXP_AVR_Internal.h"
@@ -1799,3 +1800,4 @@ void NXP_Update_Resolution_Detection()
 	HDMIStatus=Get_HDMI_Status();
 }
 
+#endif // SVR_HAVE_NXP

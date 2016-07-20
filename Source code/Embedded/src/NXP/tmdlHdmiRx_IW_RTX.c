@@ -35,6 +35,10 @@
 /*                       INCLUDE FILES                                        */
 /*============================================================================*/
 
+#include "GlobalOptions.h"
+
+#ifdef SVR_HAVE_NXP
+
 #include "tmNxTypes.h"
 #include "tmdlHdmiRx_Types.h"
 #include "tmdlHdmiRx_cfg.h"
@@ -688,6 +692,8 @@ void tmdlHdmiRxIWEnableInterrupts(tmdlHdmiIWDeviceInterrupt_t device)
 #ifdef __cplusplus
 }
 #endif
+
+#endif // SVR_HAVE_NXP
 
 /*============================================================================*/
 /*                            END OF FILE                                     */

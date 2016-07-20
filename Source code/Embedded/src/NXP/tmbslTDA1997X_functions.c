@@ -32,6 +32,8 @@
 
 #include "GlobalOptions.h"
 
+#ifdef SVR_HAVE_NXP
+
 #include "tmbslTDA1997X_Functions.h"
 #include "tmbslTDA1997X_local.h"
 #include "Console.h"
@@ -9004,3 +9006,5 @@ void HZ5()
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)CONTROL, 1, &regValue);
     /* wait during 50 ms */
 }
+
+#endif // SVR_HAVE_NXP

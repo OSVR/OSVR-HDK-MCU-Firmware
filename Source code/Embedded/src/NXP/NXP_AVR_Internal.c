@@ -9,7 +9,7 @@
 
 #include "GlobalOptions.h"
 #include "Console.h"
-
+#ifdef SVR_HAVE_NXP
 /*============================================================================*/
 /**
     \brief   Function that prints the returned error codes
@@ -49,3 +49,5 @@ void NXP_Private_PRINTIF(uint16_t errCode, uint16_t lineNumber)
     }
 #endif
 }
+
+#endif // SVR_HAVE_NXP

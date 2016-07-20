@@ -45,6 +45,8 @@
 #define BNO070_ISR() ISR(PORTD_INT0_vect)
 #define BNO_070_Reset_Pin IOPORT_CREATE_PIN(PORTA, 5)
 #define Int_BNO070 IOPORT_CREATE_PIN(PORTD, 3)
+#define BNO_BOOTN IOPORT_CREATE_PIN(PORTE, 2)  // low: Entry boot mode; high: normal.
+
 #endif  // BNO070
 
 #ifdef SVR_IS_HDK_1_x
@@ -86,6 +88,17 @@ uint8_t actualNXP_2_ADDR;  /// @todo should this be extern?
 uint8_t actualCEC_2_ADDR;  /// @todo should this be extern?
 #endif                     // SVR_HAVE_NXP2
 
+#ifdef SVR_HAVE_TOSHIBA_TC358870
+#define TC358870_Reset_Pin IOPORT_CREATE_PIN(PORTD, 5)  // out, active low, >12ms.
+
+#endif  // SVR_HAVE_TOSHIBA_TC358870
+
+#ifdef SVR_IS_HDK_20
+#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)   // out, Right Panel SWIRE
+#define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)  // out, Right Panel SWIRE
+#define PANEL_RESET IOPORT_CREATE_PIN(PORTF, 4)  // out, panel reset. hw power reset.
+
+#endif  // SVR_IS_HDK_20
 
 void custom_board_init(void);                             // Sensics-specific initialization of the hardware
 void set_pwm_values(uint8_t Display1, uint8_t Display2);  // sets pwm values for each display

@@ -30,7 +30,7 @@
 /*============================================================================*/
 
 #include "GlobalOptions.h"
-
+#ifdef SVR_HAVE_NXP
 
 #include  "Console.h" // for WriteLn
 #include "inttypes.h"
@@ -9892,6 +9892,8 @@ tmErrorCode_t tmdlHdmiRxRequestHdmioutEDID
 
 #endif
 
+
+#endif // SVR_HAVE_NXP
 
 /*============================================================================*/
 /*                            END OF FILE                                     */

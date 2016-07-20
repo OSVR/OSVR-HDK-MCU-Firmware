@@ -67,6 +67,10 @@
 #include <util/delay.h>
 #include "my_hardware.h"
 
+#ifdef SVR_IS_HDK_20
+#include <libhdk20.h>
+#endif
+
 #define USBNotConnected 0
 #define AwaitingCommand 1
 #define ReceivingCommand 2
@@ -287,12 +291,14 @@ void ProcessCommand(void)
 			break;
 		};
 #endif
+#ifdef SVR_HAVE_SOLOMON
 		case 'S':
 		case 's':
 		{
 			ProcessSPICommand();
 			break;
 		};
+#endif
 		case 'I':
 		case 'i':
 		{
@@ -342,7 +348,7 @@ void ProcessCommand(void)
 				set_buffer(EEPROM.Buffer, 0);
 				memcpy(EEPROM.Signature, SENSICS, sizeof(SENSICS));
 /// @todo HDK20RF sizeof(EEPROM.Buffer) was changed to sizeof(SENSICS) - 1 due to "write Sensics ID will overwrite S/N"
-#ifndef HDK_20
+#ifndef SVR_IS_HDK_20
 				nvm_eeprom_erase_and_write_buffer(SIGNATURE_PAGE * EEPROM_PAGE_SIZE, &EEPROM.Buffer[0],
 				                                  sizeof(EEPROM.Buffer));
 #else  // 20160605, fctu, fix write SENSICS ID will overwrite S/N.
@@ -357,7 +363,7 @@ void ProcessCommand(void)
 				EEPROM_addr = HexPairToDecimal(2);
 /// @todo HDK20RF uses the version of nvm_eeprom_write_byte in its binary-only libhdk20, called nvm_eeprom_write_byte_ -
 /// differences unknown
-#ifdef HDK_20
+#ifdef SVR_IS_HDK_20
 				nvm_eeprom_write_byte_(EEPROM_addr, HexPairToDecimal(4));
 				nvm_eeprom_write_byte_(EEPROM_addr + 1, HexPairToDecimal(6));
 				nvm_eeprom_write_byte_(EEPROM_addr + 2, HexPairToDecimal(8));
@@ -373,7 +379,7 @@ void ProcessCommand(void)
 			case 'V':  // verify Sensics ID
 			case 'v':
 			{
-#ifndef HDK_20
+#ifndef SVR_IS_HDK_20
 				set_buffer(EEPROM.Buffer, 0);
 				memcpy(EEPROM.Buffer, SENSICS, sizeof(SENSICS));
 				if (is_eeprom_page_equal_to_buffer(SIGNATURE_PAGE, EEPROM.Buffer))
@@ -642,7 +648,7 @@ void ProcessBNO070Commands(void)
 #endif
 
 // send one or more bytes to the SPI interface and prints the received bytes
-
+#ifdef SVR_HAVE_SOLOMON
 void ProcessSPICommand(void)
 
 {
@@ -844,6 +850,7 @@ void ProcessSPICommand(void)
 
 	WriteLn("");
 }
+#endif
 
 // send one or more bytes to the I2C interface and prints the received bytes
 

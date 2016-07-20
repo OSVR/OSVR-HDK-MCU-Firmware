@@ -123,9 +123,9 @@ static void gpioSetRSTN(const struct sensorhub_s *sh, int value)
 static void gpioSetBOOTN(const struct sensorhub_s *sh, int value)
 {
     if (value) {
-        ioport_set_pin_high(Side_by_side_A);
+        ioport_set_pin_high(BNO_BOOTN);
     } else {
-        ioport_set_pin_low(Side_by_side_A);
+        ioport_set_pin_low(BNO_BOOTN);
     }
 }
 

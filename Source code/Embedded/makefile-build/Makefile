@@ -30,6 +30,7 @@ FN_SUFFIX := $(subst =,_,$(SUFFIX))
 endif
 
 VARIANTS := \
+    HDK_20 \
     HDK_OLED \
     HDK_Sharp_LCD \
     dSight_Sharp_LCD
@@ -65,6 +66,7 @@ src/NXP/tmdlHdmiRx_IW_RTX.c \
 src/NXP/tmdlHdmiRx_cfg.c \
 src/DeviceDrivers/Display.c \
 src/DeviceDrivers/Display_Solomon.c \
+src/DeviceDrivers/Display_DualAUO_TC358870.c \
 src/DeviceDrivers/VideoInput.c \
 src/DeviceDrivers/VideoInput_FPGALockPin.c \
 src/DeviceDrivers/VideoInput_Single_NXP.c \
@@ -104,6 +106,11 @@ src/ASF/xmega/services/timeout/timeout.c
 PREPROCESSING_SRCS :=  \
 src/ASF/xmega/drivers/cpu/ccp.s \
 src/ASF/xmega/drivers/nvm/nvm_asm.s
+
+# Per-variant additional includes and libs
+LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.a
+INCLUDE_DIRS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/
+
 
 # Simple lists without a variant subdirectory at the beginning
 BASE_OBJS :=  $(C_SRCS:%.c=%.o) $(PREPROCESSING_SRCS:%.s=%.o)
@@ -174,7 +181,7 @@ ALL_ASFLAGS := -Wa,-gdwarf2 -x assembler-with-cpp -c $(COMMON_FLAGS) $(ASFLAGS) 
 for_each_variant = $(foreach variant,$(VARIANTS),$(variant)/$1)
 get_variant=$(word 1,$(subst /, ,$1))
 
-make_include_dirs = $(patsubst %, -I"%",$(REL_SRC)/Variants/$1 $(COMMON_INCLUDE_DIRS))
+make_include_dirs = $(patsubst %, -I"%",$(REL_SRC)/Variants/$1 $(COMMON_INCLUDE_DIRS) $(INCLUDE_DIRS_$(1)))
 DEBUG_VARIANT = @echo Variant: $(VARIANT)
 
 ifeq ($(strip $(VERBOSE)),)
@@ -264,7 +271,7 @@ $(call for_each_variant,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-ou
 $(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))
 	$(eval VARIANT?=$(call get_variant,$@))
 	@echo [$(VARIANT)$(SUFFIX)] Linking $@
-	$(QUIETRULE)$(CC) -o"$@" $(addprefix $(VARIANT)/,$(BASE_OBJS)) $(LIBS) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
+	$(QUIETRULE)$(CC) -o"$@" $(addprefix $(VARIANT)/,$(BASE_OBJS)) $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
 
 
@@ -294,6 +301,8 @@ endef
 
 FINAL_GENERATED :=
 
+hdk20: HDK_20/$(OUTPUT_HEX)
+$(call VARIANT_TOPLEVEL,hdk20,HDK_20)
 hdk_oled: HDK_OLED/$(OUTPUT_HEX)
 $(call VARIANT_TOPLEVEL,hdk_oled,HDK_OLED)
 hdk_lcd: HDK_Sharp_LCD/$(OUTPUT_HEX)

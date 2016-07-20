@@ -7,3 +7,8 @@
 dSight_Sharp_LCD/
 HDK_OLED/
 HDK_Sharp_LCD/
+HDK_20/
+!/src/Variants/dSight_Sharp_LCD/
+!/src/Variants/HDK_OLED/
+!/src/Variants/HDK_Sharp_LCD/
+!/src/Variants/HDK_20/

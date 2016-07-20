@@ -99,9 +99,11 @@ src/DeviceDrivers/VideoInput.c \
 src/DeviceDrivers/VideoInput_FPGALockPin.c \
 src/DeviceDrivers/VideoInput_Single_NXP.c \
 src/DeviceDrivers/VideoInput_TMDS422_NXP.c \
+src/DeviceDrivers/VideoInput_Toshiba_TC358870.c \
 src/DeviceDrivers/BNO070_using_hostif.c \
 src/DeviceDrivers/Solomon.c \
 src/DeviceDrivers/TI-TMDS442.c \
+src/DeviceDrivers/Toshiba_TC358870.c \
 src/DeviceDrivers/bno-hostif/1000-3251_1.7.0.390_avr.c \
 src/DeviceDrivers/bno-hostif/bno_callbacks.c \
 src/DeviceDrivers/bno-hostif/src/sensorhub.c \

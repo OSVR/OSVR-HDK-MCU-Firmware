@@ -55,7 +55,7 @@ void Display_Off(uint8_t deviceID)
 
 #endif
 }
-
+void Display_Reset(uint8_t deviceID) { Solomon_Reset(deviceID); }
 // power cycles display connected to the specific device
 void Display_Powercycle(uint8_t deviceID)
 {

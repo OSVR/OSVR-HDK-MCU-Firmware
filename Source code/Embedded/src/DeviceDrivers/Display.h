@@ -11,10 +11,19 @@
 #include <stdint.h>
 
 typedef enum { Display1 = 0, Display2 = 1 } DisplayId;
+
 void Display_System_Init(void);
+
 void Display_Init(uint8_t id);
+
 void Display_On(uint8_t deviceID);
+
 void Display_Off(uint8_t deviceID);
+
+// Reset the display controller for the given device ID
+void Display_Reset(uint8_t deviceID);
+
+// Power-cycle the panel(s) connected to the display controller with given device ID
 void Display_Powercycle(uint8_t deviceID);
 
 // strobing settings

@@ -12,19 +12,10 @@
 #include "Console.h"
 #include "SvrYield.h"
 
+#include "DeviceDrivers/Toshiba_TC358870.h"
 #include <libhdk20.h>
 
-static uint8_t tc_data;
-
-void Display_System_Init()
-{
-	// Dennis Yeh 2016/03/14 : for TC358870
-	TC358870_i2c_Init();
-	TC358870_i2c_Read(0x0000, &tc_data);
-
-	PowerOnSeq();
-}
-
+void Display_System_Init() { Toshiba_TC358870_Init(); }
 void Display_Init(DisplayId id) {}
 /// @todo why was this implementation included?
 #if 0
@@ -94,6 +85,12 @@ void Display_Off(uint8_t deviceID)
 	TC358870_i2c_Write(0x0002, 0x3F01, 2);  // SysCtl
 	TC358870_i2c_Write(0x0002, 0x0000, 2);  // SysCtl
 #endif
+}
+
+void Display_Reset(uint8_t deviceID)
+{
+	/// Note: essentially the same as VideoInput_Reset - since one chip does both ends!
+	Toshiba_TC358870_Trigger_Reset();
 }
 
 void Display_Powercycle(uint8_t deviceID)

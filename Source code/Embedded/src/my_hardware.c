@@ -59,12 +59,28 @@ void set_pwm_values(uint8_t Display1, uint8_t Display2)
 void custom_board_init(void)
 
 {
+/// @todo This is pin setup code for part of the block of pins that are referred to nowhere else in the source code for
+/// the HDK_20. Unclear how much of this is actually required for proper operation and how much is just extraneous: the
+/// system did work with just the level shifter output enable setup.
 #ifdef SVR_IS_HDK_20
-/// @todo Is this an MCU feature that just the HDK20 needs, or is this effectively dead code?
-#define MCU_LEVEL_SHIFT_OE IOPORT_CREATE_PIN(PORTA, 1)  // out, level shift enable, low enable. U55
+	/// @todo Is this an MCU feature that just the HDK20 needs, or is this effectively dead code?
 	ioport_configure_pin(
 	    MCU_LEVEL_SHIFT_OE,
 	    IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // I/O level shift gate enable. (i2c, hdmi_rst, 2848_reset).
+/// @todo the device was functional without these configured.
+#if 0
+		ioport_configure_pin(ANA_PWR_IN, IOPORT_DIR_INPUT);                       // 5v power good indicator.
+		ioport_configure_pin(EDID_EEP_WP, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // EDID EEP write protect (Low protect)
+
+		// audio block IO   (All of this block are reserved !! HW NC)
+		ioport_configure_pin(AUD_JACK_DETECT, IOPORT_DIR_INPUT);               // audio phone jack detection.
+		ioport_configure_pin(AUD_DEEM, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // AUD_DEEM,  de-emphasis , 0:off, 1:on
+		ioport_configure_pin(AUD_MUTE,
+		IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // audio soft mute, low: mute off, high: mute on.
+		// AUD_PCS, it's DAC output for audio codec operation mode. (Reserve)
+
+		ioport_configure_pin(PWR_GOOD_2V5, IOPORT_DIR_INPUT);  // TPS54478 (U16) 1.8v power good indicator.
+#endif  // 0
 #endif
 
 // Solomon SSD2848 IO Init.
@@ -132,7 +148,15 @@ void custom_board_init(void)
 #endif
 
 	ioport_configure_pin(USB_Hub_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
+
+	/// @todo HW NC on SVR_IS_HDK_20?
 	ioport_configure_pin(USB_Hub_Power_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
+
+/// @todo initialize USB_SW_OC except on SVR_IS_HDK_20 where it may be HW NC?
+
+#ifdef SVR_IS_HDK_20
+	ioport_configure_pin(PANEL_RESET, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, low > 10us
+#endif
 
 #ifdef SVR_IS_HDK_1_x
 	ioport_configure_pin(LCD_avdd_en, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);

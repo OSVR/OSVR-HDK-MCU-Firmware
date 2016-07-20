@@ -93,10 +93,37 @@ uint8_t actualCEC_2_ADDR;  /// @todo should this be extern?
 
 #endif  // SVR_HAVE_TOSHIBA_TC358870
 
+/// @todo This section is pins that are entirely unreferenced anywhere in the HDK_20 Coretronic fork except in
+/// custom_board_init
 #ifdef SVR_IS_HDK_20
-#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)   // out, Right Panel SWIRE
-#define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)  // out, Right Panel SWIRE
-#define PANEL_RESET IOPORT_CREATE_PIN(PORTF, 4)  // out, panel reset. hw power reset.
+#define MCU_LEVEL_SHIFT_OE IOPORT_CREATE_PIN(PORTA, 1)  // out, level shift enable, low enable. U55
+#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)          // out, Right Panel SWIRE
+#define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)         // out, Right Panel SWIRE
+#define PANEL_RESET IOPORT_CREATE_PIN(PORTF, 4)         // out, panel reset. hw power reset.
+#define ANA_PWR_IN IOPORT_CREATE_PIN(PORTA, 6)          // in, 5v power good.
+#define EDID_EEP_WP IOPORT_CREATE_PIN(PORTA, 7)         // out, edid eeprom write protection, 0: write protect
+
+// port B
+#define AUD_JACK_DETECT IOPORT_CREATE_PIN(PORTB, 0)  // in, Audio jack detection, 0: plug, 1: unplug
+#define CPU_RST IOPORT_CREATE_PIN(PORTB, 2)          //
+// out, dac, audio codec operation mode, LOW normal operating mode, MID low sampling
+// frequency mode, HIGH Power-down or Sleep mode
+#define AUD_PCS IOPORT_CREATE_PIN(PORTB, 3)
+
+// port C
+#define AUD_DEEM IOPORT_CREATE_PIN(PORTC, 2)
+#define AUD_MUTE IOPORT_CREATE_PIN(PORTC, 3)
+
+// port D
+#define PWR_GOOD_2V5 \
+	IOPORT_CREATE_PIN(PORTD, 0)  // in, 1.8v power good, asserts low if output voltage is low due to thermal shutdown,
+                                 // overcurrent, over/under-voltage or EN shut down.
+#define USB_SW_OC IOPORT_CREATE_PIN(PORTD, 1)  // out, HW NC, Don't care.
+
+/// @todo Comment says this is used as output, but Coretronic fork has this initialized as input... (f.k.a Int_HDMI_A)
+#define I2C_Addr_Sel \
+	IOPORT_CREATE_PIN(PORTD, 2)  // out, Active high, It's also I2C address selection: Slave address = 0x0F if INT = Low
+                                 // during reset, Slave address = 0x1F if INT = High during reset
 
 #endif  // SVR_IS_HDK_20
 

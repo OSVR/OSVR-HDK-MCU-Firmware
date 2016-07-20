@@ -49,6 +49,8 @@ void WriteLn(const char *const Data)
 {
 	Write(Data);
 	Write(CR);
+	// This is what RETIF_SEM in tmdlHdmiRx_local.h and its consumers print. Presumably requires another newline for
+	// some reason.
 	if (strcmp(Data, "Release local") == 0)
 	{
 		Write(CR);

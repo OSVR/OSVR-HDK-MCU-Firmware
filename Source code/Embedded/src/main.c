@@ -56,6 +56,7 @@
 #include "nxp/AVRHDMI.h"
 #endif
 
+#include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/TI-TMDS442.h"
 #include "DeviceDrivers/BNO070.h"
 #include "Console.h"
@@ -87,14 +88,14 @@ void load_configuration(void)
 
 {
 	if (IsConfigOffsetValid(PersistenceOffset))
-		Strobing_rate = GetConfigValue(PersistenceOffset);
+		Display_Strobing_Rate = GetConfigValue(PersistenceOffset);
 	else
-		SetConfigValue(PersistenceOffset, Strobing_rate);
+		SetConfigValue(PersistenceOffset, Display_Strobing_Rate);
 
 	if (IsConfigOffsetValid(PersistencePercentOffset))
-		Strobing_percent = GetConfigValue(PersistencePercentOffset);
+		Display_Strobing_Percent = GetConfigValue(PersistencePercentOffset);
 	else
-		SetConfigValue(PersistencePercentOffset, Strobing_percent);
+		SetConfigValue(PersistencePercentOffset, Display_Strobing_Percent);
 }
 
 /*! \brief Main function. Execution starts here.
@@ -121,7 +122,7 @@ int main(void)
 
 	load_configuration();
 
-	init_solomon();
+	Display_System_Init();
 
 	// init the incoming serial state machine
 	InitSerialState();
@@ -155,7 +156,7 @@ int main(void)
 #endif
 #endif
 
-#ifndef DISABLE_NXP
+#ifdef SVR_USING_NXP
 
 	NXP_Init_HDMI();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
 	                  // already been initizliaed
@@ -163,23 +164,23 @@ int main(void)
 	if (NewVideoDetected)
 	{
 		WriteLn("Video at start");
-#ifdef Solomon1_SPI
-		Display_On(Solomon1);
+#ifdef SVR_HAVE_DISPLAY1
+		Display_On(Display1);
 		NXP_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
-#endif
-#endif
-#ifdef Solomon2_SPI
-		Display_On(Solomon2);
-#endif
+#endif  // BNO070
+#endif  // SVR_HAVE_DISPLAY1
+#ifdef SVR_HAVE_DISPLAY2
+		Display_On(Display2);
+#endif  // SVR_HAVE_DISPLAY2
 		NewVideoDetected = false;
 	};
 #ifdef OSVRHDK
 
 	if (!(ioport_get_pin_level(FPGA_unlocked)))
 		NXPEverLocked = true;
-#endif
+#endif  // OSVRHDK
 
 	if (VideoLost)
 	{

@@ -186,8 +186,7 @@ void ProcessSPICommand(void);
 void ProcessI2CCommand(void);
 void ProcessFPGACommand(void);
 
-#if defined(SVR_HAVE_NXP) && !defined(DISABLE_NXP)
-#define SVR_USING_NXP
+#ifdef SVR_USING_NXP
 void ProcessHDMICommand(void);
 #endif
 

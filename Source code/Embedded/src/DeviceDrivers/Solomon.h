@@ -9,6 +9,7 @@
 #define SOLOMON_H_
 
 #include "GlobalOptions.h"
+#include "DeviceDrivers/Display.h"
 #include <stdbool.h>
 
 #ifdef SVR_HAVE_SOLOMON1
@@ -33,23 +34,15 @@
 
 void init_solomon(void);
 bool init_solomon_device(uint8_t deviceID);
-void Display_On(uint8_t deviceID);
-void Display_Off(uint8_t deviceID);
-
-void Display_Powercycle(uint8_t deviceID);
 uint16_t read_solomon(uint8_t channel, uint8_t address);
 void write_solomon(uint8_t channel, uint8_t address, uint16_t data);
 void write_solomon_pair(uint8_t channel, uint8_t address, uint16_t data1, uint16_t data2);
 void raise_sdc(uint8_t channel);
 void lower_sdc(uint8_t channel);
 void Solomon_Reset(uint8_t SolomonNum);
-void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage);
+void solomon_delay_ms(uint16_t ms);
 
 // read the solomon ID
 uint16_t read_Solomon_ID(uint8_t channel);
-
-// strobing settings
-extern uint8_t Strobing_rate;
-extern uint8_t Strobing_percent;
 
 #endif /* SOLOMON_H_ */

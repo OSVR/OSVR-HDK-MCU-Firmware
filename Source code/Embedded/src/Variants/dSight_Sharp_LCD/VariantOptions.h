@@ -19,4 +19,6 @@
 #define SVR_HAVE_FPGA
 #define SVR_HAVE_SIDEBYSIDE
 
+#define SVR_NUM_LOGICAL_DISPLAYS 2
+
 #endif /* VARIANTOPTIONS_H_ */

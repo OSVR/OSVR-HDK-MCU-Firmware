@@ -13,10 +13,12 @@
 #include "board.h"
 #include "spi_master.h"
 #include "my_hardware.h"
-#include "nxp\my_bit.h"
+#include "nxp/my_bit.h"  // for lo() and hi()
 #include "delay.h"
 #include "Console.h"
+#ifdef BNO070
 #include "BNO070.h"
+#endif
 
 #define Solomon_CLOCK_SPEED 1000000  // todo: consider increasing
 
@@ -25,21 +27,20 @@
 #define Solomon_LRR_code 0xFA  // default value of LRR
 #define Solomon_DIR 0xb0       // device ID register - should return value of 0x2828
 
-struct spi_device devices[2];
+static struct spi_device devices[2];
 
-SPI_t *spi[2];
+static SPI_t *spi[2];
+
+static bool SolomonInitialized = false;
 
 // uint16_t Solomon_CSN[2]; todo: can we remove?
 
-bool init_solomon_spi(uint8_t deviceID);
-void select_solomon(uint8_t channel);
-void deselect_solomon(void);
-
-uint8_t Strobing_rate = 60;
-uint8_t Strobing_percent = 80;
+static bool init_solomon_spi(uint8_t deviceID);
+static void select_solomon(uint8_t channel);
+static void deselect_solomon(void);
+static void solomon_wait_for_spi_rx_full(uint8_t channel);
 
 bool init_solomon_spi(uint8_t deviceID)
-
 {
 	spi_flags_t spi_flags = SPI_MODE_0;
 
@@ -55,122 +56,14 @@ void solomon_delay_ms(uint16_t ms)
 	while (ms > 0)
 	{
 		delay_ms(1);
-#ifdef OSVRHDK
+#ifdef BNO070
 		BNO_Yield();
 #endif
 		ms--;
 	}
 }
 
-void Display_Powercycle(uint8_t deviceID)
-
-// power cycles display connected to the specific device
-
-{
-	write_solomon(deviceID, 0xBF, 0x0028);  // display on
-	solomon_delay_ms(120);
-	write_solomon(deviceID, 0xBF, 0x0010);  // sleep out
-
-	solomon_delay_ms(1000);
-
-	write_solomon(deviceID, 0xBF, 0x0029);  // display on
-	solomon_delay_ms(120);
-	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
-}
-
-bool SolomonInitialized = false;
-
-void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
-{
-	Strobing_rate = refresh;
-	SetConfigValue(PersistenceOffset, Strobing_rate);
-
-	Strobing_percent = percentage;
-	SetConfigValue(PersistencePercentOffset, Strobing_percent);
-
-	// added commands to address strobing
-	write_solomon(deviceID, 0xBF, 0x08fe);
-
-	if (refresh == 60)
-	{
-		write_solomon(deviceID, 0xBF, 0x9889);
-		switch (percentage)
-		{
-		case 0:
-			write_solomon(deviceID, 0xBF, 0x078a);
-			write_solomon(deviceID, 0xBF, 0x708b);
-			break;
-		case 10:
-			write_solomon(deviceID, 0xBF, 0xbd8a);
-			write_solomon(deviceID, 0xBF, 0x708b);
-			break;
-		case 20:
-			write_solomon(deviceID, 0xBF, 0x808a);
-			write_solomon(deviceID, 0xBF, 0x718b);
-			break;
-		case 30:
-			write_solomon(deviceID, 0xBF, 0x438a);
-			write_solomon(deviceID, 0xBF, 0x728b);
-			break;
-		case 40:
-			write_solomon(deviceID, 0xBF, 0x068a);
-			write_solomon(deviceID, 0xBF, 0x738b);
-			break;
-		case 50:
-			write_solomon(deviceID, 0xBF, 0xcc8a);
-			write_solomon(deviceID, 0xBF, 0x738b);
-			break;
-		case 60:
-			write_solomon(deviceID, 0xBF, 0x8c8a);
-			write_solomon(deviceID, 0xBF, 0x748b);
-			break;
-		case 70:
-			write_solomon(deviceID, 0xBF, 0x8b8a);
-			write_solomon(deviceID, 0xBF, 0x758b);
-			break;
-		case 80:
-			write_solomon(deviceID, 0xBF, 0x128a);
-			write_solomon(deviceID, 0xBF, 0x768b);
-			break;
-		case 82:
-			write_solomon(deviceID, 0xBF, 0x3a8a);
-			write_solomon(deviceID, 0xBF, 0x768b);
-			break;
-		case 90:
-			write_solomon(deviceID, 0xBF, 0xd58a);
-			write_solomon(deviceID, 0xBF, 0x768b);
-			break;
-		default:
-			write_solomon(deviceID, 0xBF, 0xCC8a);
-			write_solomon(deviceID, 0xBF, 0x738b);
-			break;
-		}
-	}
-
-	else  // refresh is 240
-	{
-		write_solomon(deviceID, 0xBF, 0xe689);
-		switch (percentage)
-		{
-		case 50:
-			write_solomon(deviceID, 0xBF, 0xf38a);
-			write_solomon(deviceID, 0xBF, 0x108b);
-			break;
-		case 82:
-			write_solomon(deviceID, 0xBF, 0x8e8a);
-			write_solomon(deviceID, 0xBF, 0x118b);
-			break;
-		default:
-			write_solomon(deviceID, 0xBF, 0x8e8a);
-			write_solomon(deviceID, 0xBF, 0x118b);
-			break;
-		}
-	}
-
-	write_solomon(deviceID, 0xBF, 0x00fe);
-}
 bool init_solomon_device(uint8_t deviceID)
-
 {
 	// if (SolomonInitialized==true)
 	// return true;
@@ -289,7 +182,7 @@ bool init_solomon_device(uint8_t deviceID)
 	// write_solomon(deviceID,0xBF,0x8E8a);
 	// write_solomon(deviceID,0xBF,0x118b);
 
-	Display_Set_Strobing(deviceID, Strobing_rate, Strobing_percent);
+	Display_Set_Strobing(deviceID, Display_Strobing_Rate, Display_Strobing_Percent);
 
 	write_solomon(deviceID, 0xBF, 0xFF51);  // cmd=FE, data=08
 
@@ -344,46 +237,7 @@ delay_ms(16);*/
 	return true;
 }
 
-void Display_On(uint8_t deviceID)
-
-{
-#ifdef H546DLT01  // AUO 5.46" OLED
-	// solomon_delay_ms(500);
-	WriteLn("Turning display on");
-
-	// display power on
-	solomon_delay_ms(20);
-
-	// initial setting
-	write_solomon(deviceID, 0xBC, 0x0002);  // no of byte send
-
-	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
-	solomon_delay_ms(33);
-	write_solomon(deviceID, 0xB7, 0x0329);  // video signal on
-	solomon_delay_ms(166);                  //>10 frame
-	write_solomon(deviceID, 0xBF, 0x0029);  // display on
-
-#endif
-}
-
-void Display_Off(uint8_t deviceID)
-
-{
-#ifdef H546DLT01  // AUO 5.46" OLED
-
-	WriteLn("Turing display off");
-
-	write_solomon(deviceID, 0xB7, 0x0321);  // video mode off
-	solomon_delay_ms(16);
-	write_solomon(deviceID, 0xBF, 0x0028);  // display off
-	solomon_delay_ms(16);
-	write_solomon(deviceID, 0xBF, 0x0010);  // sleep in
-	solomon_delay_ms(20);                   // delay > 1 frames
-
-#endif
-}
 void init_solomon(void)
-
 {
 #ifdef Solomon1_SPI
 	devices[Solomon1].id = Solomon1_CSN;
@@ -400,10 +254,11 @@ void init_solomon(void)
 	// Solomon_CSN[Solomon1]=Solomon1_CSN; // todo: can we remove?
 	// Solomon_CSN[Solomon2]=Solomon2_CSN;
 
-	init_solomon_spi(Solomon1);  // no need to do repeat for Solomon2 because both share the same SPI port
+	init_solomon_spi(Solomon1);  // no need to do repeat for Solomon2 because both
+                                 // share the same SPI port
 
 #ifdef Solomon1_SPI
-	init_solomon_device(Solomon1);  // todo: add back after debug of board
+	init_solomon_device(Solomon1);
 #endif
 
 #ifdef Solomon2_SPI
@@ -418,11 +273,9 @@ void init_solomon(void)
 */
 
 void select_solomon(uint8_t channel)
-
 // enable the mux and select the correct output
-
 {
-#ifdef OSVRHDK
+#ifndef SVR_HAVE_SOLOMON2
 	return;
 #else
 	ioport_set_pin_low(SPI_Mux_OE);
@@ -441,6 +294,13 @@ void deselect_solomon(void)
 	// ioport_set_pin_high(SPI_Mux_OE); // leave permanently low per Zeev
 }
 
+inline void solomon_wait_for_spi_rx_full(uint8_t channel)
+{
+	while (!spi_is_rx_full(spi[channel]))
+	{
+	}
+}
+
 uint16_t read_solomon(uint8_t channel, uint8_t address)
 
 {
@@ -451,27 +311,19 @@ uint16_t read_solomon(uint8_t channel, uint8_t address)
 
 	spi_select_device(spi[channel], &devices[channel]);
 
-	ioport_set_pin_low(devices[channel].sdc);  // lower sdc bit because this is command
+	lower_sdc(channel);  // lower sdc bit because this is command
 	spi_write_single(spi[channel], address);
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
-	spi_write_single(
-	    spi[channel],
-	    Solomon_LRR_code);  // Component switches to read mode if this byte equals the contents of register LRR
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
-	ioport_set_pin_high(devices[channel].sdc);  // raise sdc bit because here comes the data
+	solomon_wait_for_spi_rx_full(channel);
+	spi_write_single(spi[channel], Solomon_LRR_code);  // Component switches to read mode if this
+	                                                   // byte equals the contents of register
+	                                                   // LRR
+	solomon_wait_for_spi_rx_full(channel);
+	raise_sdc(channel);  // raise sdc bit because here comes the data
 	spi_write_single(spi[channel], CONFIG_SPI_MASTER_DUMMY);
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
+	solomon_wait_for_spi_rx_full(channel);
 	spi_read_single(spi[channel], &dataL);
 	spi_write_single(spi[channel], CONFIG_SPI_MASTER_DUMMY);
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
+	solomon_wait_for_spi_rx_full(channel);
 	spi_read_single(spi[channel], &dataH);
 	spi_deselect_device(spi[channel], &devices[channel]);
 	data = dataH;
@@ -493,21 +345,15 @@ void write_solomon(uint8_t channel, uint8_t address, uint16_t data)
 	select_solomon(channel);
 
 	spi_select_device(spi[channel], &devices[channel]);
-	ioport_set_pin_low(devices[channel].sdc);  // lower sdc bit because this is command
+	lower_sdc(channel);  // lower sdc bit because this is command
 	spi_write_single(spi[channel], address);
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
-	ioport_set_pin_high(devices[channel].sdc);  // raise sdc bit because here comes the data
-	spi_write_single(spi[channel],
-	                 lo(data));  // low byte first. by default, MSB of each byte is sent first because DORD=0
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
+	solomon_wait_for_spi_rx_full(channel);
+	raise_sdc(channel);                        // raise sdc bit because here comes the data
+	spi_write_single(spi[channel], lo(data));  // low byte first. by default, MSB of each byte is
+	                                           // sent first because DORD=0
+	solomon_wait_for_spi_rx_full(channel);
 	spi_write_single(spi[channel], hi(data));
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
+	solomon_wait_for_spi_rx_full(channel);
 	spi_deselect_device(spi[channel], &devices[channel]);
 
 	deselect_solomon();
@@ -520,32 +366,24 @@ void write_solomon_pair(uint8_t channel, uint8_t address, uint16_t data1, uint16
 	select_solomon(channel);
 
 	spi_select_device(spi[channel], &devices[channel]);
-	ioport_set_pin_low(devices[channel].sdc);  // lower sdc bit because this is command
+	lower_sdc(channel);  // lower sdc bit because this is command
 	spi_write_single(spi[channel], address);
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
-	ioport_set_pin_high(devices[channel].sdc);  // raise sdc bit because here comes the data
 
-	spi_write_single(spi[channel],
-	                 lo(data1));  // low byte first. by default, MSB of each byte is sent first because DORD=0
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
+	solomon_wait_for_spi_rx_full(channel);
+	raise_sdc(channel);  // raise sdc bit because here comes the data
+
+	spi_write_single(spi[channel], lo(data1));  // low byte first. by default, MSB of each byte
+	                                            // is sent first because DORD=0
+
+	solomon_wait_for_spi_rx_full(channel);
 	spi_write_single(spi[channel], hi(data1));
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
+	solomon_wait_for_spi_rx_full(channel);
 
-	spi_write_single(spi[channel],
-	                 lo(data2));  // low byte first. by default, MSB of each byte is sent first because DORD=0
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
+	spi_write_single(spi[channel], lo(data2));  // low byte first. by default, MSB of each byte
+	                                            // is sent first because DORD=0
+	solomon_wait_for_spi_rx_full(channel);
 	spi_write_single(spi[channel], hi(data2));
-	while (!spi_is_rx_full(spi[channel]))
-	{
-	}
+	solomon_wait_for_spi_rx_full(channel);
 
 	spi_deselect_device(spi[channel], &devices[channel]);
 
@@ -554,7 +392,6 @@ void write_solomon_pair(uint8_t channel, uint8_t address, uint16_t data1, uint16
 
 // read the solomon ID
 uint16_t read_Solomon_ID(uint8_t channel)
-
 {
 	write_solomon(channel, 0xd4, 0xfa);  // about to read dir register
 	return (read_solomon(channel, Solomon_DIR));

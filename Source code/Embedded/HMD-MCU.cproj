@@ -863,6 +863,15 @@
     <None Include="src\Variants\dSight_Sharp_LCD\VariantOptions.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\DeviceDrivers\Display.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\DeviceDrivers\Display.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\DeviceDrivers\Display_Solomon.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\NXP\NXP_AVR_Internal.c">
       <SubType>compile</SubType>
     </Compile>

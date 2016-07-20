@@ -21,6 +21,13 @@
 #define SENSICS_DISPLAY_CONFIGURED
 #endif
 
+#if SVR_NUM_LOGICAL_DISPLAYS == 1
+#define SVR_HAVE_DISPLAY1
+#elif SVR_NUM_LOGICAL_DISPLAYS == 2
+#define SVR_HAVE_DISPLAY1
+#define SVR_HAVE_DISPLAY2
+#endif
+
 #if defined(LS050T1SX01) || defined(LS050T1SX01)
 #define SVR_HAVE_SHARP_LCD
 #elif defined(H546DLT01)
@@ -48,6 +55,11 @@
 #define SVR_NO_NXP
 #endif
 #endif  // SVR_HAVE_NXP
+
+// DISABLE_NXP is a flag passed to disable HDMI receiver functionality in some specialized firmware builds.
+#if defined(SVR_HAVE_NXP) && !defined(DISABLE_NXP)
+#define SVR_USING_NXP
+#endif
 
 #ifdef SVR_HAVE_SOLOMON
 #undef SVR_NO_SOLOMON

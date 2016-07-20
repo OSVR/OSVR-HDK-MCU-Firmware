@@ -790,15 +790,7 @@ static void digitalActivityCallback0 (tmdlHdmiRxEvent_t event,
         ActivityDetected0=true;
         KnownResolution0=false;
         ResolutionID0=-1;
-		#ifdef Solomon1_SPI
-			#ifdef H546DLT01
-				Display_On(Solomon1);
-				NXP_Update_Resolution_Detection();
-				#ifdef BNO070
-					Update_BNO_Report_Header();
-				#endif
-			#endif
-		#endif
+		VideoInput_Protected_Report_Signal();
         break;
     case TMDL_HDMIRX_ACTIVITY_LOST: /* New activity has been detected */
         //HDMI_debug_progmem(cDigitalActivityLost);

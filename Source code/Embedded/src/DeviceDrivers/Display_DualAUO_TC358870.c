@@ -2,13 +2,14 @@
  * Display_DualAUO_TC358870.c
  *
  * Created: 7/19/2016 9:40:29 AM
- *  Author: Sensics - based on Coretronic modifications
+ *  Author: Coretronic, Sensics
  */
 
 #include "GlobalOptions.h"
 
 #if defined(SVR_IS_HDK_20)
 #include "Display.h"
+#include "Console.h"
 #include "SvrYield.h"
 
 #include <libhdk20.h>
@@ -39,7 +40,7 @@ void Display_On(uint8_t deviceID)
 
 {
 	// delay_ms(500);
-	// WriteLn("Turning display on");
+	WriteLn("Turning display on");
 
 	// display power on
 	svr_yield_ms(20);
@@ -65,6 +66,7 @@ void Display_On(uint8_t deviceID)
 
 void Display_Off(uint8_t deviceID)
 {
+	WriteLn("Turning display off");
 #if 0  // Not for SSD2848
 	// video mode off
     TC358870_i2c_Write(0x0504, 0x8029, 2); // DCSCMD Long Write
@@ -82,10 +84,10 @@ void Display_Off(uint8_t deviceID)
 	svr_yield_ms(16);
 
 #if 0        
-			//  Sleep In
-			TC358870_i2c_Write(0x0504, 0x0005, 2);
-			TC358870_i2c_Write(0x0504, 0x0010, 2);
-			svr_yield_ms(20); // delay > 1 frames
+	//  Sleep In
+	TC358870_i2c_Write(0x0504, 0x0005, 2);
+	TC358870_i2c_Write(0x0504, 0x0010, 2);
+	svr_yield_ms(20); // delay > 1 frames
 #endif
 #else
 	TC358870_i2c_Write(0x0004, 0x0004, 2);  // ConfCtl0
@@ -96,6 +98,7 @@ void Display_Off(uint8_t deviceID)
 
 void Display_Powercycle(uint8_t deviceID)
 {
+	WriteLn("Display Power Cycle");
 	// Display Off
 	TC358870_i2c_Write(0x0504, 0x0015, 2);
 	TC358870_i2c_Write(0x0504, 0x0028, 2);

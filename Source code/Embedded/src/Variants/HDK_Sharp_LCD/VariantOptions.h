@@ -18,7 +18,8 @@
 #define SVR_HDK_DEFAULT_MINOR_VER 1
 #define SVR_HDK_VARIANT_STRING "1X-LCD"
 
-// no BNO070 IMU (reporting over USB through this MCU), so not included in what the MCU needs to do
+// BNO070 IMU (reporting over USB through this MCU)
+#define BNO070
 
 // sharp 5.5" LCD
 #define LS055T1SX01

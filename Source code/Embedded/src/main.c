@@ -233,6 +233,10 @@ int main(void)
 // ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
 #endif
 
+#ifdef HDK_20
+	VideoInput_Init();
+#endif
+
 	// Main loop
 	while (true)
 	{

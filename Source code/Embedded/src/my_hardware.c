@@ -283,6 +283,7 @@ uint8_t GetConfigValue(uint8_t offset) { return eeprom_read_byte(CONFIGURATION_P
 void SetConfigValue(uint8_t offset, uint8_t value)
 
 {
+	// writes single byte configuration value. Additional bytes in this foursome act as verification for the read operation that written value is valid
 	eeprom_write_byte(CONFIGURATION_PAGE, offset, value);
 	eeprom_write_byte(CONFIGURATION_PAGE, offset + 1, (value + 37) & 0xff);
 	eeprom_write_byte(CONFIGURATION_PAGE, offset + 2, value ^ 0xff);

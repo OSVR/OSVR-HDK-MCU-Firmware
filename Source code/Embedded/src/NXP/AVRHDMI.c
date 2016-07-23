@@ -40,6 +40,7 @@ void WriteLn_progmem(const char* Msg);
 
 /// @todo ensure this is either a: not called during interrupts or b: all config functions disable interrupts during their operation, or they could result in conflicts/corruption.
 void WriteLn_progmem(const char* Msg)
+// this function prints a string that is stored in program memory to the console. 
 {
 //#ifdef HDMI_DEBUG
     uint8_t i;

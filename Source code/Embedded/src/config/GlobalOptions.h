@@ -13,9 +13,28 @@
 #define MajorVersion 1
 #define MinorVersion 94
 
-//#define SkipNXP1 // ignore first NXP during HDMI task.
-//#define BYPASS_FIRST_NXP
+/// @ingroup Build-time options
+/// @{
+#ifdef DOXYGEN
+/// Creates a firmware that will perform a firmware upgrade on the BNO070 chip. It will not have display support - it is
+/// a special-purpose firmware only.
+#define PERFORM_BNO_DFU
 
+/// Prints additional debug messages to the USB serial console related to HDMI state.
+#define HDMI_DEBUG
+
+/// if defined, performance is being recorded for BNO work, with some performance impact
+#define MeasurePerformance
+
+/// @todo unknown debug option?
+#define BYPASS_FIRST_NXP
+
+/// ignore first NXP during HDMI task.
+/// @todo unknown debug option for dSight?
+#define SkipNXP1
+
+#endif  // DOXYGEN
+/// @}
 
 #ifndef SVR_DISABLE_VIDEO_INPUT
 /// Automatically-defined opposite of SVR_DISABLE_VIDEO_INPUT (and the deprecated DISABLE_NXP)
@@ -45,8 +64,6 @@
 #elif defined(H546DLT01)
 #define SVR_HAVE_AUO_OLED
 #endif
-
-//#define HDMI_DEBUG
 
 #ifdef SVR_HAVE_NXP
 

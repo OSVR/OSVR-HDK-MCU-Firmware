@@ -105,17 +105,15 @@ void my_callback_generic_set_feature(uint8_t *report_feature)
 		// The report feature is correct
 		if (report_feature[2] == 1)
 		{
-#ifdef OSVRHDK
-// if (report_feature[3]==0)
-//{
-// ioport_set_pin_low(Side_by_side_B); // normal mode
-// SetConfigValue(SideBySideOffset,0);
-//}
-// else
-//{
-// ioport_set_pin_high(Side_by_side_B); // side by side
-// SetConfigValue(SideBySideOffset,1);
-//}
+#if defined(OSVRHDK) && defined(HDK_ENABLE_HID_SXS)
+			if (report_feature[3] == 0)
+			{
+				SxS_Disable();  // normal mode
+			}
+			else
+			{
+				SxS_Enable();  // side by side
+			}
 #endif
 		}
 	}

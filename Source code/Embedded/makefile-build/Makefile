@@ -55,6 +55,7 @@ src/TimingDebug.c \
 src/USB.c \
 src/main.c \
 src/my_hardware.c \
+src/SideBySide.c \
 src/uart_xmega.c \
 src/NXP/AVRHDMI.c \
 src/NXP/NXP_AVR_Internal.c \

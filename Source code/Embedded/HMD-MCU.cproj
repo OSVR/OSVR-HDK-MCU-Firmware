@@ -1057,6 +1057,12 @@
     <Compile Include="src\NXP\NXP_AVR_Internal.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\SideBySide.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SideBySide.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\SvrYield.c">
       <SubType>compile</SubType>
     </Compile>

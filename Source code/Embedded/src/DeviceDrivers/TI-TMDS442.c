@@ -17,6 +17,7 @@
 #include "Solomon.h"
 #include "nxp/i2c.h"
 #include "my_hardware.h"
+#include "SideBySide.h"
 
 // asf headers
 #include <ioport.h>
@@ -82,8 +83,7 @@ void ProgramHDMISwitch(void)
 		HDMI_config(Sink1_port_config, Fixed_mask | Sink_TMDS_on | Source_port_1);
 		HDMI_config(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_1);
 		// switch to side by side mode as there is one input
-		ioport_set_pin_high(Side_by_side_A);
-		ioport_set_pin_high(Side_by_side_B);
+		SxS_Enable();
 		init_solomon_device(Solomon1);
 		init_solomon_device(Solomon2);
 		delay_ms(1000);
@@ -97,8 +97,7 @@ void ProgramHDMISwitch(void)
 		HDMI_config(Sink1_port_config, Fixed_mask | Sink_TMDS_on | Source_port_2);
 		HDMI_config(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_2);
 		// switch to side by side mode as there is one input
-		ioport_set_pin_high(Side_by_side_A);
-		ioport_set_pin_high(Side_by_side_B);
+		SxS_Enable();
 		init_solomon_device(Solomon1);
 		init_solomon_device(Solomon2);
 		delay_ms(1000);
@@ -112,8 +111,7 @@ void ProgramHDMISwitch(void)
 		HDMI_config(Sink1_port_config, Fixed_mask | Sink_TMDS_on | Source_port_1);
 		HDMI_config(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_2);
 		// switch to regular (not side-by-side) mode as there are two inputs
-		ioport_set_pin_low(Side_by_side_A);
-		ioport_set_pin_low(Side_by_side_B);
+		SxS_Disable();
 		init_solomon_device(Solomon1);
 		init_solomon_device(Solomon2);
 		delay_ms(1000);

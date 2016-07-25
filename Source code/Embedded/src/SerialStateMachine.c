@@ -53,6 +53,7 @@
 #include "TimingDebug.h"
 #include <util/delay.h>
 #include "my_hardware.h"
+#include "SideBySide.h"
 
 #ifdef SVR_HAVE_SOLOMON
 #include "DeviceDrivers/Solomon.h"
@@ -1090,14 +1091,7 @@ void ProcessFPGACommand(void)
 	case 'S':  // toggle side by side
 	{
 		WriteLn("Toggle side by side");
-#ifndef OSVRHDK
-		ioport_toggle_pin_level(Side_by_side_A);
-#endif
-		ioport_toggle_pin_level(Side_by_side_B);
-#ifdef OSVRHDK
-		SideBySideMode = ~SideBySideMode;
-		SetConfigValue(SideBySideOffset, SideBySideMode);
-#endif
+		SxS_Toggle();
 		break;
 	}
 	case '0':

@@ -17,6 +17,7 @@
 
 #include "Console.h"
 #include "MacroUtils.h"
+#include "SideBySide.h"
 
 #include "conf_usb.h"
 #include "conf_usart_serial.h"
@@ -141,24 +142,7 @@ void custom_board_init(void)
 	ioport_configure_pin(Int_HDMI_A, IOPORT_DIR_INPUT);
 #endif
 
-#ifdef SVR_HAVE_SIDEBYSIDE
-#ifdef OSVRHDK
-	ioport_configure_pin(Side_by_side_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-	ioport_configure_pin(Side_by_side_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-	uint8_t sideBySideConfig;
-	if (GetValidConfigValueOrWriteDefault(SideBySideOffset, 0, &sideBySideConfig))
-	{
-		if (sideBySideConfig == 0)
-			ioport_set_pin_low(Side_by_side_B);  // normal mode
-		else
-			ioport_set_pin_high(Side_by_side_B);  // SBS mode
-	}
-#else
-	ioport_configure_pin(Side_by_side_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-	ioport_configure_pin(Side_by_side_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-#endif
-
-#endif  // SVR_HAVE_SIDEBYSIDE
+	SxS_Init();
 
 #ifdef SVR_HAVE_NXP2
 	ioport_configure_pin(NXP2_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);

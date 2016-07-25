@@ -39,7 +39,9 @@
 #endif  // SVR_HAVE_NXP1
 
 #ifdef SVR_HAVE_SIDEBYSIDE
+#ifdef DSIGHT
 #define Side_by_side_A IOPORT_CREATE_PIN(PORTE, 2)  // low: regular; high: side by side
+#endif
 #define Side_by_side_B IOPORT_CREATE_PIN(PORTF, 1)  // low: regular; high: side by side
 #endif
 

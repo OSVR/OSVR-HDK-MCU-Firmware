@@ -40,6 +40,40 @@ CONVENIENCE_TARGETS += $(SHORT_NAME)
 
 VARIANTS += $(VARIANT_NAME)
 
+CURRENT_OBJS :=
+
+C_OBJS := $(addprefix $(VARIANT_NAME)/,$(C_SRCS:%.c=%.o))
+# Build .c -> .o
+#$(C_OBJS): $(VARIANT_NAME)/%.o : $(REL_ROOT)/%.c
+#
+$(VARIANT_NAME)/%.o: $(REL_ROOT)/%.c
+	$(call set_variant_variable,$@)
+	@echo [$(VARIANT)$(SUFFIX)] (-O$(strip $(OPTIMIZATION))) $< : $@
+	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
+	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+
+S_OBJS := $(addprefix $(VARIANT_NAME)/,$(PREPROCESSING_SRCS:%.s=%.o))
+
+# Pattern for building object files from .s
+#$(S_OBJS): $(VARIANT_NAME)/%.o : $(REL_ROOT)/%.s
+$(VARIANT_NAME)/%.o: $(REL_ROOT)/%.s
+	$(call set_variant_variable,$@)
+	@echo [$(VARIANT)$(SUFFIX)] $< : $@
+	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
+	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
+
+CURRENT_OBJS := $(C_OBJS) $(S_OBJS)
+
+# Makes the elf file
+$(VARIANT_NAME)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS)
+	$(call set_variant_variable,$@)
+	@echo [$(VARIANT)$(SUFFIX)] Linking $@
+	$(QUIETRULE)$(CC) -o"$@" $^ $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
+	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
+
+# Clean up work variables
+CURRENT_OBJS :=
+
 # Clean up input variables
 # undefine SHORT_NAME
 # undefine VARIANT_NAME

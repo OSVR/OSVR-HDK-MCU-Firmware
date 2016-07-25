@@ -12,7 +12,7 @@ CFLAGS := -g3 -Wall \
 # -Wstrict-prototypes
 EXTRA_CFLAGS :=
 
-OPTIMIZATION := -O3
+OPTIMIZATION := 3
 
 ASFLAGS :=
 EXTRA_ASFLAGS :=
@@ -43,37 +43,7 @@ OUTPUT_LSS := $(OUTPUT_STEM).lss
 # Relative path from makefile to source root
 REL_ROOT := ..
 
-# Set up the variables that add_variant.mk will populate.
-FINAL_GENERATED :=
-CONVENIENCE_TARGETS :=
-BUILT_BY_ALL :=
-VARIANTS :=
-
-SHORT_NAME := hdk2
-VARIANT_NAME := HDK_20
-SKIP_ALL_TARGET := true
-# Per-variant libs and includes
-LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.a
-INCLUDE_DIRS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/
-include add_variant.mk
-
-SHORT_NAME := hdk_oled
-VARIANT_NAME := HDK_OLED
-include add_variant.mk
-
-SHORT_NAME := hdk_lcd
-VARIANT_NAME := HDK_Sharp_LCD
-include add_variant.mk
-
-SHORT_NAME := dsight
-VARIANT_NAME := dSight_Sharp_LCD
-include add_variant.mk
-
-# Done with variants.
-
 MCU=atxmega256a3bu
-
-
 
 C_SRCS :=  \
 src/Boot.c \
@@ -137,14 +107,6 @@ src/ASF/xmega/services/timeout/timeout.c
 PREPROCESSING_SRCS :=  \
 src/ASF/xmega/drivers/cpu/ccp.s \
 src/ASF/xmega/drivers/nvm/nvm_asm.s
-
-# Simple lists without a variant subdirectory at the beginning
-BASE_OBJS :=  $(C_SRCS:%.c=%.o) $(PREPROCESSING_SRCS:%.s=%.o)
-BASE_C_DEPS := $(C_SRCS:%.c=%.d)
-
-# The above lists, multiplied by the variants.
-OBJS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_OBJS)))
-C_DEPS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_C_DEPS)))
 
 variant_include_dir=$(REL_ROOT)/src/Variants/$1
 
@@ -224,23 +186,60 @@ SUFFIXES :=
 
 include atmel_build.mk
 
-# Pattern for building object files from c
-$(call for_each_variant,%.o): $(REL_ROOT)/%.c
-	$(call set_variant_variable,$@)
-	@echo [$(VARIANT)$(SUFFIX)] ($(OPTIMIZATION)) $< : $@
-	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
-	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) $(OPTIMIZATION) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+# Set up the variables that add_variant.mk will populate.
+FINAL_GENERATED :=
+CONVENIENCE_TARGETS :=
+BUILT_BY_ALL :=
+VARIANTS :=
 
-# Pattern for building object files from .s
-$(call for_each_variant,%.o): $(REL_ROOT)/%.s
-	$(call set_variant_variable,$@)
-	@echo [$(VARIANT)$(SUFFIX)] $< : $@
-	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
-	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
+SHORT_NAME := hdk2
+VARIANT_NAME := HDK_20
+# Per-variant libs and includes
+LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.a
+INCLUDE_DIRS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/
+include add_variant.mk
+
+SHORT_NAME := hdk_oled
+VARIANT_NAME := HDK_OLED
+include add_variant.mk
+
+SHORT_NAME := hdk_lcd
+VARIANT_NAME := HDK_Sharp_LCD
+include add_variant.mk
+
+SHORT_NAME := dsight
+VARIANT_NAME := dSight_Sharp_LCD
+include add_variant.mk
+
+# Done with variants.
+# Simple lists without a variant subdirectory at the beginning
+BASE_C_OBJS := $(C_SRCS:%.c=%.o)
+BASE_S_OBJS := $(PREPROCESSING_SRCS:%.s=%.o)
+BASE_OBJS := $(BASE_C_OBJS) $(BASE_S_OBJS)
+BASE_C_DEPS := $(C_SRCS:%.c=%.d)
+
+# The above lists, multiplied by the variants.
+OBJS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_OBJS)))
+C_OBJS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_C_OBJS)))
+C_DEPS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_C_DEPS)))
+
+# # Pattern for building object files from c
+# $(call for_each_variant,%.o): $(REL_ROOT)/%.c
+# 	$(call set_variant_variable,$@)
+# 	@echo [$(VARIANT)$(SUFFIX)] ($(OPTIMIZATION)) $< : $@
+# 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
+# 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) $(OPTIMIZATION) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+#
+# # Pattern for building object files from .s
+# $(call for_each_variant,%.o): $(REL_ROOT)/%.s
+# 	$(call set_variant_variable,$@)
+# 	@echo [$(VARIANT)$(SUFFIX)] $< : $@
+# 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
+# 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
 
 # These files had optimization turned off before for some reason, turning it down now.
-$(call for_each_variant,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := -O1
-$(call for_each_variant,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := -O1
+$(call for_each_variant,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := 1
+$(call for_each_variant,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := 1
 
 # These files are terribly full of warnings. We really just want to disable the shift overflow ones, but the flag
 # below seems insufficient, thus -w disables all warnings...
@@ -249,11 +248,11 @@ $(call for_each_variant,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-ou
 
 
 # Makes the elf file
-$(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))
-	$(call set_variant_variable,$@)
-	@echo [$(VARIANT)$(SUFFIX)] Linking $@
-	$(QUIETRULE)$(CC) -o"$@" $(addprefix $(VARIANT)/,$(BASE_OBJS)) $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
-	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
+# $(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))
+# 	$(call set_variant_variable,$@)
+# 	@echo [$(VARIANT)$(SUFFIX)] Linking $@
+# 	$(QUIETRULE)$(CC) -o"$@" $(addprefix $(VARIANT)/,$(BASE_OBJS)) $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
+# 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
 
 
 # Makes the hex file

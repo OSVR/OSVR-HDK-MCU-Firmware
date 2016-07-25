@@ -16,13 +16,6 @@
 //#define SkipNXP1 // ignore first NXP during HDMI task.
 //#define BYPASS_FIRST_NXP
 
-#if defined(DISABLE_NXP) && !defined(SVR_DISABLE_VIDEO_INPUT)
-/// This is the canonical, new way of disabling the video input code
-#define SVR_DISABLE_VIDEO_INPUT
-#elif defined(SVR_DISABLE_VIDEO_INPUT) && defined(SVR_HAVE_NXP) && !defined(DISABLE_NXP)
-/// @todo remove once other references to DISABLE_NXP are gone - compatibility shim only
-#define DISABLE_NXP
-#endif
 
 #ifndef SVR_DISABLE_VIDEO_INPUT
 /// Automatically-defined opposite of SVR_DISABLE_VIDEO_INPUT (and the deprecated DISABLE_NXP)

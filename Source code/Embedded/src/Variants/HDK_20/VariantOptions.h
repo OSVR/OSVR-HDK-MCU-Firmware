@@ -36,7 +36,9 @@
 
 // HDK 1.3 boards and newer contain signal lines sufficient to permit BNO DFU.
 #ifdef PERFORM_BNO_DFU
-#define DISABLE_NXP
+// Disable video input (NXP) code
+/// @todo why?
+#define SVR_DISABLE_VIDEO_INPUT
 #endif
 
 #endif /* VARIANTOPTIONS_H_ */

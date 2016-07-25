@@ -6,18 +6,18 @@ Implements I2C communications for NXP HDMI controllers */
 #ifdef SVR_USING_NXP
 #include "Console.h"
 
-
 #include "I2C.h"
 #include "tmNxCompId.h"
 #include "my_hardware.h"
 
-
-#include <asf.h>
 #include "conf_usb.h"
 #include "ui.h"
 #include "uart.h"
-#include "twi_master.h"
+
 #include "nxp/AVRHDMI.h" // includes hardware definition
+
+// ASF Includes
+#include <twi_master.h>
 
 #define I2C_TIMEOUT				1 	// msec
 

@@ -5,20 +5,29 @@
  *  Author: Sensics Boger
  */
 
-#include <asf.h>
-#include "string.h"
-
+// Options header
 #include "GlobalOptions.h"
+
+// internal headers for BNO driver
+#include "BNO070.h"
+#include "bno_callbacks.h"
+
+// application headers
 #include "my_hardware.h"
 #include "TimingDebug.h"
 #include "Console.h"
+#include "Boot.h"
 #include "VideoInput.h"  // for video mode status to be fed into BNO report
 
+// asf headers
 #include <ioport.h>
-#include "BNO070.h"
-#include "bno_callbacks.h"
-#include "util/delay.h"
-#include "Boot.h"
+#include <delay.h>  // to dynamically define F_CPU for <util/delay.h>
+#include <util/delay.h>
+#include <udi_hid_generic.h>
+#include <twi_master.h>
+
+// standard headers
+#include <string.h>
 
 /* Define this to enable the calibrated gyro reports and stuff them in the USB reports at offset 10 */
 #define REPORT_GYRO 1

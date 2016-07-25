@@ -5,17 +5,29 @@
  *  Author: Sensics
  */
 
-#include <asf.h>
-#include "stdio.h"
-#include "TI-TMDS442.h"
+// Options header
 #include "GlobalOptions.h"
+
+#ifdef TMDS422
+
+#include "TI-TMDS442.h"
+
+// application headers
 #include "Console.h"
 #include "Solomon.h"
 #include "nxp/i2c.h"
 #include "my_hardware.h"
 
-uint8_t InputStatus = 0;     // bit field for the two channels. Shows how the TMDS is configured
-uint8_t LastStatusRead = 0;  // shows the last value read from TMDS config. Used to detect changes
+// asf headers
+#include <ioport.h>
+#include <twi_master.h>
+#include <delay.h>
+
+// standard headers
+#include <stdio.h>
+
+static uint8_t InputStatus = 0;     // bit field for the two channels. Shows how the TMDS is configured
+static uint8_t LastStatusRead = 0;  // shows the last value read from TMDS config. Used to detect changes
 
 #define ChannelAMask 1
 #define ChannelBMask 2
@@ -29,12 +41,10 @@ uint8_t LastStatusRead = 0;  // shows the last value read from TMDS config. Used
 #define Sink2_port_config 0x02
 #define Source_plug_in_status 0x03
 
-#ifdef TMDS422
 void ProgramHDMISwitch(void);
 
 bool HDMI_config(uint8_t RegNum, uint8_t Value)
 {
-#ifdef TMDS422
 	twi_package_t packet = {
 	    .addr[0] = RegNum,               // TWI slave memory address data MSB
 	    .addr_length = sizeof(uint8_t),  // TWI slave memory address data size
@@ -43,9 +53,6 @@ bool HDMI_config(uint8_t RegNum, uint8_t Value)
 	    .length = 1                      // transfer data size (bytes)
 	};
 	return (twi_master_write(TWI_TMDS422_PORT, &packet) == TWI_SUCCESS);
-#else
-	return true;
-#endif
 }
 
 #define Fixed_mask 0  // 3db emphasis off, sink side I2C disabled
@@ -169,11 +176,10 @@ void SetInputStatus(uint8_t NewStatus)
 	ProgramHDMISwitch();
 }
 
-Bool ReadTMDS422Status(uint8_t regNum, uint8_t *NewStatus)
+bool ReadTMDS422Status(uint8_t regNum, uint8_t *NewStatus)
 {
 	uint8_t Status;
 
-#ifdef TMDS422
 	twi_package_t packet_received = {
 	    .addr[0] = regNum,               // TWI slave memory address data
 	    .addr_length = sizeof(uint8_t),  // TWI slave memory address data size
@@ -190,16 +196,12 @@ Bool ReadTMDS422Status(uint8_t regNum, uint8_t *NewStatus)
 	}
 	else
 		return false;
-#else
-	return true;
-#endif
 }
 
 void TMDS_422_Task(void)
 
 // read TMDS status and decide what to do with it
 {
-#ifdef TMDS422
 	uint8_t NewStatus;
 	if (ReadTMDS422Status(Source_plug_in_status, &NewStatus))  // process only if successful
 	{
@@ -210,6 +212,5 @@ void TMDS_422_Task(void)
 			LastStatusRead = NewStatus;
 		}
 	}
-#endif
 }
-#endif
+#endif  // TMDS422

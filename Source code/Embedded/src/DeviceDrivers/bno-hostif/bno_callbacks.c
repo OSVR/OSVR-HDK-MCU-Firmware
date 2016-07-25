@@ -1,17 +1,24 @@
-#include "string.h"
 
+// Options header
+#include "GlobalOptions.h"
+
+// Internal headers for the BNO driver
 #include "sensorhub.h"
 
-#include "GlobalOptions.h"
+// application headers
 #include "my_hardware.h"
 #include "Console.h"
 #include "TimingDebug.h"
 
-#include <stdio.h>
+// asf headers
 #include <ioport.h>
-#include "util/delay.h"
+#include <delay.h>
+#include <util/delay.h>
+#include <twi_master.h>
 
-#include "twi_master.h"
+// standard headers
+#include <stdio.h>
+#include <string.h>
 
 #ifdef BNO070
 

@@ -27,25 +27,26 @@
 /*============================================================================*/
 /*                             INCLUDE FILES                                  */
 /*============================================================================*/
+// Options header
 #include "GlobalOptions.h"
 
 #ifdef SVR_HAVE_NXP
 
-#include <asf.h>
+// Internal headers for NXP driver
 #include "AVRHDMI.h"
 #include "tmdlHdmiRx_IW.h"
 #include "tmNxTypes.h"
 #include "tmdlHdmiRx.h"
 #include "tmdlHdmiRx_cfg.h"
 #include "tmbslTDA1997X_Functions.h"
-#include "Console.h"
 #include "NXP_AVR_Internal.h"
 
 
-#include <asf.h>
+// application headers
 #include "conf_usb.h"
 #include "ui.h"
 #include "uart.h"
+#include "Console.h"
 
 #ifdef HDMI_DEBUG
     //#define x

@@ -8,7 +8,8 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#include <asf.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #define debugI2CReadMask 1
 #define debugNXPLineMask 2

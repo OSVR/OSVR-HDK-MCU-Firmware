@@ -7,8 +7,10 @@
 
 #include "my_hardware.h"
 
+// Options header
 #include "GlobalOptions.h"
 
+// application headers
 #ifdef SVR_HAVE_SOLOMON
 #include "DeviceDrivers/Solomon.h"
 #endif
@@ -16,13 +18,22 @@
 #include "Console.h"
 #include "MacroUtils.h"
 
-#include <asf.h>
+#include "conf_usb.h"
+#include "conf_usart_serial.h"
+
+// asf headers
 #include <ioport.h>
 #include <delay.h>
+#include <nvm.h>
+
 #ifdef SVR_ENABLE_DISPLAY_PWM
 #include <pwm.h>
 #endif
+#ifdef SVR_HAVE_FPGA
+#include <usart.h>
+#endif
 
+// standard headers
 #include <stdio.h>
 
 #ifdef OSVRHDK

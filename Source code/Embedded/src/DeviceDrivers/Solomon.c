@@ -10,13 +10,13 @@
 
 #ifdef SVR_HAVE_SOLOMON
 
-#include <asf.h>
-
 #include "Solomon.h"
 #include "board.h"
-#include "spi_master.h"
+
 #include "my_hardware.h"
 #include "nxp/my_bit.h"  // for lo() and hi()
+
+#include <spi_master.h>
 
 #include "Console.h"
 #include "SvrYield.h"

@@ -10,7 +10,12 @@
 #ifndef TITMDS442_H_
 #define TITMDS442_H_
 
+#include "GlobalOptions.h"
+
 #ifdef TMDS422
+#include <stdint.h>
+#include <stdbool.h>
+
 void InitHDMISwitch(void);
 
 void EnableVideoA(void);
@@ -21,7 +26,7 @@ void DisableVideoB(void);
 
 void SetInputStatus(uint8_t NewStatus);
 
-Bool ReadTMDS422Status(uint8_t regNum, uint8_t *NewStatus);
+bool ReadTMDS422Status(uint8_t regNum, uint8_t *NewStatus);
 
 void TMDS_422_Task(void);
 

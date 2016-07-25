@@ -6,9 +6,13 @@
  *  Author: Sensics
  */
 
-#include <asf.h>
 #include "Console.h"
-#include "string.h"
+
+// asf headers
+#include <udi_cdc.h>
+
+// standard headers
+#include <string.h>
 
 bool CDCWriteInProgress = false;  // true if USB is being used to write console messages
 
@@ -16,7 +20,6 @@ uint8_t DebugLevel = 0xff;  // start by opening all debug messages
 
 int MaxTimerCounter = 0;
 void Write(const char *const Data)
-
 {
 	if (!Data)
 	{

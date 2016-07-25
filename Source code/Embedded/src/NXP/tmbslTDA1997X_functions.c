@@ -30,23 +30,25 @@
 /*                       INCLUDE FILES                                        */
 /*============================================================================*/
 
+// Options header
 #include "GlobalOptions.h"
 
 #ifdef SVR_HAVE_NXP
-
-#include "tmbslTDA1997X_Functions.h"
-#include "tmbslTDA1997X_local.h"
-#include "Console.h"
+// Interface header
 #include "DeviceDrivers/VideoInput.h" // for PortraitMode
 
+// Internal headers for NXP driver
+#include "AVRHDMI.h"
+#include "tmbslTDA1997X_Functions.h"
+#include "tmbslTDA1997X_local.h"
 #include "i2c.h"
 
-#include <asf.h>
+// application headers
+#include "Console.h"
 #include "my_hardware.h"
 
-#include "avrhdmi.h"
-#include "stdio.h"
-#include "my_hardware.h"
+// standard headers
+#include <stdio.h>
 
 /*============================================================================*/
 /*                     TYPES DECLARATIONS                                     */

@@ -35,28 +35,31 @@
 /*                       INCLUDE FILES                                        */
 /*============================================================================*/
 
+// Options header
 #include "GlobalOptions.h"
 
 #ifdef SVR_HAVE_NXP
 
+// Internal headers for NXP driver
 #include "tmNxTypes.h"
 #include "tmdlHdmiRx_Types.h"
 #include "tmdlHdmiRx_cfg.h"
 #include "tmNxCompId.h"
 #include "tmdlHdmiRx_IW.h"
-
 #include "LPC214x.H"
-#include "Console.h"
 
 #ifndef TMFL_NO_RTOS
     #include <RTL.h>
 #endif
 
-#include <asf.h>
+// application headers
 #include "conf_usb.h"
 #include "ui.h"
 #include "uart.h"
+#include "Console.h"
 
+// asf headers
+#include <delay.h> // to define F_CPU dynamically
 #include <util/delay.h>
 
 //char Msg[30];

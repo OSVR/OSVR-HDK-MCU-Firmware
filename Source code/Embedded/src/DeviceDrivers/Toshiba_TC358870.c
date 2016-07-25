@@ -5,15 +5,23 @@
  *  Author: Coretronic, Sensics
  */
 
+// Options header
 #include "GlobalOptions.h"
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 
 #include "Toshiba_TC358870.h"
+
+// Application headers
 #include "Console.h"
 #include "my_hardware.h"
 #include "SvrYield.h"
+
+// Vendor library header
 #include <libhdk20.h>
+
+// asf header
+#include <ioport.h>
 
 static uint8_t s_tc358870_init_count = 0;
 

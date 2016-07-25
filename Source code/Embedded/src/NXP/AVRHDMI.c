@@ -2,39 +2,38 @@
 //
 
 
-//#include "stdafx.h"
+// Options header
 #include "GlobalOptions.h"
+
 #ifdef SVR_HAVE_NXP
-#include "Console.h"
+
+// Interface header
 #include "DeviceDrivers/VideoInput_Protected.h"
+
+// Internal headers for NXP driver
 #include "NXP_AVR_Internal.h"
-
-
-#include <asf.h>
-
 #include "tmdlHdmiRx_cfg.h"
 #include "tmbslTDA1997X_functions.h"
-
+#include "AVRHDMI.h"
+#include "I2C.h"
 #include "my_bit.h"
+
+// application headers
+#include "main.h"
+#include "debugStrings.h"
+#include "Console.h"
 #include "my_hardware.h"
 
-#include "fpga.h"
+// avr-libc headers
+#include <avr/pgmspace.h>
 
-#include "DeviceDrivers/Solomon.h"
+// asf headers
+#include <delay.h>
+#include <util/delay.h> // yes it uses both delay headers
+#include <ioport.h>
 
-#ifdef BNO070
-#include "DeviceDrivers/BNO070.h"
-#endif
-
-#include "avrhdmi.h"
-#include <util/delay.h>
+// standard headers
 #include <stdio.h>
-#include "I2C.h"
-
-#include "main.h"
-
-#include "debugStrings.h"
-
 
 void WriteLn_progmem(const char* Msg);
 

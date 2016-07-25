@@ -43,6 +43,10 @@
 #define Side_by_side_B IOPORT_CREATE_PIN(PORTF, 1)  // low: regular; high: side by side
 #endif
 
+#ifdef SVR_HAVE_PWM_OUTPUTS
+/// @todo Uncomment the following line to enable the PWM for display brightness.
+//#define SVR_ENABLE_DISPLAY_PWM
+#endif
 //#define Backlight				IOPORT_CREATE_PIN(PORTE,4) //
 
 #ifdef BNO070

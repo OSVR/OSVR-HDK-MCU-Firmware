@@ -19,6 +19,9 @@
 #include <asf.h>
 #include <ioport.h>
 #include <delay.h>
+#ifdef SVR_ENABLE_DISPLAY_PWM
+#include <pwm.h>
+#endif
 
 #include <stdio.h>
 
@@ -43,17 +46,21 @@ uint8_t actualNXP_2_ADDR = NXP_2_ADDR;
 uint8_t actualCEC_2_ADDR = CEC_2_ADDR;
 #endif
 
-struct pwm_config pwm_cfg[2];
-
-void set_pwm_values(uint8_t Display1, uint8_t Display2)
+#ifdef SVR_ENABLE_DISPLAY_PWM
+static struct pwm_config pwm_cfg[2];
+#endif
 
 // sets PWM of each display
+void set_pwm_values(uint8_t Display1, uint8_t Display2)
 {
-	return;  // remove this line if you want to use the on-board PWM
+#ifdef SVR_ENABLE_DISPLAY_PWM
 	pwm_stop(&pwm_cfg[0]);
 	pwm_start(&pwm_cfg[0], Display1);
 	pwm_stop(&pwm_cfg[1]);
 	pwm_start(&pwm_cfg[1], Display2);
+#else
+	return;
+#endif
 }
 
 void custom_board_init(void)
@@ -200,16 +207,18 @@ void custom_board_init(void)
 
 // init PWM for display brightness and strobing
 
-// pwm_init(&pwm_cfg[0], PWM_TCE0, PWM_CH_D, 11000); // PWM_A: PE3
-// pwm_init(&pwm_cfg[1], PWM_TCF0, PWM_CH_C, 11000); //PWM_B: PF2
+#ifdef SVR_ENABLE_DISPLAY_PWM
+	pwm_init(&pwm_cfg[0], PWM_TCE0, PWM_CH_D, 11000);  // PWM_A: PE3
+	pwm_init(&pwm_cfg[1], PWM_TCF0, PWM_CH_C, 11000);  // PWM_B: PF2
 
-// pwm_init(&pwm_cfg[0], PWM_TCD1, PWM_CH_A, 60); // Debug_LED - D4
-// pwm_init(&pwm_cfg[1], PWM_TCE1, PWM_CH_A, 10); //Backlight - E4
+	pwm_init(&pwm_cfg[0], PWM_TCD1, PWM_CH_A, 60);  // Debug_LED - D4
+	pwm_init(&pwm_cfg[1], PWM_TCE1, PWM_CH_A, 10);  // Backlight - E4
 
-// Start both PWM channels
-// set_pwm_values(30,30);
-// ioport_set_pin_low(PWM_A);
-// ioport_set_pin_low(PWM_B);
+	// Start both PWM channels
+	set_pwm_values(30, 30);
+	ioport_set_pin_low(PWM_A);
+	ioport_set_pin_low(PWM_B);
+#endif  // SVR_ENABLE_DISPLAY_PWM
 
 // init PF0 LED for debug purposes
 #ifdef OSVRHDK

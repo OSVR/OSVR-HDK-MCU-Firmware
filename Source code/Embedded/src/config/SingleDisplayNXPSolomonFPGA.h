@@ -30,6 +30,9 @@
 // Side-by-side video transform functionality provided by FPGA
 #define SVR_HAVE_SIDEBYSIDE
 
+/// Side-by-side video transform config state is stored in eeprom.
+#define SVR_HAVE_SIDEBYSIDE_CONFIG
+
 // Single display to control
 #define SVR_NUM_LOGICAL_DISPLAYS 1
 

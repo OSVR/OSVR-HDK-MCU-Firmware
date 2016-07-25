@@ -11,6 +11,10 @@
 
 #include <stdint.h>
 
+/// Allow any regular tasks to run.
+void svr_yield(void);
+
+/// Wait at least ms milliseconds, allowing regular tasks to run.
 void svr_yield_ms(uint16_t ms);
 
 #endif /* SVRYIELD_H_ */

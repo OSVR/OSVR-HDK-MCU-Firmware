@@ -217,14 +217,12 @@ void custom_board_init(void)
 #endif
 };
 
-/**
- * Set all values of a memory buffer to a given value
- */
-void set_buffer(uint8_t *buffer, uint8_t value)
-{
-	uint8_t i;
+static void eeprom_write_byte(uint8_t page_addr, uint8_t offset, uint8_t value);
+static uint8_t eeprom_read_byte(uint8_t page_addr, uint8_t offset);
 
-	for (i = 0; i < EEPROM_PAGE_SIZE; i++)
+void set_buffer(uint8_t buffer[EEPROM_PAGE_SIZE], uint8_t value)
+{
+	for (uint8_t i = 0; i < EEPROM_PAGE_SIZE; i++)
 	{
 		buffer[i] = value;
 	}
@@ -233,18 +231,17 @@ void set_buffer(uint8_t *buffer, uint8_t value)
 /**
  * Check if an EEPROM page is equal to a memory buffer
  */
-bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer)
+bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t buffer[EEPROM_PAGE_SIZE])
 {
-	uint8_t i;
-	char Msg[10];
-
-	for (i = 0; i < EEPROM_PAGE_SIZE; i++)
+	for (uint8_t i = 0; i < EEPROM_PAGE_SIZE; i++)
 	{
 		// WriteLn("+");
-		if (nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i) != buffer[i])
+		uint8_t ebyte = eeprom_read_byte(page_addr, i);
+		if (ebyte != buffer[i])
 		{
 			WriteLn("---");
-			sprintf(Msg, "%d %d %d", nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + i), buffer[i], i);
+			char Msg[10];
+			sprintf(Msg, "%d %d %d", ebyte, buffer[i], i);
 			WriteLn(Msg);
 			return false;
 		}
@@ -253,49 +250,86 @@ bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer)
 	return true;
 }
 
-void eeprom_write_byte(uint8_t page_addr, uint8_t offset, uint8_t value)
+static inline void eeprom_write_byte(uint8_t page_addr, uint8_t offset, uint8_t value)
 {
 	nvm_eeprom_write_byte(EEPROM_PAGE_SIZE + offset, value);
 }
 
-uint8_t eeprom_read_byte(uint8_t page_addr, uint8_t offset)
+static inline uint8_t eeprom_read_byte(uint8_t page_addr, uint8_t offset)
 {
 	return nvm_eeprom_read_byte(page_addr * EEPROM_PAGE_SIZE + offset);
 }
 
-bool IsConfigOffsetValid(uint8_t offset)
-// determines if value at particular offset in config page is valid
+/// Read a chunk of eeprom corresponding to a single config value.
+static void read_eeprom_config_block(SvrEepromOffset_t oset, uint8_t block[SVR_CONFIG_BLOCK_SIZE]);
+static inline void read_eeprom_config_block(SvrEepromOffset_t oset, uint8_t block[SVR_CONFIG_BLOCK_SIZE])
+{
+	for (uint8_t i = 0; i < SVR_CONFIG_BLOCK_SIZE; ++i)
+	{
+		block[i] = eeprom_read_byte(SVR_EEP_CONFIGURATION_PAGE, oset.offset + i);
+	}
+}
+
+/// Internal implementation version of IsConfigOffsetValid that also returns the main configuration value in an
+/// outparam.
+static bool IsConfigOffsetValid_Impl(SvrEepromOffset_t oset, uint8_t *outVal);
+
+static inline bool IsConfigOffsetValid_Impl(SvrEepromOffset_t oset, uint8_t *outVal)
 {
 	// for each value, next byte needs to be value+37, next byte reverse bitwise of value and next byte 65
 
-	bool Valid = true;
-	if (((eeprom_read_byte(CONFIGURATION_PAGE, offset) + 37) & 0xff) !=
-	    eeprom_read_byte(CONFIGURATION_PAGE, offset + 1))
-		Valid = false;
-	if (eeprom_read_byte(CONFIGURATION_PAGE, offset) != (eeprom_read_byte(CONFIGURATION_PAGE, offset + 2) ^ 0xff))
-		Valid = false;
-	if (eeprom_read_byte(CONFIGURATION_PAGE, offset + 3) != 65)
-		Valid = false;
-	return Valid;
+	uint8_t confBlock[SVR_CONFIG_BLOCK_SIZE];
+	read_eeprom_config_block(oset, confBlock);
+	if (outVal)
+	{
+		*outVal = confBlock[0];
+	}
+	_Static_assert(SVR_CONFIG_BLOCK_SIZE == 4,
+	               "IsConfigOffsetValid_Impl validates four bytes for each config value. If you change that block "
+	               "size, you better change IsConfigOffsetValid_Impl too.");
+	if (((confBlock[0] + 37) & 0xff) != confBlock[1])
+	{
+		return false;
+	}
+	if (confBlock[0] != (confBlock[2] ^ 0xff))
+	{
+		return false;
+	}
+	if (confBlock[3] != 65)
+	{
+		return false;
+	}
+	return true;
 }
 
-uint8_t GetConfigValue(uint8_t offset) { return eeprom_read_byte(CONFIGURATION_PAGE, offset); }
-void SetConfigValue(uint8_t offset, uint8_t value)
-
+bool IsConfigOffsetValid(SvrEepromOffset_t oset)
+// determines if value at particular offset in config page is valid
 {
-	// writes single byte configuration value. Additional bytes in this foursome act as verification for the read operation that written value is valid
-	eeprom_write_byte(CONFIGURATION_PAGE, offset, value);
-	eeprom_write_byte(CONFIGURATION_PAGE, offset + 1, (value + 37) & 0xff);
-	eeprom_write_byte(CONFIGURATION_PAGE, offset + 2, value ^ 0xff);
-	eeprom_write_byte(CONFIGURATION_PAGE, offset + 3, 65);
+	return IsConfigOffsetValid_Impl(oset, NULL);
 }
 
-bool GetValidConfigValue(uint8_t offset, uint8_t *outValue)
+uint8_t GetConfigValue(SvrEepromOffset_t oset) { return eeprom_read_byte(SVR_EEP_CONFIGURATION_PAGE, oset.offset); }
+void SetConfigValue(SvrEepromOffset_t oset, uint8_t value)
+
 {
-	if (IsConfigOffsetValid(offset))
+	// writes single byte configuration value. Additional bytes in this foursome act as verification for the read
+	// operation that written value is valid
+	_Static_assert(SVR_CONFIG_BLOCK_SIZE == 4,
+	               "SetConfigValue writes four bytes for each config value. If you change that block size, you better "
+	               "change SetConfigValue too.");
+	eeprom_write_byte(SVR_EEP_CONFIGURATION_PAGE, oset.offset, value);
+	eeprom_write_byte(SVR_EEP_CONFIGURATION_PAGE, oset.offset + 1, (value + 37) & 0xff);
+	eeprom_write_byte(SVR_EEP_CONFIGURATION_PAGE, oset.offset + 2, value ^ 0xff);
+	eeprom_write_byte(SVR_EEP_CONFIGURATION_PAGE, oset.offset + 3, 65);
+}
+
+bool GetValidConfigValue(SvrEepromOffset_t oset, uint8_t *outValue)
+{
+	uint8_t ret;
+	if (IsConfigOffsetValid_Impl(oset, &ret))
 	{
 		// Value was valid, return it in outValue
-		*outValue = GetConfigValue(offset);
+		*outValue = ret;
 		// and tell caller that they got a live one.
 		return true;
 	}
@@ -303,25 +337,26 @@ bool GetValidConfigValue(uint8_t offset, uint8_t *outValue)
 	return false;
 }
 
-uint8_t GetValidConfigValueOrDefault(uint8_t offset, uint8_t defaultValue)
+uint8_t GetValidConfigValueOrDefault(SvrEepromOffset_t oset, uint8_t defaultValue)
 {
-	if (IsConfigOffsetValid(offset))
+	uint8_t ret;
+	if (IsConfigOffsetValid_Impl(oset, &ret))
 	{
 		// Value was valid, return it
-		return GetConfigValue(offset);
+		return ret;
 	}
 	// Not a valid config value found, so return the default instead.
 	return defaultValue;
 }
 
-bool GetValidConfigValueOrWriteDefault(uint8_t offset, uint8_t defaultValue, uint8_t *outValue)
+bool GetValidConfigValueOrWriteDefault(SvrEepromOffset_t oset, uint8_t defaultValue, uint8_t *outValue)
 {
-	if (GetValidConfigValue(offset, outValue))
+	if (GetValidConfigValue(oset, outValue))
 	{
 		// Value was valid, return true right away
 		return true;
 	}
 	// Otherwise, write the default value to eeprom and return false accordingly.
-	SetConfigValue(offset, defaultValue);
+	SetConfigValue(oset, defaultValue);
 	return false;
 }

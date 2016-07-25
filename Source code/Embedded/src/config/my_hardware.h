@@ -8,8 +8,14 @@
 #ifndef MY_HARDWARE_H_
 #define MY_HARDWARE_H_
 
-#include "board.h"
+// Options header
 #include "GlobalOptions.h"
+
+// avr-libc header
+#include <avr/io.h>
+
+// asf header
+#include <board.h>
 
 #ifdef SVR_HAVE_SOLOMON1
 //! \note Perform unit tests using SPI instance SPIC
@@ -150,35 +156,45 @@ extern char ProductName[];
 #endif
 #endif
 
-#define SIGNATURE_PAGE 0  // EEPROM page where Sensics signature is stored
+#define SVR_EEP_SIGNATURE_PAGE 0  //< EEPROM page where Sensics signature is stored
 
-#define CONFIGURATION_PAGE 1  // EEPROM page where configuration is stored
+#define SVR_EEP_CONFIGURATION_PAGE 1  //< EEPROM page where configuration is stored
 
-#if 0
-/// @todo redundant and not used anywhere?
-#define SBSOffset 0  // Side-by-side settings
-#endif
+/// Each single-byte config value uses four bytes of eeprom for validation.
+#define SVR_CONFIG_BLOCK_SIZE 4
 
-#define PersistenceOffset 4         // Persistence refresh rate
-#define PersistencePercentOffset 8  // Persistence percent
-#define SideBySideOffset 12         // Side-by-side settings
-#define GRVOffset 16                // BNO game rotation vector mode
+/// Structure to wrap eeprom offsets
+typedef struct SvrEepromOffset_
+{
+	uint8_t offset;
+} SvrEepromOffset_t;
 
-void set_buffer(uint8_t *buffer, uint8_t value);
-bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t *buffer);
-void SetConfigValue(uint8_t offset, uint8_t value);
-uint8_t GetConfigValue(uint8_t offset);
-bool IsConfigOffsetValid(uint8_t offset);
+#define PersistenceOffset ((SvrEepromOffset_t){4})         //< Persistence refresh rate
+#define PersistencePercentOffset ((SvrEepromOffset_t){8})  //< Persistence percent
+#define SideBySideOffset ((SvrEepromOffset_t){12})         //< Side-by-side settings
+#define GRVOffset ((SvrEepromOffset_t){16})                //< BNO game rotation vector mode
+
+/**
+ * Set all values of a memory buffer of size EEPROM_PAGE_SIZE to a given value
+ */
+void set_buffer(uint8_t buffer[EEPROM_PAGE_SIZE], uint8_t value);
+/**
+ * Check if an EEPROM page is equal to a memory buffer, for a buffer of size EEPROM_PAGE_SIZE
+ */
+bool is_eeprom_page_equal_to_buffer(uint8_t page_addr, uint8_t buffer[EEPROM_PAGE_SIZE]);
+void SetConfigValue(SvrEepromOffset_t oset, uint8_t value);
+uint8_t GetConfigValue(SvrEepromOffset_t oset);
+bool IsConfigOffsetValid(SvrEepromOffset_t oset);
 
 // return value is true if it was valid and if we retrieved into outValue, false if it was not valid and we did nothing.
-bool GetValidConfigValue(uint8_t offset, uint8_t *outValue);
+bool GetValidConfigValue(SvrEepromOffset_t oset, uint8_t *outValue);
 
 // returns the stored config value if it's valid, otherwise it returns the given default value (which is not stored into
 // eeprom, just returned to you.)
-uint8_t GetValidConfigValueOrDefault(uint8_t offset, uint8_t defaultValue);
+uint8_t GetValidConfigValueOrDefault(SvrEepromOffset_t oset, uint8_t defaultValue);
 
 // return value is true if it was valid and if we retrieved into outValue, false if it was not valid and we just stored
 // the default value.
-bool GetValidConfigValueOrWriteDefault(uint8_t offset, uint8_t defaultValue, uint8_t *outValue);
+bool GetValidConfigValueOrWriteDefault(SvrEepromOffset_t oset, uint8_t defaultValue, uint8_t *outValue);
 
 #endif /* MY_HARDWARE_H_ */

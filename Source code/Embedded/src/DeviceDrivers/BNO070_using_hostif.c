@@ -41,10 +41,16 @@ uint8_t BNO070_Report[USB_REPORT_SIZE];
 bool TWI_BNO070_PORT_initialized = false;  // true if already initialized
 uint8_t BNOReportVersion;                  // version 1 or 3 depending on whether velocity is being reported
 
+enum
+{
+	BNO_USE_RV = 0,
+	BNO_USE_GRV = 1
+};
 /* Set this to 1 to report GRV instead of standard RV */
-uint8_t SELECT_GRV = 1;  // When set to 1, the system will use Game Rotation Vector (GRV) which does not align to
-                         // magnetic North.  When set to 0, the system will use Rotation Vector (RV) which will always
-                         // try to have its 0 degree heading aligned with magnetic North.
+uint8_t SELECT_GRV =
+    BNO_USE_GRV;  // When set to 1, the system will use Game Rotation Vector (GRV) which does not align to
+                  // magnetic North.  When set to 0, the system will use Rotation Vector (RV) which will always
+                  // try to have its 0 degree heading aligned with magnetic North.
 
 sensorhub_ProductID_t BNO070id;
 Bool BNO_supports_400Hz = false;  // true if firmware is new enough to support higher-rate reads
@@ -447,10 +453,7 @@ bool init_BNO070(void)
 	int result;
 
 	// determine if we are in GRV or RV mode
-	if (IsConfigOffsetValid(GRVOffset))
-		SELECT_GRV = GetConfigValue(GRVOffset);
-	else
-		SetConfigValue(GRVOffset, GRVOffset);
+	GetValidConfigValueOrWriteDefault(SideBySideOffset, BNO_USE_GRV, &SELECT_GRV);
 
 	// Clear BNO070_Report so we don't send garbage out the USB.
 	memset(BNO070_Report, 0, sizeof(BNO070_Report));

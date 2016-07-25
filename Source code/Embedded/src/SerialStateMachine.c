@@ -357,10 +357,10 @@ void ProcessCommand(void)
 				memcpy(EEPROM.Signature, SENSICS, sizeof(SENSICS));
 /// @todo HDK20RF sizeof(EEPROM.Buffer) was changed to sizeof(SENSICS) - 1 due to "write Sensics ID will overwrite S/N"
 #ifndef SVR_IS_HDK_20
-				nvm_eeprom_erase_and_write_buffer(SIGNATURE_PAGE * EEPROM_PAGE_SIZE, &EEPROM.Buffer[0],
+				nvm_eeprom_erase_and_write_buffer(SVR_EEP_SIGNATURE_PAGE * EEPROM_PAGE_SIZE, &EEPROM.Buffer[0],
 				                                  sizeof(EEPROM.Buffer));
 #else  // 20160605, fctu, fix write SENSICS ID will overwrite S/N.
-				nvm_eeprom_erase_and_write_buffer(SIGNATURE_PAGE * EEPROM_PAGE_SIZE, &EEPROM.Buffer[0],
+				nvm_eeprom_erase_and_write_buffer(SVR_EEP_SIGNATURE_PAGE * EEPROM_PAGE_SIZE, &EEPROM.Buffer[0],
 				                                  sizeof(SENSICS) - 1);
 #endif
 				break;
@@ -390,7 +390,7 @@ void ProcessCommand(void)
 #ifndef SVR_IS_HDK_20
 				set_buffer(EEPROM.Buffer, 0);
 				memcpy(EEPROM.Buffer, SENSICS, sizeof(SENSICS));
-				if (is_eeprom_page_equal_to_buffer(SIGNATURE_PAGE, EEPROM.Buffer))
+				if (is_eeprom_page_equal_to_buffer(SVR_EEP_SIGNATURE_PAGE, EEPROM.Buffer))
 					WriteLn("Verified");
 				else
 					WriteLn("Not verified");
@@ -398,7 +398,7 @@ void ProcessCommand(void)
 #else  // 20160605, fctu, fix write SENSICS ID will overwrite S/N.
 				/// @todo HDK20RF presumably related to the above
 				memcpy(EEPROM.Buffer, SENSICS, sizeof(SENSICS) - 1);
-				if (is_sensics_id_equal_to_buffer(SIGNATURE_PAGE, EEPROM.Buffer, sizeof(SENSICS) - 1))
+				if (is_sensics_id_equal_to_buffer(SVR_EEP_SIGNATURE_PAGE, EEPROM.Buffer, sizeof(SENSICS) - 1))
 					WriteLn("Verified");
 				else
 					WriteLn("Not verified");

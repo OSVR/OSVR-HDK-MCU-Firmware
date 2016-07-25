@@ -200,7 +200,7 @@ ALL_DEFINES := $(BASE_DEFINES) $(DEFINES)
 
 COMMON_FLAGS := -mmcu=$(MCU) -mrelax $(patsubst %, -D%,$(ALL_DEFINES))
 
-ALL_CFLAGS = -x c $(COMMON_FLAGS) -c -std=gnu99 \
+ALL_CFLAGS = $(COMMON_FLAGS) -c -std=gnu99 \
               -ffunction-sections -fdata-sections \
               -fpack-struct -fshort-enums -fno-strict-aliasing \
               $(CFLAGS) $(EXTRA_CFLAGS)
@@ -208,7 +208,7 @@ ALL_ASFLAGS := -Wa,-gdwarf2 -x assembler-with-cpp -c $(COMMON_FLAGS) $(ASFLAGS) 
 
 for_each_variant = $(foreach variant,$(VARIANTS),$(variant)/$1)
 get_variant=$(word 1,$(subst /, ,$1))
-set_variant_variable = $(eval VARIANT ?= $(call get_variant,$1))
+set_variant_variable = $(eval VARIANT := $(call get_variant,$1))
 
 make_include_dirs = $(patsubst %, -I"%",$(call variant_include_dir,$1) $(COMMON_INCLUDE_DIRS) $(INCLUDE_DIRS_$(1)))
 DEBUG_VARIANT = @echo Variant: $(VARIANT)

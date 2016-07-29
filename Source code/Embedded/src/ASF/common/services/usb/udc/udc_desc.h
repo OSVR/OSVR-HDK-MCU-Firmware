@@ -3,7 +3,7 @@
  *
  * \brief Common API for USB Device Interface
  *
- * Copyright (c) 2009 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2009-2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,6 +40,9 @@
  * \asf_license_stop
  *
  */
+/*
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
 
 #ifndef _UDC_DESC_H_
 #define _UDC_DESC_H_
@@ -75,7 +78,7 @@ extern "C" {
  * For Mega application used "code".
  */
 #define  UDC_DESC_STORAGE
-// Descriptor storage in internal RAM
+	// Descriptor storage in internal RAM
 #if (defined UDC_DATA_USE_HRAM_SUPPORT)
 #	if defined(__GNUC__)
 #		define UDC_DATA(x)              COMPILER_WORD_ALIGNED __attribute__((__section__(".data_hram0")))
@@ -95,10 +98,10 @@ extern "C" {
  * \brief Configuration descriptor and UDI link for one USB speed
  */
 typedef struct {
-    //! USB configuration descriptor
-    usb_conf_desc_t UDC_DESC_STORAGE *desc;
-    //! Array of UDI API pointer
-    udi_api_t UDC_DESC_STORAGE *UDC_DESC_STORAGE * udi_apis;
+	//! USB configuration descriptor
+	usb_conf_desc_t UDC_DESC_STORAGE *desc;
+	//! Array of UDI API pointer
+	udi_api_t UDC_DESC_STORAGE *UDC_DESC_STORAGE * udi_apis;
 } udc_config_speed_t;
 
 
@@ -106,18 +109,19 @@ typedef struct {
  * \brief All information about the USB Device
  */
 typedef struct {
-    //! USB device descriptor for low or full speed
-    usb_dev_desc_t UDC_DESC_STORAGE *confdev_lsfs;
-    //! USB configuration descriptor and UDI API pointers for low or full speed
-    udc_config_speed_t UDC_DESC_STORAGE *conf_lsfs;
+	//! USB device descriptor for low or full speed
+	usb_dev_desc_t UDC_DESC_STORAGE *confdev_lsfs;
+	//! USB configuration descriptor and UDI API pointers for low or full speed
+	udc_config_speed_t UDC_DESC_STORAGE *conf_lsfs;
 #ifdef USB_DEVICE_HS_SUPPORT
-    //! USB device descriptor for high speed
-    usb_dev_desc_t UDC_DESC_STORAGE *confdev_hs;
-    //! USB device qualifier, only use in high speed mode
-    usb_dev_qual_desc_t UDC_DESC_STORAGE *qualifier;
-    //! USB configuration descriptor and UDI API pointers for high speed
-    udc_config_speed_t UDC_DESC_STORAGE *conf_hs;
+	//! USB device descriptor for high speed
+	usb_dev_desc_t UDC_DESC_STORAGE *confdev_hs;
+	//! USB device qualifier, only use in high speed mode
+	usb_dev_qual_desc_t UDC_DESC_STORAGE *qualifier;
+	//! USB configuration descriptor and UDI API pointers for high speed
+	udc_config_speed_t UDC_DESC_STORAGE *conf_hs;
 #endif
+	usb_dev_bos_desc_t UDC_DESC_STORAGE *conf_bos;
 } udc_config_t;
 
 //! Global variables of USB Device Descriptor and UDI links

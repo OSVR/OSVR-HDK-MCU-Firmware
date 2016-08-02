@@ -55,15 +55,23 @@
  */
 
 //! Device definition (mandatory)
-#ifdef OSVRHDK
-    //#define  USB_DEVICE_VENDOR_ID             USB_VID_ATMEL //0x1532 // USB_VID_ATMEL // should be 0x1532 New one is Razer ID
-    //#define  USB_DEVICE_PRODUCT_ID            0x2421 //0x0B00 // 0x2421 // should be 0x0B00 - OSVR Hacker Dev Kit.
-    #define  USB_DEVICE_VENDOR_ID             0x1532 // should be 0x1532 New one is Razer ID
-    #define  USB_DEVICE_PRODUCT_ID            0x0B00 // should be 0x0B00 - OSVR Hacker Dev Kit.
-#else
-    //#define  USB_DEVICE_VENDOR_ID             USB_VID_ATMEL
+#if defined(SVR_IS_HDK_1_x)
+	/// HDK 1.x family
+    #define  USB_DEVICE_VENDOR_ID             0x1532 // Razer VID
+    #define  USB_DEVICE_PRODUCT_ID            0x0B00 // 0x0B00 - OSVR Hacker Dev Kit.
+
+#elif defined(SVR_IS_HDK_20)
+    /// HDK2 family
+    #define  USB_DEVICE_VENDOR_ID             0x1532 // Razer VID
+	/// @todo this should be updated: HDK2 should not have same PID as 1.x!
+    #define  USB_DEVICE_PRODUCT_ID            0x0B00
+
+#elif defined(DSIGHT)
+    /// Sensics dSight
 	#define  USB_DEVICE_VENDOR_ID             0x16D0 // Sensics
     #define  USB_DEVICE_PRODUCT_ID            0x0676 // dSight
+#else
+#error "Variant is missing product name define or product is missing USB VID/PID configuration in conf_usb.h!"
 #endif
 
 #define  USB_DEVICE_MAJOR_VERSION         1

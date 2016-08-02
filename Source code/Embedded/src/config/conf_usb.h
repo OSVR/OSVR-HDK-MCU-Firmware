@@ -85,13 +85,16 @@
 
 //! USB Device string definitions (Optional)
 #if defined(OSVRHDK)
-	#define DYNAMIC_PRODUCT_NAME			// if true, product name is reported based on detected configuration
 	#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"
+	#define  DYNAMIC_PRODUCT_NAME			// if true, product name is reported based on detected configuration
 #if SVR_HDK_DEFAULT_MAJOR_VER == 1 && SVR_HDK_DEFAULT_MINOR_VER == 2
 	// The same firmware works from 1.2 through 1.4, so to avoid offending/confusing people, we'll call it 1.x until otherwise determined.
 	// The extra internal space is intentional padding - please leave it there!
 	#define  USB_DEVICE_PRODUCT_NAME          "OSVR  HDK 1.x"
 	#define  SVR_USB_DEVICE_PRODUCT_NAME_LENGTH 14
+#elif defined(SVR_IS_HDK_20)
+	#define  USB_DEVICE_PRODUCT_NAME          "OSVR HDK 2"
+	#define  SVR_USB_DEVICE_PRODUCT_NAME_LENGTH 11
 #else
 	#define  USB_DEVICE_PRODUCT_NAME          "OSVR HDK " SVR_STRINGIFY(SVR_HDK_DEFAULT_MAJOR_VER) "." SVR_STRINGIFY(SVR_HDK_DEFAULT_MINOR_VER)
 	#define  SVR_USB_DEVICE_PRODUCT_NAME_LENGTH 13
@@ -99,6 +102,7 @@
 	/// @todo Technically not supposed to report a USB serial unless it's actually unique
 	/// Here we will combine the firmware variant with the firmware version
 	#define  USB_DEVICE_SERIAL_NAME           "HDK-" SVR_HDK_VARIANT_STRING "-" SVR_STRINGIFY(MajorVersion) "." SVR_STRINGIFY(MinorVersion)
+
 #elif defined(DSIGHT)
 	#define  USB_DEVICE_MANUFACTURE_NAME      "Sensics"
 	#define  USB_DEVICE_PRODUCT_NAME          "dSight"

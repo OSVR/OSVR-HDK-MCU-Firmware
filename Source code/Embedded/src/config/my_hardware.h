@@ -157,10 +157,14 @@ extern char ProductName[];
 #if SVR_HDK_DEFAULT_MAJOR_VER == 1 && SVR_HDK_DEFAULT_MINOR_VER == 2
 // these version have an extra space for a + since we can't determine what's a 1.3 vs 1.4
 #define SVR_HDK_PRODUCT_NAME_STRING_LENGTH 14
+#elif defined(SVR_IS_HDK_20)
+// just HDK 2, no .0
+#define SVR_HDK_PRODUCT_NAME_STRING_LENGTH 11
 #else
 #define SVR_HDK_PRODUCT_NAME_STRING_LENGTH 13
 #endif
-#endif
+
+#endif  // OSVRHDK
 
 #define SVR_EEP_SIGNATURE_PAGE 0  //< EEPROM page where Sensics signature is stored
 

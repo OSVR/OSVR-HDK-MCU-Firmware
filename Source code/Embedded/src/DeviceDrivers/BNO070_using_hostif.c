@@ -36,6 +36,11 @@
 
 // Skip version check and always DFU
 //#define FORCE_DFU 1
+/// @todo Without a definition of FORCE_DFU, build fails when defining PERFORM_BNO_DFU.
+/// This was added as a fallback.
+#ifndef FORCE_DFU
+#define FORCE_DFU 0
+#endif
 
 #define STABILITY_ON_TABLE 1
 #define DCD_SAVE_PERIOD_SEC (300UL)  // 300sec = 5 min

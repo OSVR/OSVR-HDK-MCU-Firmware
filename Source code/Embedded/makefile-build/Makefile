@@ -86,7 +86,6 @@ src/DeviceDrivers/BNO070_using_hostif.c \
 src/DeviceDrivers/Solomon.c \
 src/DeviceDrivers/TI-TMDS442.c \
 src/DeviceDrivers/Toshiba_TC358870.c \
-src/DeviceDrivers/bno-hostif/1000-3251_1.7.0.390_avr.c \
 src/DeviceDrivers/bno-hostif/bno_callbacks.c \
 src/DeviceDrivers/bno-hostif/src/sensorhub.c \
 src/DeviceDrivers/bno-hostif/src/sensorhub_hid.c \

@@ -35,6 +35,6 @@
 #define SVR_DISABLE_VIDEO_INPUT
 #endif
 
-#define SVR_VARIANT_STRING "dSight_Sharp_LCD"
+#define SVR_VARIANT_STRING "HDK_OLED"
 
 #endif /* VARIANTOPTIONS_H_ */

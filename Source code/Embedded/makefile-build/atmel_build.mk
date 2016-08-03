@@ -29,7 +29,7 @@ FUNC_CP := copy
 RM := del /q
 # must be recursively evaluated - they're functions
 FUNC_MKDIR_P = if not exist "$(call PATH_CONVERT,$1)" mkdir "$(call PATH_CONVERT,$1)"
-FUNC_CP := copy /Y "$(call PATH_CONVERT,$1)" "$(call PATH_CONVERT,$2)"
+FUNC_CP = copy /Y "$(call PATH_CONVERT,$1)" "$(call PATH_CONVERT,$2)"
 endif
 
 

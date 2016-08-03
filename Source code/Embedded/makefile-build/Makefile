@@ -27,9 +27,19 @@ EXTRA_ASFLAGS :=
 # in a hopefully-safe way for display and for appending to the output filename.
 # Of course, if you change the value of DEFINES, you must rebuild the whole thing.
 ifneq ($(strip $(DEFINES)),)
-  # the bit with eval is to be able to search for a space.
-  SUFFIX := -$(subst $(eval) ,-,$(subst =,_,$(strip $(DEFINES))))
-  FN_SUFFIX := $(subst =,_,$(SUFFIX))
+    # the bit with eval is just a dummy, to be able to search for a space.
+    # This swaps spaces for dashes.
+    CONFIG_DEFINES := $(subst $(eval) ,-,$(subst =,_,$(strip $(DEFINES))))
+    # This swaps equals signs for underscores so the result is (hopefully) safe for filename usage.
+    FN_SAFE_CONFIG_DEFINES := $(subst =,_,$(CONFIG_DEFINES))
+
+    # This is a human-readable string for use in messages
+    CONFIG_DEFINES_HUMAN := (Config: $(CONFIG_DEFINES))
+
+    # This prepends a dash to CONFIG_DEFINES, for display usage.
+    SUFFIX := -$(CONFIG_DEFINES)
+    # This prepends a dash to FN_SAFE_CONFIG_DEFINES, for output filename usage.
+    FN_SUFFIX := -$(FN_SAFE_CONFIG_DEFINES)
 endif
 
 LIBS :=
@@ -180,11 +190,17 @@ else
     get_variant = $(firstword $(subst $(VARIANT_SUFFIX_SEP), ,$(firstword $(subst /, ,$1))))
 endif
 
-make_build_dirs = $(foreach variant,$(VARIANTS),$(addprefix $(variant)$(VARIANT_SUFFIX_SEP)$(FN_SUFFIX)/,$1))
-set_variant_variable = $(eval VARIANT := $(call get_variant,$1))
+
 
 # Recursively evaluated: as long as you have VARIANT defined correctly, this will always be the right build directory.
-BUILD_DIR = $(VARIANT)$(VARIANT_SUFFIX_SEP)$(FN_SUFFIX)
+BUILD_DIR = $(VARIANT)$(VARIANT_SUFFIX_SEP)$(FN_SAFE_CONFIG_DEFINES)
+
+# For when you can't set VARIANT but can use call.
+make_build_dir = $1$(VARIANT_SUFFIX_SEP)$(FN_SAFE_CONFIG_DEFINES)
+
+# Prefixes the build dir on everything that's passed.
+make_build_dirs = $(foreach VARIANT,$(VARIANTS),$(addprefix $(BUILD_DIR)/,$1))
+set_variant_variable = $(eval VARIANT := $(call get_variant,$1))
 
 make_include_dirs = $(patsubst %, -I"%",$(call variant_include_dir,$1) $(COMMON_INCLUDE_DIRS) $(INCLUDE_DIRS_$(1)))
 DEBUG_VARIANT = @echo Variant: $(VARIANT)
@@ -204,12 +220,22 @@ endif
 
 include atmel_build.mk
 
-# Set up the variables that add_variant.mk will populate.
+# Lists to be populated
 FINAL_GENERATED :=
 CONVENIENCE_TARGETS :=
 BUILT_BY_ALL :=
 VARIANTS :=
+CONFIG_SHORT_NAMES :=
+CONFIG_CLEAN_TARGETS :=
+CONFIG_REALCLEAN_TARGETS :=
+SPECIAL_CONFIG_TARGETS :=
+# recursively-expanded variables required by add_config.mk
+CONFIG_CLEAN_TARGET = $(CONFIG)_clean
+CONFIG_REALCLEAN_TARGET = $(CONFIG)_realclean
 
+###
+# The Variants
+###
 SHORT_NAME := hdk2
 VARIANT_NAME := HDK_20
 
@@ -302,34 +328,49 @@ endif
 #	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-size.exe" "HMD-MCU.elf"
 
 clean:
-	-$(RM) $(OBJS)
-	-$(RM) $(C_DEPS)
-	-$(RM) $(call make_build_dirs,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX) $(OUTPUT_LSS))
+	@echo [clean$(SUFFIX)] Removing object files
+	$(QUIETRULE)-$(RM) $(OBJS)
+	@echo [clean$(SUFFIX)] Removing generated dependency makefiles
+	$(QUIETRULE)-$(RM) $(C_DEPS)
+	@echo [clean$(SUFFIX)] Removing linker and related outputs.
+	$(QUIETRULE)-$(RM) $(call make_build_dirs,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX) $(OUTPUT_LSS))
 .PHONY: clean
 
-distclean: clean
-	-$(RM) $(FINAL_GENERATED)
+realclean: clean
+	@echo [realclean$(SUFFIX)] Removing renamed copies of final .hex files.
+	$(QUIETRULE)-$(RM) $(FINAL_GENERATED)
+.PHONY: realclean
+
+# A special target that's typically only called with no DEFINES contents.
+distclean: realclean
+	@echo [distclean$(SUFFIX)] Recursing to realclean known configs using these targets: $(CONFIG_REALCLEAN_TARGETS)
+	$(QUIETRULE)-$(MAKE) $(CONFIG_REALCLEAN_TARGETS)
 .PHONY: distclean
 
-hdmi_verbose:
-	$(MAKE) DEFINES=HDMI_VERBOSE
-hdmi_verbose_clean:
-	$(MAKE) DEFINES=HDMI_VERBOSE clean
-.PHONY: hdmi_verbose hdmi_verbose_clean
+# like all, except also including all of the known configs as well.
+complete: all $(SPECIAL_CONFIG_TARGETS)
 
-disable_video:
-	$(MAKE) DEFINES=SVR_DISABLE_VIDEO_INPUT
-disable_video_clean:
-	$(MAKE) DEFINES=SVR_DISABLE_VIDEO_INPUT clean
-.PHONY: disable_video disable_video_clean
+#
+# hdmi_verbose:
+# 	$(MAKE) DEFINES=HDMI_VERBOSE
+# hdmi_verbose_clean:
+# 	$(MAKE) DEFINES=HDMI_VERBOSE clean
+# .PHONY: hdmi_verbose hdmi_verbose_clean
+#
+# disable_video:
+# 	$(MAKE) DEFINES=SVR_DISABLE_VIDEO_INPUT
+# disable_video_clean:
+# 	$(MAKE) DEFINES=SVR_DISABLE_VIDEO_INPUT clean
+# .PHONY: disable_video disable_video_clean
 
 help:
 	@echo make clean will delete build intermediate files.
-	@echo make distclean will do make clean and also delete the final output hex files
-	@echo ($(FINAL_GENERATED))
+	@echo make realclean includes make clean, and also deletes the final output hex files
+	@echo ($(strip $(FINAL_GENERATED)))
+	@echo make distclean is make realclean for both "standard" configuration and the special configurations listed below.
 	@echo Build targets:
 	@echo These targets exist to build variants: $(CONVENIENCE_TARGETS)
 	@echo By default (or by make all), this subset is built: $(BUILT_BY_ALL)
-	@echo make hdmi_verbose will build all targets with DEFINES=HDMI_VERBOSE - make hdmi_verbose_clean is its clean counterpart.
-	@echo make disable_video will re-build all targets with DEFINES=SVR_DISABLE_VIDEO_INPUT - make disable_video_clean is its clean counterpart.
+	@echo make hdmi_verbose will build targets with DEFINES=HDMI_VERBOSE - make hdmi_verbose_clean is its clean counterpart.
+	@echo make disable_video will build targets with DEFINES=SVR_DISABLE_VIDEO_INPUT - make disable_video_clean is its clean counterpart.
 .PHONY: help

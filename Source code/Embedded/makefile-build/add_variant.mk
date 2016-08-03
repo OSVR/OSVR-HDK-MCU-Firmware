@@ -14,7 +14,7 @@
 # Convenience variable
 COPIED_OUTPUT_$(VARIANT_NAME) := $(SHORT_NAME)$(FN_SUFFIX).hex
 
-# Needed by the recursively-evaluated BUILD_DIR
+# Needed by the recursively-expanded BUILD_DIR
 VARIANT := $(VARIANT_NAME)
 
 # "Map"
@@ -25,9 +25,10 @@ FINAL_GENERATED += $(COPIED_OUTPUT_$(VARIANT_NAME))
 
 # For this target, we pass $< instead of $@ to set_variant_variable because that's the one that still lives in the variant directory.
 $(COPIED_OUTPUT_$(VARIANT_NAME)): $(BUILD_DIR)/$(OUTPUT_HEX) $(BUILD_DIR)/$(OUTPUT_LSS)
-	$(call set_variant_variable,$<)
 	$(QUIETRULE)$(call FUNC_CP,$<,$@)
 	@echo [$(VARIANT)] Copied output hex to $@
+# set target-specific variable
+$(COPIED_OUTPUT_$(VARIANT_NAME)): VARIANT := $(VARIANT)
 
 $(SHORT_NAME): $(COPIED_OUTPUT_$(VARIANT_NAME))
 	@echo [$(FULL_VARIANT_NAME_$(@)) - $@] Build finished.
@@ -45,33 +46,46 @@ VARIANTS += $(VARIANT_NAME)
 CURRENT_OBJS :=
 
 C_OBJS := $(addprefix $(BUILD_DIR)/,$(C_SRCS:%.c=%.o))
-# Build .c -> .o
-#$(C_OBJS): $(VARIANT_NAME)/%.o : $(REL_ROOT)/%.c
 
+# Build .c -> .o
 $(BUILD_DIR)/%.o: $(REL_ROOT)/%.c
-	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] (-O$(strip $(OPTIMIZATION))) $< : $@
 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+# set pattern-specific variable for the variant
+$(BUILD_DIR)/%.o: VARIANT := $(VARIANT)
 
 S_OBJS := $(addprefix $(BUILD_DIR)/,$(PREPROCESSING_SRCS:%.s=%.o))
 
 # Pattern for building object files from .s
-#$(S_OBJS): $(VARIANT_NAME)/%.o : $(REL_ROOT)/%.s
 $(BUILD_DIR)/%.o: $(REL_ROOT)/%.s
-	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] $< : $@
 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
+# set pattern-specific variable for the variant
+$(BUILD_DIR)/%.o: VARIANT := $(VARIANT)
 
 CURRENT_OBJS := $(C_OBJS) $(S_OBJS)
 
 # Makes the elf file
 $(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS)
-	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] Linking $@
 	$(QUIETRULE)$(CC) -o"$@" $^ $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(BUILD_DIR)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
+# set target-specific variables
+$(BUILD_DIR)/$(OUTPUT_FILE_PATH): SUFFIX := $(SUFFIX)
+$(BUILD_DIR)/$(OUTPUT_FILE_PATH): VARIANT := $(VARIANT)
+
+# Add targets for different configurations of the build.
+CONFIG_SHORT_NAME := hdmi_verbose
+DEFINES_CONTENTS := HDMI_VERBOSE
+include add_config.mk
+
+CONFIG_SHORT_NAME := disable_video
+DEFINES_CONTENTS := SVR_DISABLE_VIDEO_INPUT
+# TODO fix this - should be able to build dsight without video too!
+SKIP_VARIANTS := dSight_Sharp_LCD
+include add_config.mk
 
 # Clean up work variables
 C_OBJS :=

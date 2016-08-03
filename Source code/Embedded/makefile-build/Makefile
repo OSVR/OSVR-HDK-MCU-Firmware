@@ -27,9 +27,9 @@ EXTRA_ASFLAGS :=
 # in a hopefully-safe way for display and for appending to the output filename.
 # Of course, if you change the value of DEFINES, you must rebuild the whole thing.
 ifneq ($(strip $(DEFINES)),)
-# the bit with eval is to be able to search for a space.
-SUFFIX := -$(subst $(eval) ,-,$(subst =,_,$(strip $(DEFINES))))
-FN_SUFFIX := $(subst =,_,$(SUFFIX))
+  # the bit with eval is to be able to search for a space.
+  SUFFIX := -$(subst $(eval) ,-,$(subst =,_,$(strip $(DEFINES))))
+  FN_SUFFIX := $(subst =,_,$(SUFFIX))
 endif
 
 LIBS :=
@@ -169,21 +169,38 @@ ALL_CFLAGS = $(COMMON_FLAGS) -c -std=gnu99 \
               $(CFLAGS) $(EXTRA_CFLAGS)
 ALL_ASFLAGS := -Wa,-gdwarf2 -x assembler-with-cpp -c $(COMMON_FLAGS) $(ASFLAGS) $(EXTRA_ASFLAGS)
 
-for_each_variant = $(foreach variant,$(VARIANTS),$(variant)/$1)
-get_variant=$(word 1,$(subst /, ,$1))
+ifeq (,$(strip $(DEFINES)))
+    # no separator if no special defines
+    VARIANT_SUFFIX_SEP :=
+    get_variant = $(firstword $(subst /, ,$1))
+else
+    # Special defines produce a special build dir so we don't mix object files between configs.
+    # Has to be parseable, though, so we can still extract the variant name from it.
+    VARIANT_SUFFIX_SEP := --
+    get_variant = $(firstword $(subst $(VARIANT_SUFFIX_SEP), ,$(firstword $(subst /, ,$1))))
+endif
+
+make_build_dirs = $(foreach variant,$(VARIANTS),$(addprefix $(variant)$(VARIANT_SUFFIX_SEP)$(FN_SUFFIX)/,$1))
 set_variant_variable = $(eval VARIANT := $(call get_variant,$1))
+
+# Recursively evaluated: as long as you have VARIANT defined correctly, this will always be the right build directory.
+BUILD_DIR = $(VARIANT)$(VARIANT_SUFFIX_SEP)$(FN_SUFFIX)
 
 make_include_dirs = $(patsubst %, -I"%",$(call variant_include_dir,$1) $(COMMON_INCLUDE_DIRS) $(INCLUDE_DIRS_$(1)))
 DEBUG_VARIANT = @echo Variant: $(VARIANT)
 
 ifeq ($(strip $(VERBOSE)),)
-QUIETRULE := @
+    QUIETRULE := @
 else
-$(info Building in verbose mode - all meaningful command lines will be echoed)
+    $(info Building in verbose mode - all meaningful command lines will be echoed)
 endif
 
-# No implicit rules, please.
+# No implicit rules, please. We'll define them all and we'd like our performance back.
+.SUFFIXES:
 SUFFIXES :=
+ifeq ($(filter -r,$(MAKEFLAGS)),)
+    MAKEFLAGS += -r
+endif
 
 include atmel_build.mk
 
@@ -195,6 +212,7 @@ VARIANTS :=
 
 SHORT_NAME := hdk2
 VARIANT_NAME := HDK_20
+
 # Per-variant libs and includes
 LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.a
 INCLUDE_DIRS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/
@@ -220,36 +238,36 @@ BASE_OBJS := $(BASE_C_OBJS) $(BASE_S_OBJS)
 BASE_C_DEPS := $(C_SRCS:%.c=%.d)
 
 # The above lists, multiplied by the variants.
-OBJS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_OBJS)))
-C_OBJS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_C_OBJS)))
-C_DEPS := $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(BASE_C_DEPS)))
+OBJS := $(call make_build_dirs,$(BASE_OBJS)))
+C_OBJS := $(call make_build_dirs,$(BASE_C_OBJS)))
+C_DEPS := $(call make_build_dirs,$(BASE_C_DEPS)))
 
 # # Pattern for building object files from c
-# $(call for_each_variant,%.o): $(REL_ROOT)/%.c
+# $(call make_build_dirs,%.o): $(REL_ROOT)/%.c
 # 	$(call set_variant_variable,$@)
 # 	@echo [$(VARIANT)$(SUFFIX)] ($(OPTIMIZATION)) $< : $@
 # 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 # 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) $(OPTIMIZATION) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
 #
 # # Pattern for building object files from .s
-# $(call for_each_variant,%.o): $(REL_ROOT)/%.s
+# $(call make_build_dirs,%.o): $(REL_ROOT)/%.s
 # 	$(call set_variant_variable,$@)
 # 	@echo [$(VARIANT)$(SUFFIX)] $< : $@
 # 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 # 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
 
 # These files had optimization turned off before for some reason, turning it down now.
-$(call for_each_variant,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := 1
-$(call for_each_variant,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := 1
+$(call make_build_dirs,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := 1
+$(call make_build_dirs,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := 1
 
 # These files are terribly full of warnings. We really just want to disable the shift overflow ones, but the flag
 # below seems insufficient, thus -w disables all warnings...
-$(call for_each_variant,src/NXP/tmbslTDA1997X_functions.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
-$(call for_each_variant,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
+$(call make_build_dirs,src/NXP/tmbslTDA1997X_functions.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
+$(call make_build_dirs,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
 
 
 # Makes the elf file
-# $(call for_each_variant,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))
+# $(call make_build_dirs,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))
 # 	$(call set_variant_variable,$@)
 # 	@echo [$(VARIANT)$(SUFFIX)] Linking $@
 # 	$(QUIETRULE)$(CC) -o"$@" $(addprefix $(VARIANT)/,$(BASE_OBJS)) $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
@@ -257,13 +275,13 @@ $(call for_each_variant,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-ou
 
 
 # Makes the hex file
-$(call for_each_variant,$(OUTPUT_HEX)): %/$(OUTPUT_HEX) : %/$(OUTPUT_FILE_PATH)
+$(call make_build_dirs,$(OUTPUT_HEX)): %/$(OUTPUT_HEX) : %/$(OUTPUT_FILE_PATH)
 	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] Generating $@
 	$(QUIETRULE)$(OBJCOPY) -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "$<" "$@"
 
 # Makes the lss (assembly listing) file
-$(call for_each_variant,$(OUTPUT_LSS)): %/$(OUTPUT_LSS) : %/$(OUTPUT_FILE_PATH)
+$(call make_build_dirs,$(OUTPUT_LSS)): %/$(OUTPUT_LSS) : %/$(OUTPUT_FILE_PATH)
 	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] Generating $@
 	$(QUIETRULE)$(OBJDUMP) -h -S "$<" > "$@"
@@ -286,7 +304,7 @@ endif
 clean:
 	-$(RM) $(OBJS)
 	-$(RM) $(C_DEPS)
-	-$(RM) $(foreach variant,$(VARIANTS),$(addprefix $(variant)/,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX) $(OUTPUT_LSS)))
+	-$(RM) $(call make_build_dirs,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX) $(OUTPUT_LSS))
 .PHONY: clean
 
 distclean: clean

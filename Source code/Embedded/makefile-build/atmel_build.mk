@@ -32,6 +32,7 @@ FUNC_MKDIR_P = if not exist "$(call PATH_CONVERT,$1)" mkdir "$(call PATH_CONVERT
 FUNC_CP = copy /Y "$(call PATH_CONVERT,$1)" "$(call PATH_CONVERT,$2)"
 endif
 
+FUNC_PRINT_LIST = $(foreach elt,$($1),@echo $2 $(elt)&)
 
 else
 # not Windows
@@ -43,6 +44,7 @@ RM := rm -f
 FUNC_CP := cp
 FUNC_MKDIR_P = mkdir -p "$1"
 
+FUNC_PRINT_LIST = foreach elt in $($1); do echo $2 $$elt; done
 endif
 
 CC := "$(TOOLCHAIN_ROOT)/bin/avr-gcc$(TOOL_EXTENSION)"

@@ -23,7 +23,7 @@
 
 /// Prints additional debug messages to the USB serial console related to HDMI
 /// state.
-#define HDMI_DEBUG
+#define HDMI_VERBOSE
 
 /// if defined, performance is being recorded for BNO work, with some
 /// performance impact

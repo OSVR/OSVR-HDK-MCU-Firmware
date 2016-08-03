@@ -283,11 +283,19 @@ static void Display_firmware_details(void)
 {
 	WriteLn("Firmware Variant: " SVR_VARIANT_STRING);
 	Write("Special Config Defines:");
+// flag define, undefined as soon as we print something for a special config.
 #define SVR_NO_SPECIAL_CONFIG
+
+#ifdef PERFORM_BNO_DFU
+#undef SVR_NO_SPECIAL_CONFIG
+	Write(" PERFORM_BNO_DFU");
+#endif
+
 #ifdef HDMI_VERBOSE
 #undef SVR_NO_SPECIAL_CONFIG
 	Write(" HDMI_VERBOSE");
 #endif
+
 #ifdef SVR_DISABLE_VIDEO_INPUT
 #undef SVR_NO_SPECIAL_CONFIG
 	Write(" SVR_DISABLE_VIDEO_INPUT");
@@ -297,6 +305,7 @@ static void Display_firmware_details(void)
 	Write(" [none]");
 #endif
 	WriteEndl();
+
 	Write("Built ");
 	Write(__DATE__);
 	Write(" ");

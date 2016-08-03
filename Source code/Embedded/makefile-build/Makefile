@@ -311,6 +311,18 @@ distclean: clean
 	-$(RM) $(FINAL_GENERATED)
 .PHONY: distclean
 
+hdmi_verbose:
+	$(MAKE) DEFINES=HDMI_VERBOSE
+hdmi_verbose_clean:
+	$(MAKE) DEFINES=HDMI_VERBOSE clean
+.PHONY: hdmi_verbose hdmi_verbose_clean
+
+disable_video:
+	$(MAKE) DEFINES=SVR_DISABLE_VIDEO_INPUT
+disable_video_clean:
+	$(MAKE) DEFINES=SVR_DISABLE_VIDEO_INPUT clean
+.PHONY: disable_video disable_video_clean
+
 help:
 	@echo make clean will delete build intermediate files.
 	@echo make distclean will do make clean and also delete the final output hex files
@@ -318,4 +330,6 @@ help:
 	@echo Build targets:
 	@echo These targets exist to build variants: $(CONVENIENCE_TARGETS)
 	@echo By default (or by make all), this subset is built: $(BUILT_BY_ALL)
+	@echo make hdmi_verbose will build all targets with DEFINES=HDMI_VERBOSE - make hdmi_verbose_clean is its clean counterpart.
+	@echo make disable_video will re-build all targets with DEFINES=SVR_DISABLE_VIDEO_INPUT - make disable_video_clean is its clean counterpart.
 .PHONY: help

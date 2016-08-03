@@ -129,6 +129,7 @@ static uint8_t ReadyBufferPos = 0;  // copy of BufferPos for command being execu
 static uint8_t HexDigitToDecimal(uint8_t CommandBufferIndex);
 static uint8_t HexPairToDecimal(uint8_t startIndex);
 static void Display_software_version(void);
+static void Display_firmware_details(void);
 
 // called once to reset state machine
 void InitSerialState(void)
@@ -276,6 +277,30 @@ static void Display_software_version(void)
 	        BNO070id.swBuildNumber);
 	WriteLn(OutString);
 #endif
+}
+
+static void Display_firmware_details(void)
+{
+	WriteLn("Firmware Variant: " SVR_VARIANT_STRING);
+	Write("Special Config Defines:");
+#define SVR_NO_SPECIAL_CONFIG
+#ifdef HDMI_VERBOSE
+#undef SVR_NO_SPECIAL_CONFIG
+	Write(" HDMI_VERBOSE");
+#endif
+#ifdef SVR_DISABLE_VIDEO_INPUT
+#undef SVR_NO_SPECIAL_CONFIG
+	Write(" SVR_DISABLE_VIDEO_INPUT");
+#endif
+
+#ifdef SVR_NO_SPECIAL_CONFIG
+	Write(" [none]");
+#endif
+	WriteEndl();
+	Write("Built ");
+	Write(__DATE__);
+	Write(" ");
+	WriteLn(__TIME__);
 }
 
 void ProcessCommand(void)
@@ -461,6 +486,12 @@ void ProcessInfoCommands(void)
 	case 'v':
 	{
 		Display_software_version();
+		break;
+	}
+	case 'F':  // firmware variant/config
+	case 'f':
+	{
+		Display_firmware_details();
 		break;
 	}
 	case 'C':  // clock

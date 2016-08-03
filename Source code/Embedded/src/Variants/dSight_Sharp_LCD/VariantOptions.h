@@ -36,4 +36,6 @@
 
 #define SVR_HAVE_PWM_OUTPUTS
 
+#define SVR_VARIANT_STRING "dSight_Sharp_LCD"
+
 #endif /* VARIANTOPTIONS_H_ */

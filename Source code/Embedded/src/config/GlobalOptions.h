@@ -16,14 +16,17 @@
 /// @ingroup Build-time options
 /// @{
 #ifdef DOXYGEN
-/// Creates a firmware that will perform a firmware upgrade on the BNO070 chip. It will not have display support - it is
+/// Creates a firmware that will perform a firmware upgrade on the BNO070 chip.
+/// It will not have display support - it is
 /// a special-purpose firmware only.
 #define PERFORM_BNO_DFU
 
-/// Prints additional debug messages to the USB serial console related to HDMI state.
+/// Prints additional debug messages to the USB serial console related to HDMI
+/// state.
 #define HDMI_DEBUG
 
-/// if defined, performance is being recorded for BNO work, with some performance impact
+/// if defined, performance is being recorded for BNO work, with some
+/// performance impact
 #define MeasurePerformance
 
 /// @todo unknown debug option?
@@ -37,7 +40,8 @@
 /// @}
 
 #ifndef SVR_DISABLE_VIDEO_INPUT
-/// Automatically-defined opposite of SVR_DISABLE_VIDEO_INPUT (and the deprecated DISABLE_NXP)
+/// Automatically-defined opposite of SVR_DISABLE_VIDEO_INPUT (and the
+/// deprecated DISABLE_NXP)
 #define SVR_ENABLE_VIDEO_INPUT
 #else
 #undef SVR_ENABLE_VIDEO_INPUT
@@ -85,7 +89,8 @@
 #endif
 #endif  // SVR_HAVE_NXP
 
-// DISABLE_NXP is a flag passed to disable HDMI receiver functionality in some specialized firmware builds.
+// DISABLE_NXP is a flag passed to disable HDMI receiver functionality in some
+// specialized firmware builds.
 // It is being replaced by SVR_DISABLE_VIDEO_INPUT
 #if defined(SVR_HAVE_NXP) && !defined(SVR_DISABLE_VIDEO_INPUT)
 #define SVR_USING_NXP

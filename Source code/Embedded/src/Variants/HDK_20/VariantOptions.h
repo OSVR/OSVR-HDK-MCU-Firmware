@@ -41,4 +41,6 @@
 #define SVR_DISABLE_VIDEO_INPUT
 #endif
 
+#define SVR_VARIANT_STRING "HDK_20"
+
 #endif /* VARIANTOPTIONS_H_ */

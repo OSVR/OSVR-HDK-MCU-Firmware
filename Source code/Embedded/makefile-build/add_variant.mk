@@ -21,9 +21,7 @@ VARIANT := $(VARIANT_NAME)
 FULL_VARIANT_NAME_$(SHORT_NAME) := $(VARIANT_NAME)
 
 FINAL_GENERATED += $(COPIED_OUTPUT_$(VARIANT_NAME))
-#$(info Available variant: $(VARIANT_NAME) aka $(SHORT_NAME), copied output of $(COPIED_OUTPUT_$(VARIANT_NAME)))
 
-# For this target, we pass $< instead of $@ to set_variant_variable because that's the one that still lives in the variant directory.
 $(COPIED_OUTPUT_$(VARIANT_NAME)): $(BUILD_DIR)/$(OUTPUT_HEX) $(BUILD_DIR)/$(OUTPUT_LSS)
 	$(QUIETRULE)$(call FUNC_CP,$<,$@)
 	@echo [$(VARIANT)] Copied output hex to $@

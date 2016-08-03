@@ -268,37 +268,15 @@ OBJS := $(call make_build_dirs,$(BASE_OBJS)))
 C_OBJS := $(call make_build_dirs,$(BASE_C_OBJS)))
 C_DEPS := $(call make_build_dirs,$(BASE_C_DEPS)))
 
-# # Pattern for building object files from c
-# $(call make_build_dirs,%.o): $(REL_ROOT)/%.c
-# 	$(call set_variant_variable,$@)
-# 	@echo [$(VARIANT)$(SUFFIX)] ($(OPTIMIZATION)) $< : $@
-# 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
-# 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) $(OPTIMIZATION) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
-#
-# # Pattern for building object files from .s
-# $(call make_build_dirs,%.o): $(REL_ROOT)/%.s
-# 	$(call set_variant_variable,$@)
-# 	@echo [$(VARIANT)$(SUFFIX)] $< : $@
-# 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
-# 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
-
 # These files had optimization turned off before for some reason, turning it down now.
-$(call make_build_dirs,src/DeviceDrivers/bno-hostif/src/sensorhub.o): override OPTIMIZATION := 1
-$(call make_build_dirs,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): override OPTIMIZATION := 1
+# TODO why does optimization need to be reduced for this BNO code?
+$(call make_build_dirs,src/DeviceDrivers/bno-hostif/src/sensorhub.o): OPTIMIZATION := 1
+$(call make_build_dirs,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): OPTIMIZATION := 1
 
 # These files are terribly full of warnings. We really just want to disable the shift overflow ones, but the flag
 # below seems insufficient, thus -w disables all warnings...
 $(call make_build_dirs,src/NXP/tmbslTDA1997X_functions.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
 $(call make_build_dirs,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
-
-
-# Makes the elf file
-# $(call make_build_dirs,$(OUTPUT_FILE_PATH)): %/$(OUTPUT_FILE_PATH) : $(addprefix %/,$(BASE_OBJS))
-# 	$(call set_variant_variable,$@)
-# 	@echo [$(VARIANT)$(SUFFIX)] Linking $@
-# 	$(QUIETRULE)$(CC) -o"$@" $(addprefix $(VARIANT)/,$(BASE_OBJS)) $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(VARIANT)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
-# 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
-
 
 # Makes the hex file
 $(call make_build_dirs,$(OUTPUT_HEX)): %/$(OUTPUT_HEX) : %/$(OUTPUT_FILE_PATH)
@@ -311,7 +289,6 @@ $(call make_build_dirs,$(OUTPUT_LSS)): %/$(OUTPUT_LSS) : %/$(OUTPUT_FILE_PATH)
 	$(call set_variant_variable,$@)
 	@echo [$(VARIANT)$(SUFFIX)] Generating $@
 	$(QUIETRULE)$(OBJDUMP) -h -S "$<" > "$@"
-
 
 # Includes the deps files.
 ifneq ($(MAKECMDGOALS),clean)
@@ -349,19 +326,6 @@ distclean: realclean
 
 # like all, except also including all of the known configs as well.
 complete: all $(SPECIAL_CONFIG_TARGETS)
-
-#
-# hdmi_verbose:
-# 	$(MAKE) DEFINES=HDMI_VERBOSE
-# hdmi_verbose_clean:
-# 	$(MAKE) DEFINES=HDMI_VERBOSE clean
-# .PHONY: hdmi_verbose hdmi_verbose_clean
-#
-# disable_video:
-# 	$(MAKE) DEFINES=SVR_DISABLE_VIDEO_INPUT
-# disable_video_clean:
-# 	$(MAKE) DEFINES=SVR_DISABLE_VIDEO_INPUT clean
-# .PHONY: disable_video disable_video_clean
 
 help:
 	@echo make clean will delete build intermediate files.

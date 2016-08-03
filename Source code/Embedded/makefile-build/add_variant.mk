@@ -85,6 +85,11 @@ DEFINES_CONTENTS := SVR_DISABLE_VIDEO_INPUT
 SKIP_VARIANTS := dSight_Sharp_LCD
 include add_config.mk
 
+CONFIG_SHORT_NAME := bno_dfu
+DEFINES_CONTENTS := PERFORM_BNO_DFU
+SKIP_VARIANTS := dSight_Sharp_LCD HDK_Sharp_LCD
+include add_config.mk
+
 # Clean up work variables
 C_OBJS :=
 S_OBJS :=

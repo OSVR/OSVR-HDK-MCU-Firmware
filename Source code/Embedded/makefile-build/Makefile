@@ -17,6 +17,8 @@ OPTIMIZATION := 3
 ASFLAGS :=
 EXTRA_ASFLAGS :=
 
+LIBHDK20_VER := 1.01
+
 # Other useful things you could define on the command line:
 # ATMEL_STUDIO_ROOT
 # NO_ATMEL_STUDIO (for a Windows avrgcc toolchain without atmel studio - any value is true)
@@ -239,7 +241,7 @@ SHORT_NAME := hdk2
 VARIANT_NAME := HDK_20
 
 # Per-variant libs and includes
-LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.a
+LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.$(strip $(LIBHDK20_VER)).a
 INCLUDE_DIRS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/
 include add_variant.mk
 

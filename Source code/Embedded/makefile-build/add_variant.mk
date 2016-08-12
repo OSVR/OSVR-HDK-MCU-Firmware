@@ -3,7 +3,7 @@
 # All rights reserved.
 
 # Helper makefile:
-# Set SHORT_NAME, VARIANT_NAME, and optionally SKIP_ALL_TARGET
+# Set SHORT_NAME, VARIANT_NAME, and optionally SKIP_ALL_TARGET, EXTRA_C_SRCS
 # before including this file.
 #
 # Creates a rule to copy the final hex to a renamed file in the current directory
@@ -43,7 +43,9 @@ VARIANTS += $(VARIANT_NAME)
 
 CURRENT_OBJS :=
 
-C_OBJS := $(addprefix $(BUILD_DIR)/,$(C_SRCS:%.c=%.o))
+ALL_C_SRCS := $(C_SRCS) $(EXTRA_C_SRCS)
+
+C_OBJS := $(addprefix $(BUILD_DIR)/,$(ALL_C_SRCS:%.c=%.o))
 
 # Build .c -> .o
 $(BUILD_DIR)/%.o: $(REL_ROOT)/%.c
@@ -100,6 +102,7 @@ VARIANT :=
 # undefine SHORT_NAME
 # undefine VARIANT_NAME
 # undefine SKIP_ALL_TARGET
+EXTRA_C_SRCS :=
 SHORT_NAME :=
 VARIANT_NAME :=
 SKIP_ALL_TARGET :=

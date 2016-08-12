@@ -11,7 +11,7 @@
 #include "VariantOptions.h"
 
 #define MajorVersion 1
-#define MinorVersion 95
+#define MinorVersion 96
 
 /// @ingroup Build-time options
 /// @{

@@ -17,6 +17,8 @@ OPTIMIZATION := 3
 ASFLAGS :=
 EXTRA_ASFLAGS :=
 
+LIBHDK20_VER := 1.01
+
 # Other useful things you could define on the command line:
 # ATMEL_STUDIO_ROOT
 # NO_ATMEL_STUDIO (for a Windows avrgcc toolchain without atmel studio - any value is true)
@@ -239,8 +241,23 @@ SHORT_NAME := hdk2
 VARIANT_NAME := HDK_20
 
 # Per-variant libs and includes
-LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.a
+LIBS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/libhdk20.$(strip $(LIBHDK20_VER)).a
 INCLUDE_DIRS_HDK_20 := $(REL_ROOT)/vendor/libhdk20/
+include add_variant.mk
+
+
+SHORT_NAME := hdk2svr
+VARIANT_NAME := HDK_20_SVR
+EDID_BIN := $(REL_ROOT)/src/Variants/HDK_20_SVR/svr1020.edid.bin
+LIBS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/libhdk20.$(strip $(LIBHDK20_VER)).svr1020.a
+INCLUDE_DIRS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/
+EXTRA_C_SRCS := src/Variants/$(VARIANT_NAME)/svr1020.edid_info.c
+
+# Rule to build the custom modified libhdk20, if we need to.
+$(LIBS_HDK_20_SVR): $(LIBS_HDK_20) $(EDID_BIN)
+	@echo [HDK_20_SVR] Generating $@ by injecting EDID from $(EDID_BIN)
+	$(QUIETRULE)$(OBJCOPY) "$<" --update-section .rodata.EDID_LUT=$(EDID_BIN) "$@"
+
 include add_variant.mk
 
 SHORT_NAME := hdk_oled

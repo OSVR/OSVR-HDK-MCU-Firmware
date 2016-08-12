@@ -248,9 +248,9 @@ include add_variant.mk
 
 SHORT_NAME := hdk2svr
 VARIANT_NAME := HDK_20_SVR
-LIBS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/libhdk20.$(strip $(LIBHDK20_VER)).weakedid.a
+LIBS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/libhdk20.$(strip $(LIBHDK20_VER)).svr1020.a
 INCLUDE_DIRS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/
-EXTRA_C_SRCS := src/Variants/$(VARIANT_NAME)/edid_lut.svr1020.c
+EXTRA_C_SRCS := src/Variants/$(VARIANT_NAME)/svr1020.edid_info.c
 include add_variant.mk
 
 SHORT_NAME := hdk_oled

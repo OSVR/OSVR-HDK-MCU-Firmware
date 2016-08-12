@@ -306,6 +306,11 @@ static void Display_firmware_details(void)
 #endif
 	WriteEndl();
 
+#ifdef SVR_HAVE_EDID_INFO_STRING
+	Write("EDID Info: ");
+	WriteLn(svrEdidInfoString);
+#endif
+
 	Write("Built ");
 	Write(__DATE__);
 	Write(" ");

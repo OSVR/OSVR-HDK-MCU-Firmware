@@ -66,7 +66,7 @@ $(BUILD_DIR)/%.o: VARIANT := $(VARIANT)
 CURRENT_OBJS := $(C_OBJS) $(S_OBJS)
 
 # Makes the elf file
-$(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS)
+$(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS) $(LIBS) $(LIBS_$(VARIANT))
 	@echo [$(VARIANT)$(SUFFIX)] Linking $@
 	$(QUIETRULE)$(CC) -o"$@" $^ $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(BUILD_DIR)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"

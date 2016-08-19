@@ -155,6 +155,8 @@ void Display_Reset(uint8_t deviceID)
 {
 	/// Note: essentially the same as VideoInput_Reset - since one chip does both ends!
 	Toshiba_TC358870_Trigger_Reset();
+	svr_yield_ms(16);
+	Toshiba_TC358870_Init_Receiver();
 
 	/// @todo we could actually panel reset here...
 }

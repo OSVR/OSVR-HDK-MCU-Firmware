@@ -21,6 +21,7 @@
 // whether to send the sleep in/out and display on/off commands with a parameter of 0x00, or with no parameter. Appears
 // to work both ways, docs are contradictory: AUO app note says use a parameter, standard says don't
 #undef SLEEP_HAS_NULL_PARAMETER
+static void AUO_Null_Param_DSI_Cmd(uint8_t cmd);
 
 static void AUO_H381DLN01_Send_Panel_Init_Commands(void);
 static void AUO_H381DLN01_Panel_Reset(void);
@@ -35,6 +36,7 @@ static const CommandSequenceElt_t AUO_H381DLN01_Init_Commands[] = {
     {0xFE, 0x07}, {0x00, 0xEC}, {0x0B, 0xEC}, {0x16, 0xEC}, {0x21, 0xEC}, {0x2D, 0xEC}, {0xA9, 0xBA}, {0xAB, 0x06},
     {0xBB, 0x84}, {0xBC, 0x1C}, {0xFE, 0x08}, {0x07, 0x1A}, {0xFE, 0x0A}, {0x2A, 0x1B}, {0xFE, 0x0D}, {0x02, 0x65},
     {0x4D, 0x41}, {0x4B, 0x0F}, {0x53, 0xFE}, {0xFE, 0x00}, {0xC2, 0x03}, {0x51, 0xFF}};
+
 inline static void AUO_H381DLN01_Send_Panel_Init_Commands()
 {
 	/// Run all display setup commands for these panels from the app note.
@@ -58,15 +60,20 @@ inline static void AUO_H381DLN01_Panel_Reset()
 	svr_yield_ms(120);
 }
 
+inline static void AUO_Null_Param_DSI_Cmd(uint8_t cmd)
+{
+#ifdef SLEEP_HAS_NULL_PARAMETER
+	Toshiba_TC358870_DSI_Write_Cmd_Short_Param(cmd, 0x00);
+#else
+	Toshiba_TC358870_DSI_Write_Cmd_Short(cmd);
+#endif
+}
+
 void Display_System_Init() { Toshiba_TC358870_Init(); }
 void Display_Init(uint8_t deviceID)
 {
-#if 0
-tc358870_mystery_setup_commands();
-#endif
-#if 0
-AUO_H381DLN01_Send_Panel_Init_Commands();
-#endif
+	AUO_H381DLN01_Panel_Reset();
+	AUO_H381DLN01_Send_Panel_Init_Commands();
 }
 void Display_On(uint8_t deviceID)
 
@@ -75,14 +82,17 @@ void Display_On(uint8_t deviceID)
 	WriteLn("Turning display on");
 #endif
 
-	/// @todo ugly workaround for resetting things.
-	Toshiba_TC358870_Init();
-
-	AUO_H381DLN01_Init(true);
+/// @todo ugly workaround for resetting things.
 #if 0
-	/// @todo ugly workaround for resetting things.
-	Display_Init(Display1);
+	Toshiba_TC358870_Init();
+#else
+	/// This one is at least a little bit less extreme
+	AUO_H381DLN01_Panel_Reset();
+	AUO_H381DLN01_Send_Panel_Init_Commands();
+	svr_yield_ms(120);
+	Toshiba_TC358870_Init_Receiver();
 #endif
+
 	// display power on - wait 120 ms in case this is after a reset.
 	svr_yield_ms(120);
 
@@ -94,20 +104,12 @@ void Display_On(uint8_t deviceID)
 	TC358870_i2c_Write(0x0504, 0x2903, 2); // DCSCMD_Q
 #endif
 
-// Sleep Out
-#ifdef SLEEP_HAS_NULL_PARAMETER
-	Toshiba_TC358870_DSI_Write_Cmd_Short_Param(0x11, 0x00);
-#else
-	Toshiba_TC358870_DSI_Write_Cmd_Short(0x11);
-#endif
+	// Sleep Out
+	AUO_Null_Param_DSI_Cmd(0x11);
 	svr_yield_ms(166);  //>10 frame
 
-// Display On
-#ifdef SLEEP_HAS_NULL_PARAMETER
-	Toshiba_TC358870_DSI_Write_Cmd_Short_Param(0x29, 0x00);
-#else
-	Toshiba_TC358870_DSI_Write_Cmd_Short(0x29);
-#endif
+	// Display On
+	AUO_Null_Param_DSI_Cmd(0x29);
 }
 
 void Display_Off(uint8_t deviceID)
@@ -125,24 +127,24 @@ void Display_Off(uint8_t deviceID)
 	svr_yield_ms(16);
 #endif
 
-// Display Off
-#ifdef SLEEP_HAS_NULL_PARAMETER
-	Toshiba_TC358870_DSI_Write_Cmd_Short_Param(0x28, 0x00);
-#else
-	Toshiba_TC358870_DSI_Write_Cmd_Short(0x28);
-#endif
+	// Display Off
+	AUO_Null_Param_DSI_Cmd(0x28);
+	svr_yield_ms(166);
+
+	// Sleep in
+	AUO_Null_Param_DSI_Cmd(0x10);
 	svr_yield_ms(16);
 
-// Sleep in
-#ifdef SLEEP_HAS_NULL_PARAMETER
-	Toshiba_TC358870_DSI_Write_Cmd_Short_Param(0x10, 0x00);
-#else
-	Toshiba_TC358870_DSI_Write_Cmd_Short(0x10);
-#endif
-	svr_yield_ms(16);
-
-	/// @todo ugly workaround for resetting things.
+/// @todo ugly workaround for resetting things.
+/// This first version is uglier (more binary blob) but avoids a 1-2second period of a bright horizontal stripe on the
+/// display during shutdown.
+#if 1
 	Toshiba_TC358870_Init();
+#else
+	Display_Reset(Display1);
+	AUO_H381DLN01_Panel_Reset();
+	AUO_H381DLN01_Send_Panel_Init_Commands();
+#endif
 
 #if 0
 	TC358870_i2c_Write(0x0004, 0x0004, 2);  // ConfCtl0
@@ -165,26 +167,22 @@ void Display_Powercycle(uint8_t deviceID)
 {
 	WriteLn("Display Power Cycle");
 	// Display Off
-	TC358870_i2c_Write(0x0504, 0x0015, 2);
-	TC358870_i2c_Write(0x0504, 0x0028, 2);
+	AUO_Null_Param_DSI_Cmd(0x28);
 
 	svr_yield_ms(120);
 
 	//  Sleep In
-	TC358870_i2c_Write(0x0504, 0x0005, 2);
-	TC358870_i2c_Write(0x0504, 0x0010, 2);
+	AUO_Null_Param_DSI_Cmd(0x10);
 
 	svr_yield_ms(1000);
 
 	// Exit Sleep
-	TC358870_i2c_Write(0x0504, 0x0005, 2);
-	TC358870_i2c_Write(0x0504, 0x0011, 2);
+	AUO_Null_Param_DSI_Cmd(0x11);
 
 	svr_yield_ms(166);  //>10 frame
 
 	// Display On
-	TC358870_i2c_Write(0x0504, 0x0015, 2);
-	TC358870_i2c_Write(0x0504, 0x0029, 2);
+	AUO_Null_Param_DSI_Cmd(0x29);
 }
 
 #endif

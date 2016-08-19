@@ -234,6 +234,7 @@ int main(void)
 #endif
 
 #ifdef HDK_20
+	/// @todo this is hopefully a temporary workaround we can remove soon once some libhdk20 code is replaced.
 	VideoInput_Init();
 #endif
 

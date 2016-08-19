@@ -27,7 +27,9 @@ static uint8_t s_tc358870_init_count = 0;
 
 void Toshiba_TC358870_Init(void)
 {
+#ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: Start");
+#endif
 	// Dennis Yeh 2016/03/14 : for TC358870
 	uint8_t tc_data;
 	TC358870_i2c_Init();
@@ -35,7 +37,9 @@ void Toshiba_TC358870_Init(void)
 
 	PowerOnSeq();
 	s_tc358870_init_count++;
+#ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: End");
+#endif
 }
 
 void Toshiba_TC358870_Init_Receiver() { TC358870_Init_Receive_HDMI_Signal(); }

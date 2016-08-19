@@ -191,10 +191,6 @@ int main(void)
 #endif  // DSIGHT
 
 	// ProgramMTP0();
-
-	/// @todo This also gets set to true in VideoInput_Init - remove this line?
-	HDMI_task = true;
-
 #endif  // SVR_ENABLE_VIDEO_INPUT
 
 #ifdef BNO070
@@ -227,15 +223,6 @@ int main(void)
 
 #ifdef SVR_VIDEO_INPUT_POLL_INTERVAL
 	uint16_t videoPollCounter = 0;
-#endif
-
-#ifdef OSVRHDK
-// ioport_set_pin_high(FPGA_Reset_Pin);	// release FPGA reset
-#endif
-
-#ifdef HDK_20
-	/// @todo this is hopefully a temporary workaround we can remove soon once some libhdk20 code is replaced.
-	VideoInput_Init();
 #endif
 
 	// Main loop

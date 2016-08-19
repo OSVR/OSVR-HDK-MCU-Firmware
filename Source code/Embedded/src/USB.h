@@ -8,6 +8,9 @@
 #ifndef USB_H_
 #define USB_H_
 
+#include <stdbool.h>
+#include <stdint.h>
+
 /*! \brief Opens the communication port
  * This is called by CDC interface when USB Host enable it.
  *
@@ -19,6 +22,9 @@ bool main_cdc_enable(uint8_t port);
  * This is called by CDC interface when USB Host disable it.
  */
 void main_cdc_disable(uint8_t port);
+
+/// @brief Check to see if USB CDC is active.
+bool usb_cdc_is_active(void);
 
 /*! \brief Manages the leds behaviors
  * Called when a start of frame is received on USB line each 1ms.

@@ -56,6 +56,7 @@ void main_cdc_disable(uint8_t port)
 	uart_close(port);
 }
 
+bool usb_cdc_is_active(void) { return main_b_cdc_enable; }
 void main_cdc_set_dtr(uint8_t port, bool b_enable)
 {
 	if (b_enable)

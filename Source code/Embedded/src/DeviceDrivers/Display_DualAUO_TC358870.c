@@ -20,6 +20,29 @@
 #undef SLEEP_HAS_NULL_PARAMETER
 
 static void tc358870_mystery_setup_commands(void);
+static void AUO_H381DLN01_Send_Panel_Init_Commands(void);
+
+typedef struct CommandSequenceElt
+{
+	uint8_t addr;
+	uint8_t param;
+} CommandSequenceElt_t;
+
+static const CommandSequenceElt_t AUO_H381DLN01_Init_Commands[] = {
+    {0xFE, 0x07}, {0x00, 0xEC}, {0x0B, 0xEC}, {0x16, 0xEC}, {0x21, 0xEC}, {0x2D, 0xEC}, {0xA9, 0xBA}, {0xAB, 0x06},
+    {0xBB, 0x84}, {0xBC, 0x1C}, {0xFE, 0x08}, {0x07, 0x1A}, {0xFE, 0x0A}, {0x2A, 0x1B}, {0xFE, 0x0D}, {0x02, 0x65},
+    {0x4D, 0x41}, {0x4B, 0x0F}, {0x53, 0xFE}, {0xFE, 0x00}, {0xC2, 0x03}, {0x51, 0xFF}};
+inline static void AUO_H381DLN01_Send_Panel_Init_Commands()
+{
+	/// Run all display setup commands for these panels from the app note.
+	unsigned int numCommands = sizeof(AUO_H381DLN01_Init_Commands) / sizeof(AUO_H381DLN01_Init_Commands[0]);
+	for (unsigned int i = 0; i < numCommands; ++i)
+	{
+		Toshiba_TC358870_DSI_Write_Cmd_Short_Param(AUO_H381DLN01_Init_Commands[i].addr,
+		                                           AUO_H381DLN01_Init_Commands[i].param);
+		svr_yield_ms(16);
+	}
+}
 inline static void tc358870_mystery_setup_commands()
 {
 	/// This code was originally in "write_solomon()" in the Coretronic fork of the firmware. It would have gotten

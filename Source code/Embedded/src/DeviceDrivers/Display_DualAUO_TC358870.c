@@ -8,9 +8,12 @@
 #include "GlobalOptions.h"
 
 #if defined(SVR_IS_HDK_20)
+#include "my_hardware.h"
+
 #include "Display.h"
 #include "Console.h"
 #include "SvrYield.h"
+#include <ioport.h>
 
 #include "DeviceDrivers/Toshiba_TC358870.h"
 #include <libhdk20.h>
@@ -19,8 +22,8 @@
 // to work both ways, docs are contradictory: AUO app note says use a parameter, standard says don't
 #undef SLEEP_HAS_NULL_PARAMETER
 
-static void tc358870_mystery_setup_commands(void);
 static void AUO_H381DLN01_Send_Panel_Init_Commands(void);
+static void AUO_H381DLN01_Panel_Reset(void);
 
 typedef struct CommandSequenceElt
 {
@@ -43,16 +46,16 @@ inline static void AUO_H381DLN01_Send_Panel_Init_Commands()
 		svr_yield_ms(16);
 	}
 }
-inline static void tc358870_mystery_setup_commands()
+
+inline static void AUO_H381DLN01_Panel_Reset()
 {
-	/// This code was originally in "write_solomon()" in the Coretronic fork of the firmware. It would have gotten
-	/// triggered once: during init_solomon_device, the call to read_solomon_id starts with a write_solomon (which would
-	/// call this). The subsequent read was replaced with a dummy function returning 0, so the init_solomon_device would
-	/// always fail out at that point (not receiving the ID it expected), but these two writes would have taken place.
-	/// @todo why was this implementation included? what does it do?
-	/// Answer - it's the first step of the panel init commands.
-	TC358870_i2c_Write(0x0504, 0x0015, 2);
-	TC358870_i2c_Write(0x0504, 0x07FE, 2);
+	ioport_set_pin_low(PANEL_RESET);
+	// >3ms recommended to move from deep standby to sleep state.
+	svr_yield_ms(10);
+	ioport_set_pin_high(PANEL_RESET);
+	// Reset after this signal takes at most 5ms during sleep mode, 120ms during non-sleep mode (and can't "sleep out"
+	// for 120ms)
+	svr_yield_ms(120);
 }
 
 void Display_System_Init() { Toshiba_TC358870_Init(); }

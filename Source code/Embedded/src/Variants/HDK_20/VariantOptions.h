@@ -41,6 +41,10 @@
 #define SVR_DISABLE_VIDEO_INPUT
 #endif
 
+// Interval in number of mainloop cycles that should elapse between polling for video status.
+// Quite a few, because polling this is fairly expensive.
+#define SVR_VIDEO_INPUT_POLL_INTERVAL 10000
+
 #define SVR_VARIANT_STRING "HDK_20"
 
 #endif /* VARIANTOPTIONS_H_ */

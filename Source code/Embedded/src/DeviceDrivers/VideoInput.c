@@ -30,11 +30,16 @@ static inline void internal_report_detected_event()
 		s_everSignal = true;
 		VideoInput_Events.firstVideoDetected = true;
 	}
+	// new video: must update resolution detection (HDMIStatus)
+	VideoInput_Update_Resolution_Detection();
 }
 static inline void internal_report_lost_event()
 {
 	// report event
 	VideoInput_Events.videoLost = true;
+
+	// Update HDMIStatus.
+	HDMIStatus = 0;
 }
 void VideoInput_Protected_Report_Status(bool signalStatus)
 {

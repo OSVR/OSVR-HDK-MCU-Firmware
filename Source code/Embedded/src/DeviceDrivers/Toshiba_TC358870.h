@@ -22,6 +22,9 @@
 /// things, eventually calls the other libhdk20 function TC358870_Init_Receive_HDMI_Signal
 void Toshiba_TC358870_Init(void);
 
+/// Wraps libhdk20 function TC358870_Init_Receive_HDMI_Signal
+void Toshiba_TC358870_Init_Receiver(void);
+
 /// Returns the number of times that Toshiba_TC358870_Init() has been called.
 uint8_t Toshiba_TC358870_Get_Init_Count(void);
 
@@ -29,21 +32,16 @@ uint8_t Toshiba_TC358870_Get_Init_Count(void);
 /// (Can't call it just Toshiba_TC358870_Reset, libhdk20 exports a symbol by that name.)
 void Toshiba_TC358870_Trigger_Reset(void);
 
-/// @todo currently disabled because it is instead referenced circularly by libhdk20 by a different name
-#if 0
-/*
-    HDMI IF Functions
+/// Checks the status register to see if the toshiba chip has stable video sync.
+bool Toshiba_TC358870_Have_Video_Sync(void);
 
-    Coretronic
-    FC Tu
-*/
-/*
-    Function : Toshiba_TC358870_HDMI_IsVideoExisting
-    IN : void
-    OUT: false: video does not exist
-              true: video exist
-*/
-bool Toshiba_TC358870_HDMI_IsVideoExisting(void);
-#endif
+/// Send a short DSI command with no parameter.
+void Toshiba_TC358870_DSI_Write_Cmd_Short(uint8_t cmd);
+
+/// Send a short DSI command with one parameter.
+void Toshiba_TC358870_DSI_Write_Cmd_Short_Param(uint8_t cmd, uint8_t param);
+
+/// Send a "long" DSI command with data (may be of length 0)
+// void Toshiba_TC358870_DSI_Write_Cmd_Long(uint8_t cmd, uint16_t len, uint8_t * data);
 
 #endif /* TOSHIBA_TC358870_H_ */

@@ -7,6 +7,7 @@
  */
 
 #include "Console.h"
+#include "USB.h"
 
 // asf headers
 #include <udi_cdc.h>
@@ -21,6 +22,11 @@ uint8_t DebugLevel = 0xff;  // start by opening all debug messages
 int MaxTimerCounter = 0;
 void Write(const char *const Data)
 {
+	if (!usb_cdc_is_active())
+	{
+		// Early out if no USB CDC.
+		return;
+	}
 	if (!Data)
 	{
 		// Given a null pointer - that's not very polite.

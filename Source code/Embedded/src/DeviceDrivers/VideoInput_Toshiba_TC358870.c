@@ -38,7 +38,7 @@ void UpdateResolutionDetection()
 	}
 #endif
 }
-
+#if 0
 /// @todo We actually need to export this function as bool HDMI_IsVideoExisting(void) so libhdk20.a can link against it
 /// circularly... (IsVideoExistingPolling contains a reference to it)
 ///
@@ -67,7 +67,7 @@ bool HDMI_IsVideoExisting()
 	VideoInput_Protected_Report_Signal();
 	return true;
 }
-
+#endif
 static bool haveInitOnce = false;
 void VideoInput_Init(void)
 {
@@ -93,13 +93,7 @@ void VideoInput_Update_Resolution_Detection(void)
 	HDMIStatus = (VideoInput_Get_Status() ? VIDSTATUS_VIDEO_LANDSCAPE : VIDSTATUS_NOVIDEO);
 }
 
-void VideoInput_Task(void)
-{
-	// This method reportedly calls HDMI_IsVideoExisting, so we supply a version that contains calls to
-	// VideoInput_Protected_Report_No_Signal() and VideoInput_Protected_Report_Signal()
-	IsVideoExistingPolling();
-}
-
+void VideoInput_Task(void) {}
 void VideoInput_Reset(uint8_t inputId)
 {
 	if (inputId == 1)
@@ -115,11 +109,7 @@ static const char LIBHDK2_NOT_SUPPORTED[] = "TC358870 via libhdk20 does not supp
 
 void VideoInput_Suspend(void) { WriteLn(LIBHDK2_NOT_SUPPORTED); }
 void VideoInput_Resume(void) { WriteLn(LIBHDK2_NOT_SUPPORTED); }
-void VideoInput_Poll_Status(void)
-{
-	// does not require separate polling outside the task.
-}
-
+void VideoInput_Poll_Status(void) { VideoInput_Protected_Report_Status(Toshiba_TC358870_Have_Video_Sync()); }
 // to console
 void VideoInput_Report_Status(void)
 {

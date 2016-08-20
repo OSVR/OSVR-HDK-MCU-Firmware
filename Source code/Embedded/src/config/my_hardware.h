@@ -110,13 +110,16 @@ extern uint8_t
 
 #endif  // SVR_HAVE_TOSHIBA_TC358870
 
+#ifdef SVR_IS_HDK_20
+#define PANEL_RESET IOPORT_CREATE_PIN(PORTF, 4)  // out, panel reset. hw power reset.
+#endif
+
 /// @todo This section is pins that are entirely unreferenced anywhere in the HDK_20 Coretronic fork except in
 /// custom_board_init
 #ifdef SVR_IS_HDK_20
 #define MCU_LEVEL_SHIFT_OE IOPORT_CREATE_PIN(PORTA, 1)  // out, level shift enable, low enable. U55
 #define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)          // out, Right Panel SWIRE
 #define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)         // out, Right Panel SWIRE
-#define PANEL_RESET IOPORT_CREATE_PIN(PORTF, 4)         // out, panel reset. hw power reset.
 #define ANA_PWR_IN IOPORT_CREATE_PIN(PORTA, 6)          // in, 5v power good.
 #define EDID_EEP_WP IOPORT_CREATE_PIN(PORTA, 7)         // out, edid eeprom write protection, 0: write protect
 

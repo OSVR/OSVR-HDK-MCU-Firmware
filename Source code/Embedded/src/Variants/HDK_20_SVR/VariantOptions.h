@@ -14,6 +14,8 @@
 #undef SVR_VARIANT_STRING
 #define SVR_VARIANT_STRING "HDK_20_SVR"
 
+#define SVR_IS_HDK_20_SVR
+
 #define SVR_HAVE_EDID_INFO_STRING
 extern const char svrEdidInfoString[];
 

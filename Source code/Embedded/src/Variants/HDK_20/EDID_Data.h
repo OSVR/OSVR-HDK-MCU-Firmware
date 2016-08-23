@@ -27,6 +27,9 @@ const char svrEdidInfoString[] = "AUO1111 - identical to 1.01";
 // enforce the core key pass system
 static uint8_t core_key_pass = 0;
 
+#define CORE_KEY_PASS_FAIL_VALUE 0
+#define CORE_KEY_PASS_SUCCESS_VALUE 1
+
 /// AUO1111
 const unsigned char EDID_LUT[256] = {
     0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x06, 0xAF, 0x11, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,

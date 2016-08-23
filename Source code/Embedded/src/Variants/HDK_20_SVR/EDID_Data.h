@@ -25,8 +25,11 @@
 // info for #?f
 const char svrEdidInfoString[] = "SVR1019, based on 1.01, all dims 26x15 (r3)";
 
-// do not enforce the core key pass system
+// do not enforce the core key pass system - it's "accepted" by default
 static uint8_t core_key_pass = 1;
+// no matter what you enter if you choose to enter a key, it will be accepted as well.
+#define CORE_KEY_PASS_FAIL_VALUE 1
+#define CORE_KEY_PASS_SUCCESS_VALUE 1
 
 /// SVR1019
 const unsigned char EDID_LUT[256] = {

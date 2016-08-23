@@ -17,8 +17,6 @@ OPTIMIZATION := 3
 ASFLAGS :=
 EXTRA_ASFLAGS :=
 
-LIBHDK20_VER := 1.01
-
 # Optional config file.
 -include config.mk
 
@@ -195,13 +193,38 @@ else
     get_variant = $(firstword $(subst $(VARIANT_SUFFIX_SEP), ,$(firstword $(subst /, ,$1))))
 endif
 
-
-
-# Recursively evaluated: as long as you have VARIANT defined correctly, this will always be the right build directory.
-BUILD_DIR = $(VARIANT)$(VARIANT_SUFFIX_SEP)$(FN_SAFE_CONFIG_DEFINES)
-
 # For when you can't set VARIANT but can use call.
 make_build_dir = $1$(VARIANT_SUFFIX_SEP)$(FN_SAFE_CONFIG_DEFINES)
+
+# Recursively evaluated: as long as you have VARIANT defined correctly, this will always be the right build directory.
+#BUILD_DIR = $(VARIANT)$(VARIANT_SUFFIX_SEP)$(FN_SAFE_CONFIG_DEFINES)
+BUILD_DIR = $(call make_build_dir,$(VARIANT))
+
+isCFamilyFile = $(filter .c .cpp .h,$(suffix $1))
+
+# Commands common to all canned recipe beginnings.
+# Ensure that the target's directory exists.
+define CANNED_RECIPE_COMMON
+	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
+endef
+
+# Show the variant and suffix, and if the input is a c-family file, show
+# optimization level, all followed by showing the input and output.
+# Then common portion.
+define CANNED_RECIPE_BEGINNING_SHOW_IN_AND_OUT
+	@echo [$(VARIANT)$(SUFFIX)]$(if $(call isCFamilyFile,$<),[-O$(strip $(OPTIMIZATION))]) $< : $@
+	$(CANNED_RECIPE_COMMON)
+endef
+
+# Show the variant and suffix, then just show the output, with either
+# "Generating", or, if you have target/pattern specific variable
+# "DISPLAY_OP" set, its contents, preceding it
+# Then common portion.
+define CANNED_RECIPE_BEGINNING_SHOW_OUT
+	@echo [$(VARIANT)$(SUFFIX)] $(if $(DISPLAY_OP),$(strip $(DISPLAY_OP)),Generating) $@
+	$(CANNED_RECIPE_COMMON)
+endef
+
 
 # Prefixes the build dir on everything that's passed.
 make_build_dirs = $(foreach VARIANT,$(VARIANTS),$(addprefix $(BUILD_DIR)/,$1))
@@ -234,6 +257,7 @@ CONFIG_SHORT_NAMES :=
 CONFIG_CLEAN_TARGETS :=
 CONFIG_REALCLEAN_TARGETS :=
 SPECIAL_CONFIG_TARGETS :=
+EXTRA_CLEAN_FILES :=
 # recursively-expanded variables required by add_config.mk
 CONFIG_CLEAN_TARGET = $(CONFIG)_clean
 CONFIG_REALCLEAN_TARGET = $(CONFIG)_realclean
@@ -267,11 +291,13 @@ BASE_C_OBJS := $(C_SRCS:%.c=%.o)
 BASE_S_OBJS := $(PREPROCESSING_SRCS:%.s=%.o)
 BASE_OBJS := $(BASE_C_OBJS) $(BASE_S_OBJS)
 BASE_C_DEPS := $(C_SRCS:%.c=%.d)
+BASE_C_PREPROCS := $(C_SRCS:c=i)
 
 # The above lists, multiplied by the variants.
 OBJS := $(call make_build_dirs,$(BASE_OBJS)))
 C_OBJS := $(call make_build_dirs,$(BASE_C_OBJS)))
 C_DEPS := $(call make_build_dirs,$(BASE_C_DEPS)))
+C_PREPROCS := $(call make_build_dirs,$(BASE_C_PREPROCS)))
 
 # These files had optimization turned off before for some reason, turning it down now.
 # TODO why does optimization need to be reduced for this BNO code?
@@ -285,15 +311,21 @@ $(call make_build_dirs,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-out
 
 # Makes the hex file
 $(call make_build_dirs,$(OUTPUT_HEX)): %/$(OUTPUT_HEX) : %/$(OUTPUT_FILE_PATH)
-	$(call set_variant_variable,$@)
-	@echo [$(VARIANT)$(SUFFIX)] Generating $@
+	$(CANNED_RECIPE_BEGINNING_SHOW_OUT)
 	$(QUIETRULE)$(OBJCOPY) -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "$<" "$@"
+$(call make_build_dirs,$(OUTPUT_HEX)) : DISPLAY_OP := Reading full .elf file to extract
 
 # Makes the lss (assembly listing) file
+# 	$(call set_variant_variable,$@)
 $(call make_build_dirs,$(OUTPUT_LSS)): %/$(OUTPUT_LSS) : %/$(OUTPUT_FILE_PATH)
-	$(call set_variant_variable,$@)
-	@echo [$(VARIANT)$(SUFFIX)] Generating $@
+	$(CANNED_RECIPE_BEGINNING_SHOW_OUT)
 	$(QUIETRULE)$(OBJDUMP) -h -S "$<" > "$@"
+%.lss : DISPLAY_OP := Extracting assembly listing
+
+# Helper target to build all the compilation databases.
+.PHONY: compiledb
+compiledb: $(call make_build_dirs,$(COMPILATION_DATABASE_FILENAME))
+all: compiledb
 
 # Includes the deps files.
 ifneq ($(MAKECMDGOALS),clean)
@@ -312,6 +344,8 @@ endif
 clean:
 	@echo [clean$(SUFFIX)] Removing object files
 	$(QUIETRULE)-$(RM) $(OBJS)
+	@echo [clean$(SUFFIX)] Removing preprocessor files
+	$(QUIETRULE)-$(RM) $(C_PREPROCS)
 	@echo [clean$(SUFFIX)] Removing generated dependency makefiles
 	$(QUIETRULE)-$(RM) $(C_DEPS)
 	@echo [clean$(SUFFIX)] Removing linker and related outputs.
@@ -347,4 +381,5 @@ help:
 	@echo Special config targets:
 	$(call FUNC_PRINT_LIST,SPECIAL_CONFIG_TARGETS, - )
 	@echo The extreme target "complete" will build a normal make all, as well as all those special config targets.
+	@echo make compiledb will generate compile_commands.json in each variant directory for use with Clang-related tools (libtooling-based).
 .PHONY: help

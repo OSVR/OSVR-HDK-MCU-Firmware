@@ -1222,9 +1222,6 @@
     <Compile Include="src\Variants\HDK_20_SVR\EDID_Data.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\Variants\HDK_20_SVR\svr1020.edid_info.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\Variants\HDK_20_SVR\VariantOptions.h">
       <SubType>compile</SubType>
     </Compile>

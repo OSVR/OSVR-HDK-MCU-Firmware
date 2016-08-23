@@ -21,6 +21,9 @@
 
 #include <stdint.h>
 
+// info for #?f
+const char svrEdidInfoString[] = "AUO1111 - identical to 1.01";
+
 // enforce the core key pass system
 static uint8_t core_key_pass = 0;
 

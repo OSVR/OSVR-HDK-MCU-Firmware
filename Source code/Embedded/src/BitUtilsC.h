@@ -71,10 +71,15 @@ static inline bool bitUtils_checkMask(uint8_t value, uint8_t mask)
 /// Get the nth least significant byte of a given value (the nth byte in little-endian format)
 #define BITUTILS_GET_NTH_LEAST_SIG_BYTE(BYTENUM, VALUE) ((uint8_t)(((VALUE) >> ((BYTENUM)*CHAR_BIT)) & 0xff))
 
+/// Get a value with the lowest BITS bits set, where bits < 8.
+#define BITUTILS_GET_SET_LOW_BITS_MAX8(BITS) (0xff >> (CHAR_BIT - (BITS)))
+/// Get a value with the lowest BITS bits set, where BITS < 16.
+#define BITUTILS_GET_SET_LOW_BITS_MAX16(BITS) (0xffff >> ((2 * CHAR_BIT) - (BITS)))
+
 /// Mask off all but the BITS low bits of VAL, where BITS < 8.
-#define BITUTILS_KEEP_LOW_BITS_MAX8(BITS, VAL) ((0xff >> (CHAR_BIT - (BITS))) & (VAL))
+#define BITUTILS_KEEP_LOW_BITS_MAX8(BITS, VAL) (BITUTILS_GET_SET_LOW_BITS_MAX8(BITS) & (VAL))
 /// Mask off all but the BITS low bits of VAL, where BITS < 16.
-#define BITUTILS_KEEP_LOW_BITS_MAX16(BITS, VAL) ((0xffff >> ((2 * CHAR_BIT) - (BITS))) & (VAL))
+#define BITUTILS_KEEP_LOW_BITS_MAX16(BITS, VAL) (BITUTILS_GET_SET_LOW_BITS_MAX16(BITS) & (VAL))
 
 /// Portable equivalent of _BV
 #define BITUTILS_BIT(B) (0x1 << (B))

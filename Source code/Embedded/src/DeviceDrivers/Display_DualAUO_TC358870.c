@@ -20,7 +20,7 @@
 #include <ioport.h>
 
 #include "DeviceDrivers/Toshiba_TC358870.h"
-#include <HDK2.h>
+#include "DeviceDrivers/HDK2.h"
 
 // whether to send the sleep in/out and display on/off commands with a parameter of 0x00, or with no parameter. Appears
 // to work both ways, docs are contradictory: AUO app note says use a parameter, standard says don't
@@ -97,8 +97,9 @@ void Display_On(uint8_t deviceID)
 	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 
 /// @todo ugly workaround for resetting things.
-#if 0
-	Toshiba_TC358870_Init();
+#if 1
+	TC358870_Init_Receive_HDMI_Signal();
+// Toshiba_TC358870_Init();
 #endif
 #if 0
 	/// This one is at least a little bit less extreme

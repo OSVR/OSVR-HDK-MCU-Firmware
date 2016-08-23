@@ -83,7 +83,7 @@
 #endif
 
 #ifdef SVR_IS_HDK_20
-#include <HDK2.h>
+#include "DeviceDrivers/HDK2.h"
 #endif
 
 #include <avr/io.h>

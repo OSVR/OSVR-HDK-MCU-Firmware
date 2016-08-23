@@ -37,7 +37,7 @@
 #include "BitUtilsC.h"
 
 // Vendor library header
-#include <HDK2.h>
+#include "DeviceDrivers/HDK2.h"
 
 // asf headers
 #include <ioport.h>

@@ -9,9 +9,9 @@
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 
-#include <HDK2.h>
 #include "VideoInput_Protected.h"
 #include "DeviceDrivers/Display.h"
+#include "DeviceDrivers/HDK2.h"
 #include "DeviceDrivers/Toshiba_TC358870.h"
 #include "my_hardware.h"
 #include "Console.h"

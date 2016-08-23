@@ -76,6 +76,24 @@ $(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS) $(LIBS) $(LIBS_$(VARIANT))
 $(BUILD_DIR)/%: SUFFIX := $(SUFFIX)
 $(BUILD_DIR)/%: VARIANT := $(VARIANT)
 
+# Compiler database generation - optional, for clang tool usage.
+json_stringify = jq -R "." >>"$@"
+
+$(BUILD_DIR)/command_parts.json: Makefile add_variant.mk
+	@echo [$(VARIANT)$(SUFFIX)] $@
+	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
+	$(QUIETRULE)-$(RM) "$@"
+	$(QUIETRULE)echo $(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP | $(json_stringify)
+	$(QUIETRULE)echo $(abspath $(strip .))| $(json_stringify)
+	$(QUIETRULE)echo $(abspath $(strip $(BUILD_DIR)))| $(json_stringify)
+	echo REL_ROOT $(REL_ROOT)
+	$(QUIETRULE)echo $(abspath $(REL_ROOT))| $(json_stringify)
+#$(QUIETRULE)echo $(strip $(RELROOT))| $(json_stringify)
+
+$(BUILD_DIR)/compile_commands.json: make-compiledatabase.jq $(BUILD_DIR)/command_parts.json add_variant.mk
+	@echo [$(VARIANT)$(SUFFIX)] $@
+	$(QUIETRULE)echo $(subst $(eval) ,;,$(strip $(ALL_C_SRCS))) | jq --raw-input --slurp --slurpfile params "$(BUILD_DIR)/command_parts.json" -f "$<" > "$@"
+
 # Add targets for different configurations of the build.
 CONFIG_SHORT_NAME := hdmi_verbose
 DEFINES_CONTENTS := HDMI_VERBOSE

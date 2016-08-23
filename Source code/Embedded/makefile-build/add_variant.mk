@@ -73,8 +73,8 @@ $(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS) $(LIBS) $(LIBS_$(VARIANT))
 	$(QUIETRULE)$(CC) -o"$@" $^ $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(BUILD_DIR)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
 # set target-specific variables
-$(BUILD_DIR)/$(OUTPUT_FILE_PATH): SUFFIX := $(SUFFIX)
-$(BUILD_DIR)/$(OUTPUT_FILE_PATH): VARIANT := $(VARIANT)
+$(BUILD_DIR)/%: SUFFIX := $(SUFFIX)
+$(BUILD_DIR)/%: VARIANT := $(VARIANT)
 
 # Add targets for different configurations of the build.
 CONFIG_SHORT_NAME := hdmi_verbose

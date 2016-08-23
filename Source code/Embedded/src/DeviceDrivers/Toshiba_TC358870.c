@@ -37,7 +37,7 @@
 #include "BitUtilsC.h"
 
 // Vendor library header
-#include <libhdk20.h>
+#include <HDK2.h>
 
 // asf headers
 #include <ioport.h>

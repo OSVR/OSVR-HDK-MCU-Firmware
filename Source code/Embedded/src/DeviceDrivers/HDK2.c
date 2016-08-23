@@ -16,7 +16,7 @@
  *
  */
 
-#include "HDKv15.h"
+#include "HDK2.h"
 #include "Console.h"
 #include "string.h"
 #include "ui.h"
@@ -98,7 +98,7 @@ int TC358870_i2c_Read(ui16_t RegNum, ui8_t *data)
 	};
 
 	nResult = twi_master_read(TWI_TC358870_PORT, &packet_read);
-	
+
 	if(nResult == STATUS_OK)
 	{
 		*data = data_received[0];
@@ -238,7 +238,7 @@ int AUO_H381DLN01_Init(int bDisplayON)
 	TC358870_i2c_Write(0x0504,0x0011, 2); // DCSCMD_Q
 
 	if (bDisplayON != 0)
-	{	
+	{
 		delay_ms(200);
 		TC358870_i2c_Write(0x0504,0x0005, 2); // DCSCMD_Q
 		TC358870_i2c_Write(0x0504,0x0029, 2); // DCSCMD_Q
@@ -251,7 +251,7 @@ int AUO_H381DLN01_Init(int bDisplayON)
         Function: Checking video is existing or not by polling method.
         In: none
         Out: VIDEO_EXIST / VIDEO_NOT_EXIST.
-        
+
 */
 static void VideoStatusHandler (bool video_status)
 {
@@ -284,7 +284,7 @@ static void VideoStatusHandler (bool video_status)
         Function: Checking video is existing or not by polling method.
         In: none
         Out: VIDEO_EXIST / VIDEO_NOT_EXIST.
-        
+
 */
 bool IsVideoExistingPolling (void)
 {
@@ -292,15 +292,15 @@ bool IsVideoExistingPolling (void)
     static uint16_t cnt = 0;
     static bool last_video_status = VIDEO_NOT_EXIST;
     bool status;
-    
+
     new_cnt = tc_read_count(&VIDEO_POLLING_TIMER);
 
     if (new_cnt - cnt > VIDEO_POLLING_PERIOD){
         if ((status = HDMI_IsVideoExisting()) != last_video_status){  // status is changed...
             last_video_status = status;
-            VideoStatusHandler(status);          
+            VideoStatusHandler(status);
         }
-        cnt = new_cnt;  
+        cnt = new_cnt;
     }
 
     return status;
@@ -311,27 +311,27 @@ bool IsVideoExistingPolling (void)
         Function: Power on sequence.
         In: 0: sucess / 1: fail
         Out: none
-        
+
 */
 bool PowerOnSeq(void)
 {
     while (ioport_get_value(PWR_GOOD_2V5) == 0){     // waiting for power good.
         // time out
 		delay_us(50);
-    }   
+    }
 
     delay_ms (100);
 
     ioport_set_value (TC358870_Reset_Pin, 0);   // TC358870 reset active
     ioport_set_value (PANEL_RESET, 0);          // AUO panel reset active
-    
+
     delay_ms (50);
 
     ioport_set_value (TC358870_Reset_Pin, 1);   // TC358870 reset active
     ioport_set_value (PANEL_RESET, 1);          // AUO panel reset active
-	
+
      delay_ms (5);
-    //AUO_H381DLN01_Reset(); 
+    //AUO_H381DLN01_Reset();
     TC358870_Init_Receive_HDMI_Signal();
 
     return 0;
@@ -366,9 +366,9 @@ int TC358870_Reset_MIPI(void)
 	TC358870_i2c_Write(0x0004, tc_data, 2);
 	TC358870_i2c_Write(0x0002, 0x0200, 2);
 	TC358870_i2c_Write(0x0002, 0x0000, 2);
-	
+
 	delay_ms(150);
-	
+
 	// DSI-TX0 Transition Timing
 	TC358870_i2c_Write(0x0108,0x00000001, 4); // DSI_TX_CLKEN
 	TC358870_i2c_Write(0x010C,0x00000001, 4); // DSI_TX_CLKSEL
@@ -460,7 +460,7 @@ int TC358870_Reset_MIPI(void)
 	TC358870_i2c_Write(0x0478,0x00060005, 4); // BTA_COUNT
 	TC358870_i2c_Write(0x047C,0x00000002, 4); // DPHY_TX ADJUST
 	TC358870_i2c_Write(0x031C,0x00000001, 4); // DSITX_START
-	
+
 	// Command Transmission Before Video Start
 	TC358870_i2c_Write(0x0500,0x0004, 2); // CMD_SEL
 	TC358870_i2c_Write(0x0110,0x00000016, 4); // MODE_CONFIG
@@ -529,7 +529,7 @@ void OSVR_HDK_EDID (void)
 
     if (sn_status = eep_read_sn (sn) != 0){
         //WriteLn ("Read S/N NG.");
-        
+
         edid_year = 26;   // 26 => 2016.
         edid_week = 1;
         memset (edid_sn_hex, 0, sizeof(uint8_t)*4);
@@ -541,10 +541,10 @@ void OSVR_HDK_EDID (void)
             edid_week = 1;
             //WriteLn("Week Out Of Range.\n");
         }
-        edid_sn_dec = (uint32_t)(((uint32_t)(sn[10]-'0')*10000) + 
-                                ((uint32_t)(sn[11]-'0')*1000) + 
+        edid_sn_dec = (uint32_t)(((uint32_t)(sn[10]-'0')*10000) +
+                                ((uint32_t)(sn[11]-'0')*1000) +
                                 ((uint32_t)(sn[12]-'0')*100) +
-                                ((uint32_t)(sn[13]-'0')*10) + 
+                                ((uint32_t)(sn[13]-'0')*10) +
                                 (uint32_t)(sn[14]-'0'));
         edid_sn_hex[0] = (uint8_t) (edid_sn_dec & 0x000000FF);
         edid_sn_hex[1] = (uint8_t)((edid_sn_dec & 0x0000FF00)>>8);
@@ -562,7 +562,7 @@ void OSVR_HDK_EDID (void)
 
         sprintf (buf, "int32=%d", sizeof (uint32_t));
         WriteLn (buf);
-        
+
         sprintf (buf, "S/N: %d", (uint32_t)edid_sn_dec);
         WriteLn (buf);
         sprintf (buf, "%02X-%02X-%02X-%02X", edid_sn_hex[3], edid_sn_hex[2], edid_sn_hex[1], edid_sn_hex[0]);
@@ -578,7 +578,7 @@ void OSVR_HDK_EDID (void)
                             cs += edid_week;
                             TC358870_i2c_Write(0x8C00+idx, edid_week, 1);
                             break;
-                            
+
                     case EDID_ADDR_YEAR:
                             cs += edid_year;
                             TC358870_i2c_Write(0x8C00+idx, edid_year, 1);
@@ -597,7 +597,7 @@ void OSVR_HDK_EDID (void)
                             cs = (unsigned char)(0x100 - cs);    // Making EDID page check sum. The 1-byte sum of all 128 bytes in this EDID block shall equal zero.
                             TC358870_i2c_Write(0x8C00+idx, (unsigned char)cs, 1);
                             break;
-                            
+
                     default:
                             cs += EDID_LUT[idx];
                             TC358870_i2c_Write(0x8C00+idx, EDID_LUT[idx], 1);
@@ -808,7 +808,7 @@ int TC358870_Init_Receive_HDMI_Signal(void)
 		else
 			delay_ms(20);
 	}
-	
+
 	TC358870_i2c_Write(0x850B, 0xFF, 1); // MISC_INT
 	TC358870_i2c_Write(0x0014, 0x0FBF, 2); // IntStatus
 
@@ -832,7 +832,7 @@ int TC358870_Init_Receive_HDMI_Signal(void)
 	if(InitFlag == 1)
 	{
 		TC358870_Reset_MIPI();
-	
+
 		if(TC358870_Check0x0294tatus() == TC358870_ERROR)
 			TC358870_Reset_MIPI();
 	}
@@ -867,12 +867,12 @@ int TC358870_VideoSyncSignalStatus(void)
 
 unsigned char sn[SN_LENGTH];
 
-// If CRC 16 is fine for the performnace, replace it... 
+// If CRC 16 is fine for the performnace, replace it...
 static unsigned char check_sum_gen (unsigned char *buf, int length)
 {
     int i=0;
     unsigned char cs=0;
-    
+
     for (i=0; i < length; i++){
         cs += buf[i];
     }
@@ -893,7 +893,7 @@ int eep_read_sn (unsigned char *buf)
     int i = 0;
 
     for (i = 0 ; i < SN_LENGTH; i++){
-        buf[i] = nvm_eeprom_read_byte(EEP_ADDR_SN + i);        
+        buf[i] = nvm_eeprom_read_byte(EEP_ADDR_SN + i);
     }
 
     // check sum verify.
@@ -910,7 +910,7 @@ void ProcessFactoryCommand(void)
     int i;
     char OutString[SN_LENGTH];
     static int core_key_retry_time = 0;
-    
+
     switch (CommandToExecute[1]){
         case 's':       // 20160520, fctu, S/N read, write.
         case 'S':
@@ -922,19 +922,19 @@ void ProcessFactoryCommand(void)
                     // write...
                     memcpy(sn, CommandToExecute+3, SN_LENGTH-1);
                     eep_write_sn();
-                    
+
                     // verify...
                     i = eep_read_sn(OutString);
                     OutString[SN_LENGTH-1] = '\0';
                     sn[SN_LENGTH-1] = '\0';
-                    
+
                     if (i)
-                        WriteLn("NG");  // check sum error.  
+                        WriteLn("NG");  // check sum error.
                     else if (strcmp (OutString, sn) != 0)
                         WriteLn("NG");  // s/n does not match.
                     else
                         WriteLn("OK");  // s/n match.
-                        
+
                     break;
 
                 case 'r':       // Read S/N from eeprom.
@@ -946,10 +946,10 @@ void ProcessFactoryCommand(void)
                         WriteLn(OutString);
                     }
                     break;
-    
+
             }
             break;
-            
+
         case 't':       // for testing purpose.
         case 'T':
             OSVR_HDK_EDID();
@@ -970,7 +970,7 @@ void ProcessFactoryCommand(void)
                         WriteLn("NG");  // for someone whom unauthority.
                         break;
                     }
-                    
+
                     memcpy (OutString, CommandToExecute+3, CORE_KEY_LENGTH);
 
                     if (memcmp(OutString, CORE_KEY, CORE_KEY_LENGTH) == 0){
@@ -980,15 +980,15 @@ void ProcessFactoryCommand(void)
                     }
                     else{
                             core_key_retry_time++;
-                            core_key_pass = 0; 
+                            core_key_pass = 0;
                             WriteLn("NG");
                     }
-                    
+
                     break;
 
             }
             break;
-    }            
+    }
 }
 
 
@@ -998,8 +998,7 @@ void nvm_eeprom_write_byte_(eeprom_addr_t address, uint8_t value)
     if (address >= EEP_ADDR_SN && address <= 0x1F)  // 0x08 ~0x1F
         if (core_key_pass == 0)     // no right to access this area.
             return;
-            
+
     nvm_eeprom_write_byte(address, value);
 
 }
-

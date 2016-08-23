@@ -106,9 +106,8 @@ int TC358870_i2c_Read(uint16_t RegNum, uint8_t *data)
 int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength)
 {
 	static status_code_t nResult = 0;
-	uint8_t sendData[4];
+	uint8_t sendData[4] = {0x0};
 
-	memset(sendData, 0x00, sizeof(uint8_t *) * 4);
 	if (nLength == 1)
 	{
 		sendData[0] = (uint8_t)nValue;
@@ -478,12 +477,14 @@ int TC358870_CheckLANEStatus(void)
 	if (TC358870_i2c_Read(0x0290, &tc_data) != TC358870_OK)  // get SYS_STATUS
 		return TC358870_ERROR;
 
+	/// checking high-speed state of data lane 3?
 	if (!(tc_data & 0x8F))
 		return TC358870_ERROR;
 
 	if (TC358870_i2c_Read(0x0490, &tc_data) != TC358870_OK)  // get SYS_STATUS
 		return TC358870_ERROR;
 
+	/// checking high-speed state of data lane 3?
 	if (!(tc_data & 0x8F))
 		return TC358870_ERROR;
 
@@ -495,6 +496,8 @@ int TC358870_Check0x0294tatus(void)
 	uint8_t tc_data;
 
 	delay_ms(20);
+	/// Getting this first byte of 0x0294 will probably always be zero since it's reserved according to the information
+	/// I have.
 
 	if (TC358870_i2c_Read(0x0294, &tc_data) != TC358870_OK)  // get SYS_STATUS
 		return TC358870_ERROR;
@@ -926,7 +929,7 @@ void ProcessFactoryCommand(void)
 
 			if (i)
 				WriteLn("NG");  // check sum error.
-			else if (strcmp(OutString, sn) != 0)
+			else if (strcmp(OutString, (char *)sn) != 0)
 				WriteLn("NG");  // s/n does not match.
 			else
 				WriteLn("OK");  // s/n match.

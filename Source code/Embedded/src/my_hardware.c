@@ -133,8 +133,8 @@ void custom_board_init(void)
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 	ioport_configure_pin(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, > 12ms.
 	/// @todo why is this being initialized as input? The pin is used as Int_HDMI_A on other variants, but on HDK_20
-	/// it's I2C_Addr_Sel
-	ioport_configure_pin(I2C_Addr_Sel, IOPORT_DIR_INPUT);
+	/// it's TC358870_ADDR_SEL_INT
+	ioport_configure_pin(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT);
 #endif
 
 #ifdef SVR_HAVE_NXP1

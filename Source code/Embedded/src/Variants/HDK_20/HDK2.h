@@ -26,34 +26,32 @@
 
 #define TC358870 0
 
-#define TC358870_OK		0
-#define TC358870_ERROR	-1
+#define TC358870_OK 0
+#define TC358870_ERROR -1
 
-#define TC358870_NoSync	0
-#define TC358870_Sync	1
+#define TC358870_NoSync 0
+#define TC358870_Sync 1
 
-#define TC358870_TWI_SPEED	100000	// or 400kHz or 2MHz
-#define TC358870_ADDR		0x1F	// or 0x1F
+#define TC358870_TWI_SPEED 100000  // or 400kHz or 2MHz
+#define TC358870_ADDR 0x1F         // or 0x1F
 
-#define VIDEO_POLLING_PERIOD     60000
-#define VIDEO_POLLING_TIMER      TCC2
+#define VIDEO_POLLING_PERIOD 60000
+#define VIDEO_POLLING_TIMER TCC2
 
-#define EEP_ADDR_SN     0x008   // 20160605, fctu, change from 0xFF0 to 0x008 due to RAZER asked.
-#define SN_LENGTH       16  // include 1 byte check sum.
+#define EEP_ADDR_SN 0x008  // 20160605, fctu, change from 0xFF0 to 0x008 due to RAZER asked.
+#define SN_LENGTH 16       // include 1 byte check sum.
 
-inline uint8_t ascii_to_dec_8 (uint8_t *buf) { return (buf[0]-'0')*10 + (buf[1]-'0'); }
-
-
+inline uint8_t ascii_to_dec_8(uint8_t *buf) { return (buf[0] - '0') * 10 + (buf[1] - '0'); }
 extern unsigned char sn[SN_LENGTH];
 
-typedef unsigned char  ui8_t;
+typedef unsigned char ui8_t;
 typedef unsigned short ui16_t;
-typedef unsigned long  ui32_t;
+typedef unsigned long ui32_t;
 
-#if 1 // Dennis Yeh : for Toshiba I2C 
-	#define i2c1_uh2d_write8(x,y)  TC358870_i2c_Write(x,y,1)
-	#define i2c1_uh2d_write16(x,y)  TC358870_i2c_Write(x,y,2)
-	#define i2c1_uh2d_write32(x,y)  TC358870_i2c_Write(x,y,4)
+#if 1  // Dennis Yeh : for Toshiba I2C
+#define i2c1_uh2d_write8(x, y) TC358870_i2c_Write(x, y, 1)
+#define i2c1_uh2d_write16(x, y) TC358870_i2c_Write(x, y, 2)
+#define i2c1_uh2d_write32(x, y) TC358870_i2c_Write(x, y, 4)
 #endif
 
 int TC358870_i2c_Init(void);
@@ -64,7 +62,7 @@ int TC358870_i2c_Write(ui16_t RegNum, ui32_t nValue, int nLength);
 int AUO_H381DLN01_Init(int bDisplayON);
 int TC358870_Init_Receive_HDMI_Signal(void);
 
-bool IsVideoExistingPolling (void);
+bool IsVideoExistingPolling(void);
 bool PowerOnSeq(void);
 void AUO_H381DLN01_Reset(void);
 void Toshiba_TC358870_Reset(void);
@@ -76,11 +74,10 @@ int TC358870_Reset_MIPI(void);
 int TC358870_CheckLANEStatus(void);
 int TC358870_Check0x0294tatus(void);
 
-void eep_write_sn (void);
-int eep_read_sn (unsigned char *buf);
-void OSVR_HDK_EDID (void);
+void eep_write_sn(void);
+int eep_read_sn(unsigned char *buf);
+void OSVR_HDK_EDID(void);
 void ProcessFactoryCommand(void);
 void nvm_eeprom_write_byte_(eeprom_addr_t address, uint8_t value);
-
 
 #endif /* HDKV15_H_ */

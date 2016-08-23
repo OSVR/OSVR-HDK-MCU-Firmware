@@ -83,7 +83,7 @@
 #endif
 
 #ifdef SVR_IS_HDK_20
-#include <libhdk20.h>
+#include <HDK2.h>
 #endif
 
 #include <avr/io.h>

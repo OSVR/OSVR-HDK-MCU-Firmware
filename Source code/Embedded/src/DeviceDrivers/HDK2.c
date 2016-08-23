@@ -55,10 +55,7 @@
 #define CORE_KEY_LENGTH 8
 #define CORE_KEY_RETRY_TIME 3
 
-inline uint8_t ascii_to_dec_8(uint8_t *buf) { return (buf[0] - '0') * 10 + (buf[1] - '0'); }
-static void i2c1_uh2d_write8(uint16_t x, uint8_t y) { TC358870_i2c_Write(x, y, 1); }
-static void i2c1_uh2d_write16(uint16_t x, uint16_t y) { TC358870_i2c_Write(x, y, 2); }
-static void i2c1_uh2d_write32(uint16_t x, uint32_t y) { TC358870_i2c_Write(x, y, 4); }
+static inline uint8_t ascii_to_dec_8(uint8_t *buf) { return (buf[0] - '0') * 10 + (buf[1] - '0'); }
 static inline void UpdateResolutionDetection(void)
 {
 	// dummy function to satisfy old code.

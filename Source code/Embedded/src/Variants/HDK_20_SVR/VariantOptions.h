@@ -16,7 +16,4 @@
 
 #define SVR_IS_HDK_20_SVR
 
-#define SVR_HAVE_EDID_INFO_STRING
-extern const char svrEdidInfoString[];
-
 #endif /* VARIANTOPTIONS_H_HDK20SVR */

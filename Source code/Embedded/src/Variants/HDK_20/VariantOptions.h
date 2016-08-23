@@ -47,4 +47,7 @@
 
 #define SVR_VARIANT_STRING "HDK_20"
 
+#define SVR_HAVE_EDID_INFO_STRING
+extern const char svrEdidInfoString[];
+
 #endif /* VARIANTOPTIONS_H_ */

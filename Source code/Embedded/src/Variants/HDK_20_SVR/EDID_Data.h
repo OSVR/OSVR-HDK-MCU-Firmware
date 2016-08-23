@@ -22,6 +22,9 @@
 
 #include <stdint.h>
 
+// info for #?f
+const char svrEdidInfoString[] = "SVR1019, based on 1.01, all dims 26x15 (r3)";
+
 // do not enforce the core key pass system
 static uint8_t core_key_pass = 1;
 

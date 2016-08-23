@@ -170,4 +170,7 @@ void Toshiba_TC358870_Prepare_TX(void);
 void Toshiba_TC358870_Configure_Splitter(void);
 void Toshiba_TC358870_HDMI_Setup(void);
 
+void Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts(void);
+void Toshiba_TC358870_Disable_All_Interrupts(void);
+
 #endif /* TOSHIBA_TC358870_H_ */

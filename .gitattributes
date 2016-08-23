@@ -3,6 +3,8 @@
 
 # Atmel Studio files.
 *.componentinfo.xml text eol=crlf
+*.cproj text eol=crlf
+*.atsln text eol=crlf
 
 # Custom for Visual Studio
 *.cs     diff=csharp

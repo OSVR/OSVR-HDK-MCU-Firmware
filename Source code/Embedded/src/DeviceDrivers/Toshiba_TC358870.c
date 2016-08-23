@@ -140,9 +140,12 @@ enum
 	TC_REG_CONFIG_CONTROL_1 = 0x0006,
 	TC_REG_INT_STATUS = 0x0014,
 	TC_REG_INT_STATUS_HDMI_INT_BITMASK = BITUTILS_BIT(9),
+	TC_REG_INT_STATUS_NONRESERVED_BITS = BITUTILS_GET_SET_LOW_BITS_MAX16(12) & (~BITUTILS_BIT(6)),
+	TC_REG_INT_MASK = 0x0016,
 	TC_REG_DCSCMD_Q = 0x0504,
 	TC_REG_MISC_INT = 0x850B,
 	TC_REG_MISC_INT_SYNC_CHG_BITMASK = BITUTILS_BIT(1),
+	TC_REG_MISC_INT_MASK = 0x851B,
 	TC_REG_SYS_STATUS = 0x8520,
 #if 0
 	TC_REG_SYS_STATUS_HAVE_VIDEO_MASK = BITUTILS_BIT(7) | BITUTILS_BIT(3) /* PHY DE detect */ | BITUTILS_BIT(2) /* PHY PLL lock */ | BITUTILS_BIT(1) /* TMDS input amplitude */ | BITUTILS_BIT(0) /* DDC_Power input */
@@ -324,6 +327,36 @@ void Toshiba_TC358870_Disable_Video_TX()
 		WriteLn("TC358770: Could not write config control reg 1");
 		return;
 	}
+}
+
+void Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts(void)
+{
+	// Clear out the interrupt flags.
+	Toshiba_TC358870_I2C_Write8(TC_REG_MISC_INT, 0xFF);
+	// Unmask only the sync status change bit.
+	Toshiba_TC358870_I2C_Write8(TC_REG_MISC_INT_MASK, ~TC_REG_MISC_INT_SYNC_CHG_BITMASK);
+
+	// Write 1 to clear all the non-reserved bits (0-11, excluding 6)
+	Toshiba_TC358870_I2C_Write16(TC_REG_INT_STATUS, TC_REG_INT_STATUS_NONRESERVED_BITS);
+	// Top level: mask all non-reserved bits, unmasking the HDMI bit.
+	Toshiba_TC358870_I2C_Write16(TC_REG_INT_MASK,
+	                             TC_REG_INT_STATUS_NONRESERVED_BITS & (~TC_REG_INT_STATUS_HDMI_INT_BITMASK));
+}
+
+void Toshiba_TC358870_Disable_All_Interrupts(void)
+{
+	// Top level: mask all non-reserved bits.
+	Toshiba_TC358870_I2C_Write16(TC_REG_INT_MASK, TC_REG_INT_STATUS_NONRESERVED_BITS);
+	// Mask all interrupts at the lower level as well.
+	Toshiba_TC358870_I2C_Write8(TC_REG_MISC_INT_MASK, 0xff);
+
+	// Clear out the interrupt flags.
+
+	// low level
+	Toshiba_TC358870_I2C_Write8(TC_REG_MISC_INT, 0xFF);
+	// top level
+	// Write 1 to clear all the non-reserved bits (0-11, excluding 6)
+	Toshiba_TC358870_I2C_Write16(TC_REG_INT_STATUS, TC_REG_INT_STATUS_NONRESERVED_BITS);
 }
 
 #endif  // SVR_HAVE_TOSHIBA_TC358870

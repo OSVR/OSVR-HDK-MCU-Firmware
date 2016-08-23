@@ -34,6 +34,7 @@
 #include "Console.h"
 #include "my_hardware.h"
 #include "SvrYield.h"
+#include "BitUtilsC.h"
 
 // Vendor library header
 #include <libhdk20.h>
@@ -45,7 +46,108 @@
 // standard header
 #include <limits.h>
 
+// -- Basic support functionality -- //
+
+/// General implementation of the I2C write, used by all sizes of writes.
 static TC358870_Op_Status_t Toshiba_TC358870_I2C_Write_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len);
+
+/// General implementation of the I2C read, used by all sizes of reads.
+static TC358870_Op_Status_t Toshiba_TC358870_I2C_Read_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len);
+
+#define TC_REG_CONVERSION(REG)                                                                  \
+	{                                                                                           \
+		BITUTILS_GET_NTH_LEAST_SIG_BYTE(0, (REG)), BITUTILS_GET_NTH_LEAST_SIG_BYTE(1, (REG)), 0 \
+	}
+
+static inline TC358870_Op_Status_t Toshiba_TC358870_I2C_Write_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len)
+{
+	twi_package_t packet_write = {
+	    .addr = TC_REG_CONVERSION(reg),         //< register to write to, disassembled into bytes.
+	    .addr_length = sizeof(TC358870_Reg_t),  //< length of register address
+	    .chip = TC358870_ADDR,                  //< bus address
+	    .buffer = (void*)buf,                   //< buffer to write
+	    .length = len,                          //< buffer length
+	    .no_wait = false                        //< block until the bus is available to send this.
+	};
+	TC358870_Op_Status_t status = (TC358870_Op_Status_t)twi_master_write(TC358870_TWI_PORT, &packet_write);
+	while (TOSHIBA_TC358770_OK != status && TOSHIBA_TC358770_ERR_INVALID_ARG != status)
+	{
+		/// We think we can beat io, buffer, and bus state errors.
+		status = (TC358870_Op_Status_t)twi_master_write(TC358870_TWI_PORT, &packet_write);
+	}
+	return status;
+}
+
+static inline TC358870_Op_Status_t Toshiba_TC358870_I2C_Read_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len)
+{
+	twi_package_t packet_read = {
+	    .addr = TC_REG_CONVERSION(reg),         //< register to write to, disassembled into bytes.
+	    .addr_length = sizeof(TC358870_Reg_t),  //< length of register address
+	    .chip = TC358870_ADDR,                  //< bus address
+	    .buffer = (void*)buf,                   //< buffer to read
+	    .length = len,                          //< buffer length
+	    .no_wait = false                        //< block until the bus is available to send this.
+	};
+	TC358870_Op_Status_t status = (TC358870_Op_Status_t)twi_master_read(TC358870_TWI_PORT, &packet_read);
+	while (TOSHIBA_TC358770_OK != status && TOSHIBA_TC358770_ERR_BUFFER != status &&
+	       TOSHIBA_TC358770_ERR_INVALID_ARG != status)
+	{
+		/// We think we can beat io and bus state errors.
+		/// buffer errors mean that the buffer is full, so don't bother re-trying those.
+		status = (TC358870_Op_Status_t)twi_master_read(TC358870_TWI_PORT, &packet_read);
+	}
+	return status;
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8(TC358870_Reg_t reg, uint8_t val)
+{
+	return Toshiba_TC358870_I2C_Write_Impl(reg, &val, sizeof(val));
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write16(TC358870_Reg_t reg, uint16_t val)
+{
+	uint8_t buf[sizeof(val)];
+	buf[0] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(0, val);
+	buf[1] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(1, val);
+	return Toshiba_TC358870_I2C_Write_Impl(reg, buf, sizeof(buf));
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32(TC358870_Reg_t reg, uint32_t val)
+{
+	uint8_t buf[sizeof(val)];
+	buf[0] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(0, val);
+	buf[1] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(1, val);
+	buf[2] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(2, val);
+	buf[3] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(3, val);
+	return Toshiba_TC358870_I2C_Write_Impl(reg, buf, sizeof(buf));
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Read8(TC358870_Reg_t reg, uint8_t* val)
+{
+	return Toshiba_TC358870_I2C_Read_Impl(reg, val, sizeof(uint8_t));
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Read16(TC358870_Reg_t reg, uint16_t* val)
+{
+	uint8_t buf[2];
+	TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read_Impl(reg, buf, sizeof(uint16_t));
+	*val = (((uint16_t)(buf[1])) << CHAR_BIT) | ((uint16_t)(buf[0]));
+	return status;
+}
+
+// Select register addresses
+enum
+{
+	TC_REG_SYS_CONTROL = 0x0002,
+	TC_REG_CONFIG_CONTROL_0 = 0x0004,
+	TC_REG_CONFIG_CONTROL_1 = 0x0006,
+	TC_REG_DCSCMD_Q = 0x0504,
+	TC_REG_SYS_STATUS = 0x8520,
+#if 0
+	TC_REG_SYS_STATUS_HAVE_VIDEO_MASK = BITUTILS_BIT(7) | BITUTILS_BIT(3) /* PHY DE detect */ | BITUTILS_BIT(2) /* PHY PLL lock */ | BITUTILS_BIT(1) /* TMDS input amplitude */ | BITUTILS_BIT(0) /* DDC_Power input */
+#endif
+	TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK = BITUTILS_BIT(7)
+};
 
 static uint8_t s_tc358870_init_count = 0;
 
@@ -76,73 +178,6 @@ void Toshiba_TC358870_Trigger_Reset()
 	ioport_set_pin_high(TC358870_Reset_Pin);
 }
 
-#define TC_MAKE_SINGLE_BIT_MASK(BIT) (0x01 << BIT)
-
-enum
-{
-	TC_REG_SYS_CONTROL = 0x0002,
-	TC_REG_CONFIG_CONTROL_0 = 0x0004,
-	TC_REG_CONFIG_CONTROL_1 = 0x0006,
-	TC_REG_DCSCMD_Q = 0x0504,
-	TC_REG_SYS_STATUS = 0x8520,
-#if 0
-TC_REG_SYS_STATUS_HAVE_VIDEO_MASK = TC_MAKE_SINGLE_BIT_MASK(7) | TC_MAKE_SINGLE_BIT_MASK(3) /* PHY DE detect */ | TC_MAKE_SINGLE_BIT_MASK(2) /* PHY PLL lock */ | TC_MAKE_SINGLE_BIT_MASK(1) /* TMDS input amplitude */ | TC_MAKE_SINGLE_BIT_MASK(0) /* DDC_Power input */
-#endif
-	TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK = TC_MAKE_SINGLE_BIT_MASK(7)
-};
-
-/// Checks that all the bits in the mask are set. Factored out because I'm not sure what will give the best performance.
-static inline bool checkMask(uint8_t value, uint8_t mask)
-{
-#if 0
-	return (value & mask) == mask;
-#else
-	// xor should flip all masked bits from 1 to 0, if they were set, then the and should give us only any
-	// previously-unset bits in the masked bits that remain. This lets us compare against 0. Who knows, the compiler may
-	// be clever enough to turn the first approach into this.
-	return ((value ^ mask) & mask) == 0x0;
-#endif
-}
-
-/// General implementation of the I2C write, used by all sizes of writes.
-static inline TC358870_Op_Status_t Toshiba_TC358870_I2C_Write_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len)
-{
-	twi_package_t packet_write = {
-	    .addr = reg,                            //< register to write to
-	    .addr_length = sizeof(TC358870_Reg_t),  //< length of register address
-	    .chip = TC358870_ADDR,                  //< bus address
-	    .buffer = (void*)buf,                   //< buffer to write
-	    .length = len,                          //< buffer length
-	    .no_wait = false                        //< block until the bus is available to send this.
-	};
-	return (TC358870_Op_Status_t)twi_master_write(TC358870_TWI_PORT, &packet_write);
-}
-
-TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8(TC358870_Reg_t reg, uint8_t val)
-{
-	return Toshiba_TC358870_I2C_Write_Impl(reg, &val, sizeof(val));
-}
-
-TC358870_Op_Status_t Toshiba_TC358870_I2C_Write16(TC358870_Reg_t reg, uint16_t val)
-{
-	uint8_t buf[sizeof(val)];
-	buf[0] = (uint8_t)(val & 0xff);
-	buf[1] = (uint8_t)((val >> CHAR_BIT) & 0xff);
-	return Toshiba_TC358870_I2C_Write_Impl(reg, buf, sizeof(buf));
-}
-
-TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32(TC358870_Reg_t reg, uint32_t val)
-{
-	uint8_t buf[sizeof(val)];
-	buf[0] = (uint8_t)(val & 0xff);
-	buf[1] = (uint8_t)((val >> CHAR_BIT) & 0xff);
-	buf[2] = (uint8_t)((val >> (2 * CHAR_BIT)) & 0xff);
-	buf[3] = (uint8_t)((val >> (3 * CHAR_BIT)) & 0xff);
-	return Toshiba_TC358870_I2C_Write_Impl(reg, buf, sizeof(buf));
-}
-
-/// assumes the mask you pass has only one bit set!
-static inline bool checkBit(uint8_t value, uint8_t mask) { return (value & mask) != 0; }
 /* Documentation from old Coretronic-authored predecessor to this function follows: note that the comparison to 0x9f is
    faulty.
     Function : Toshiba_TC358870_HDMI_IsVideoExisting
@@ -165,23 +200,23 @@ bool Toshiba_TC358870_Have_Video_Sync(void)
 	/// input)?
 	/// Bit 7 is input video sync - bits 6, 5, and 4 are unimportant to the task at hand, so equality to 0x9f is not
 	/// quite right.
-	return checkBit(tc_data, TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK);
+	return bitUtils_checkBit(tc_data, TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK);
 }
 
 /// Send a short DSI command with no parameter.
 void Toshiba_TC358870_DSI_Write_Cmd_Short(uint8_t cmd)
 {
-	TC358870_i2c_Write(TC_REG_DCSCMD_Q, 0x0005, 2);
-	TC358870_i2c_Write(TC_REG_DCSCMD_Q, (uint32_t)cmd, 2);
+	Toshiba_TC358870_I2C_Write16(TC_REG_DCSCMD_Q, 0x0005);
+	Toshiba_TC358870_I2C_Write16(TC_REG_DCSCMD_Q, (uint16_t)cmd);
 }
 
 /// Send a short DSI command with one parameter.
 void Toshiba_TC358870_DSI_Write_Cmd_Short_Param(uint8_t cmd, uint8_t param)
 {
-	TC358870_i2c_Write(TC_REG_DCSCMD_Q, 0x0015, 2);
+	Toshiba_TC358870_I2C_Write16(TC_REG_DCSCMD_Q, 0x0015);
 	// uint8_t yyCmd, uint8_t zzArg
 	// want to send 0xzzyy
-	TC358870_i2c_Write(TC_REG_DCSCMD_Q, (((uint16_t)param) << sizeof(cmd)) | ((uint16_t)cmd), 2);
+	Toshiba_TC358870_I2C_Write16(TC_REG_DCSCMD_Q, (((uint16_t)param) << sizeof(cmd)) | ((uint16_t)cmd));
 }
 
 #if 0
@@ -206,18 +241,18 @@ void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_
 {
 	uint32_t val = 0;
 	// load in MP_LBW
-	val |= (uint32_t)(0x03 & ((uint8_t)conf.low_bandwidth_setting)) << 16;
+	val |= (uint32_t)(BITUTILS_KEEP_LOW_BITS_MAX8(2, (uint8_t)conf.low_bandwidth_setting)) << 16;
 	// now MP_PRD
-	val |= (uint32_t)(0x0f & (conf.input_divider - 1)) << 12;
+	val |= (uint32_t)(BITUTILS_KEEP_LOW_BITS_MAX8(4, (conf.input_divider - 1))) << 12;
 	// MP_FRS
-	val |= (uint32_t)(0x03 & ((uint8_t)conf.hsck_freq_range_post_divider)) << 10;
+	val |= (uint32_t)(BITUTILS_KEEP_LOW_BITS_MAX8(2, (uint8_t)conf.hsck_freq_range_post_divider)) << 10;
 	// LFBREN
 	if (conf.lower_freq_bound_removal)
 	{
 		val |= (uint32_t)(0x01) << 9;
 	}
 	// Finally, MP_FBD
-	val |= (uint32_t)(0x01ff & (conf.feedback_divider_value - 1));
+	val |= (uint32_t)(BITUTILS_KEEP_LOW_BITS_MAX16(9, (conf.feedback_divider_value - 1)));
 }
 
 /// Send a "long" DSI command with data (may be of length 0)

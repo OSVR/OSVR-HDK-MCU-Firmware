@@ -1102,6 +1102,9 @@
     <None Include="src\config\conf_timeout.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\BitUtilsC.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\config\SingleDisplayNXPSolomonFPGA.h">
       <SubType>compile</SubType>
     </Compile>

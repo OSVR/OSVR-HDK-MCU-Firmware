@@ -82,6 +82,12 @@ TC358870_Op_Status_t Toshiba_TC358870_I2C_Write16(TC358870_Reg_t reg, uint16_t v
 /// Does wait for the bus to become available, but returns other errors from I2C code as-is.
 TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32(TC358870_Reg_t reg, uint32_t val);
 
+/// Reads an 8-bit byte from the given register over I2C.
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Read8(TC358870_Reg_t reg, uint8_t* val);
+
+/// Reads 16 bits starting at the given register address over I2C.
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Read16(TC358870_Reg_t reg, uint16_t* val);
+
 /// Send a short DSI command with no parameter.
 void Toshiba_TC358870_DSI_Write_Cmd_Short(uint8_t cmd);
 

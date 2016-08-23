@@ -973,14 +973,20 @@ void ProcessFactoryCommand(void)
 
 			if (memcmp(OutString, CORE_KEY, CORE_KEY_LENGTH) == 0)
 			{
+				core_key_pass = CORE_KEY_PASS_SUCCESS_VALUE;
+			}
+			else
+			{
+				core_key_pass = CORE_KEY_PASS_FAIL_VALUE;
+			}
+			if (CORE_KEY_PASS_SUCCESS_VALUE == core_key_pass)
+			{
 				core_key_retry_time = 0;
-				core_key_pass = 1;
 				WriteLn("OK");
 			}
 			else
 			{
 				core_key_retry_time++;
-				core_key_pass = 0;
 				WriteLn("NG");
 			}
 

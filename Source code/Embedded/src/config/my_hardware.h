@@ -126,10 +126,10 @@ extern uint8_t
 /// custom_board_init
 #ifdef SVR_IS_HDK_20
 #define MCU_LEVEL_SHIFT_OE IOPORT_CREATE_PIN(PORTA, 1)  // out, level shift enable, low enable. U55
-#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)          // out, Right Panel SWIRE
-#define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)         // out, Right Panel SWIRE
-#define ANA_PWR_IN IOPORT_CREATE_PIN(PORTA, 6)          // in, 5v power good.
-#define EDID_EEP_WP IOPORT_CREATE_PIN(PORTA, 7)         // out, edid eeprom write protection, 0: write protect
+#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)          // out, Right Panel SWIRE //< @todo NC
+#define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)  // out, Right Panel SWIRE //< @todo PF3 is HDMI_HPD on schematic?
+#define ANA_PWR_IN IOPORT_CREATE_PIN(PORTA, 6)   // in, 5v power good. "ANA_TMP1" - there is also PA4 HDMI_D5V
+#define EDID_EEP_WP IOPORT_CREATE_PIN(PORTA, 7)  // out, edid eeprom write protection, 0: write protect
 
 // port B
 #define AUD_JACK_DETECT IOPORT_CREATE_PIN(PORTB, 0)  // in, Audio jack detection, 0: plug, 1: unplug
@@ -143,7 +143,7 @@ extern uint8_t
 #define AUD_MUTE IOPORT_CREATE_PIN(PORTC, 3)
 
 // port D
-#define USB_SW_OC IOPORT_CREATE_PIN(PORTD, 1)  // out, HW NC, Don't care.
+#define USB_SW_OC IOPORT_CREATE_PIN(PORTD, 1)  // out, HW NC, Don't care. //< @todo schematic says in, present
 
 #endif  // SVR_IS_HDK_20
 

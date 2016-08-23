@@ -85,6 +85,7 @@ src/DeviceDrivers/VideoInput_Single_NXP.c \
 src/DeviceDrivers/VideoInput_TMDS422_NXP.c \
 src/DeviceDrivers/VideoInput_Toshiba_TC358870.c \
 src/DeviceDrivers/BNO070_using_hostif.c \
+src/DeviceDrivers/HDK2.c \
 src/DeviceDrivers/Solomon.c \
 src/DeviceDrivers/TI-TMDS442.c \
 src/DeviceDrivers/Toshiba_TC358870.c \
@@ -249,15 +250,15 @@ include add_variant.mk
 
 SHORT_NAME := hdk2svr
 VARIANT_NAME := HDK_20_SVR
-EDID_BIN := $(REL_ROOT)/src/Variants/HDK_20_SVR/svr1020.edid.bin
-LIBS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/libhdk20.$(strip $(LIBHDK20_VER)).svr1020.a
-INCLUDE_DIRS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/
+#EDID_BIN := $(REL_ROOT)/src/Variants/HDK_20_SVR/svr1020.edid.bin
+#LIBS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/libhdk20.$(strip $(LIBHDK20_VER)).svr1020.a
+#INCLUDE_DIRS_HDK_20_SVR := $(REL_ROOT)/vendor/libhdk20/
 EXTRA_C_SRCS := src/Variants/$(VARIANT_NAME)/svr1020.edid_info.c
 
 # Rule to build the custom modified libhdk20, if we need to.
-$(LIBS_HDK_20_SVR): $(LIBS_HDK_20) $(EDID_BIN)
-	@echo [HDK_20_SVR] Generating $@ by injecting EDID from $(EDID_BIN)
-	$(QUIETRULE)$(OBJCOPY) "$<" --update-section .rodata.EDID_LUT=$(EDID_BIN) "$@"
+#$(LIBS_HDK_20_SVR): $(LIBS_HDK_20) $(EDID_BIN)
+#	@echo [HDK_20_SVR] Generating $@ by injecting EDID from $(EDID_BIN)
+#	$(QUIETRULE)$(OBJCOPY) "$<" --update-section .rodata.EDID_LUT=$(EDID_BIN) "$@"
 
 include add_variant.mk
 

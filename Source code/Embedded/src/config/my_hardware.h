@@ -107,7 +107,12 @@ extern uint8_t
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 #define TC358870_Reset_Pin IOPORT_CREATE_PIN(PORTD, 5)  // out, active low, >12ms.
+#define TC358870_TWI_PORT (&TWIE)                       // Dennis Yeh 2016/03/14 : for TC358870
 
+/// This pin is used as address select during reset, interrupt the rest of the time.
+#define TC358870_ADDR_SEL_INT \
+	IOPORT_CREATE_PIN(PORTD, 2)  // out, Active high, It's also I2C address selection: Slave address = 0x0F if INT = Low
+// during reset, Slave address = 0x1F if INT = High during reset
 #endif  // SVR_HAVE_TOSHIBA_TC358870
 
 #ifdef SVR_IS_HDK_20
@@ -139,11 +144,6 @@ extern uint8_t
 	IOPORT_CREATE_PIN(PORTD, 0)  // in, 1.8v power good, asserts low if output voltage is low due to thermal shutdown,
                                  // overcurrent, over/under-voltage or EN shut down.
 #define USB_SW_OC IOPORT_CREATE_PIN(PORTD, 1)  // out, HW NC, Don't care.
-
-/// @todo Comment says this is used as output, but Coretronic fork has this initialized as input... (f.k.a Int_HDMI_A)
-#define I2C_Addr_Sel \
-	IOPORT_CREATE_PIN(PORTD, 2)  // out, Active high, It's also I2C address selection: Slave address = 0x0F if INT = Low
-                                 // during reset, Slave address = 0x1F if INT = High during reset
 
 #endif  // SVR_IS_HDK_20
 

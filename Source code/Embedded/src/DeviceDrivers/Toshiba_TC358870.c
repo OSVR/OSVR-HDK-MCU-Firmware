@@ -4,6 +4,24 @@
  * Created: 7/21/2016 8:30:05 AM
  *  Author: Coretronic, Sensics
  */
+/*
+ * Copyright 2016 Sensics, Inc.
+ * Copyright 2016 OSVR and contributors.
+ * Copyright 2016 Dennis Yeh.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 
 // Options header
 #include "GlobalOptions.h"
@@ -22,6 +40,12 @@
 
 // asf header
 #include <ioport.h>
+#include <twi_master.h>
+
+// standard header
+#include <limits.h>
+
+static TC358870_Op_Status_t Toshiba_TC358870_I2C_Write_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len);
 
 static uint8_t s_tc358870_init_count = 0;
 
@@ -56,6 +80,9 @@ void Toshiba_TC358870_Trigger_Reset()
 
 enum
 {
+	TC_REG_SYS_CONTROL = 0x0002,
+	TC_REG_CONFIG_CONTROL_0 = 0x0004,
+	TC_REG_CONFIG_CONTROL_1 = 0x0006,
 	TC_REG_DCSCMD_Q = 0x0504,
 	TC_REG_SYS_STATUS = 0x8520,
 #if 0
@@ -75,6 +102,43 @@ static inline bool checkMask(uint8_t value, uint8_t mask)
 	// be clever enough to turn the first approach into this.
 	return ((value ^ mask) & mask) == 0x0;
 #endif
+}
+
+/// General implementation of the I2C write, used by all sizes of writes.
+static inline TC358870_Op_Status_t Toshiba_TC358870_I2C_Write_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len)
+{
+	twi_package_t packet_write = {
+	    .addr = reg,                            //< register to write to
+	    .addr_length = sizeof(TC358870_Reg_t),  //< length of register address
+	    .chip = TC358870_ADDR,                  //< bus address
+	    .buffer = (void*)buf,                   //< buffer to write
+	    .length = len,                          //< buffer length
+	    .no_wait = false                        //< block until the bus is available to send this.
+	};
+	return (TC358870_Op_Status_t)twi_master_write(TC358870_TWI_PORT, &packet_write);
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8(TC358870_Reg_t reg, uint8_t val)
+{
+	return Toshiba_TC358870_I2C_Write_Impl(reg, &val, sizeof(val));
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write16(TC358870_Reg_t reg, uint16_t val)
+{
+	uint8_t buf[sizeof(val)];
+	buf[0] = (uint8_t)(val & 0xff);
+	buf[1] = (uint8_t)((val >> CHAR_BIT) & 0xff);
+	return Toshiba_TC358870_I2C_Write_Impl(reg, buf, sizeof(buf));
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32(TC358870_Reg_t reg, uint32_t val)
+{
+	uint8_t buf[sizeof(val)];
+	buf[0] = (uint8_t)(val & 0xff);
+	buf[1] = (uint8_t)((val >> CHAR_BIT) & 0xff);
+	buf[2] = (uint8_t)((val >> (2 * CHAR_BIT)) & 0xff);
+	buf[3] = (uint8_t)((val >> (3 * CHAR_BIT)) & 0xff);
+	return Toshiba_TC358870_I2C_Write_Impl(reg, buf, sizeof(buf));
 }
 
 /// assumes the mask you pass has only one bit set!
@@ -118,6 +182,42 @@ void Toshiba_TC358870_DSI_Write_Cmd_Short_Param(uint8_t cmd, uint8_t param)
 	// uint8_t yyCmd, uint8_t zzArg
 	// want to send 0xzzyy
 	TC358870_i2c_Write(TC_REG_DCSCMD_Q, (((uint16_t)param) << sizeof(cmd)) | ((uint16_t)cmd), 2);
+}
+
+#if 0
+void Toshiba_TC358870_Set_Address_AutoIncrement(bool value)
+{
+	static const uint8_t AutoIndexBit = 2;
+	uint8_t data;
+	if (TC358870_i2c_Read(TC_REG_CONFIG_CONTROL_0, &data) != TC358870_OK) {
+		// don't set if we couldn't read.
+		return;
+	}
+	if (value) {
+	data |= (0x01 << AutoIndexBit);
+	} else {
+	data &= !(0x01<<AutoIndexBit);
+	}
+	TC358870_i2c_Write
+}
+#endif
+
+void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_PLL_Conf_t conf)
+{
+	uint32_t val = 0;
+	// load in MP_LBW
+	val |= (uint32_t)(0x03 & ((uint8_t)conf.low_bandwidth_setting)) << 16;
+	// now MP_PRD
+	val |= (uint32_t)(0x0f & (conf.input_divider - 1)) << 12;
+	// MP_FRS
+	val |= (uint32_t)(0x03 & ((uint8_t)conf.hsck_freq_range_post_divider)) << 10;
+	// LFBREN
+	if (conf.lower_freq_bound_removal)
+	{
+		val |= (uint32_t)(0x01) << 9;
+	}
+	// Finally, MP_FBD
+	val |= (uint32_t)(0x01ff & (conf.feedback_divider_value - 1));
 }
 
 /// Send a "long" DSI command with data (may be of length 0)

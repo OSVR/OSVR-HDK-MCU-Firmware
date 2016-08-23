@@ -1,8 +1,33 @@
 /*
  * Toshiba_TC358870.h
  *
+ * Requires definitions of:
+ * - TC358870_Reset_Pin
+ * - TC358870_ADDR (I2C address, either 0x0f or 0x1f depending on reset state of INT)
+ * - TC358870_TWI_PORT (to something like (&TWIE) )
+ * - TC358870_TWI_SPEED (100000 or 400kHz or 2MHz)
+ * - TC358870_ADDR_SEL_INT (an IOPORT_CREATE_PIN for where you connected INT/addr_select)
+ *
  * Created: 7/21/2016 8:29:17 AM
  *  Author: Coretronic, Sensics
+ */
+/*
+ * Copyright 2016 Sensics, Inc.
+ * Copyright 2016 OSVR and contributors.
+ * Copyright 2016 Dennis Yeh.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 #ifndef TOSHIBA_TC358870_H_
@@ -17,6 +42,16 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
+typedef enum {
+	TOSHIBA_TC358770_OK = 0,
+	TOSHIBA_TC358770_ERR_IO = -1,
+	TOSHIBA_TC358770_ERR_BUFFER = -7,
+	TOSHIBA_TC358770_ERR_BUS_STATE = -5,
+	TOSHIBA_TC358770_ERR_INVALID_ARG = -8
+} TC358870_Op_Status_t;
+
+typedef uint16_t TC358870_Reg_t;
 
 /// Sets up the i2c bus, does an initial read, then calls the "black-box" PowerOnSeq libhdk20 function that, among other
 /// things, eventually calls the other libhdk20 function TC358870_Init_Receive_HDMI_Signal
@@ -35,6 +70,18 @@ void Toshiba_TC358870_Trigger_Reset(void);
 /// Checks the status register to see if the toshiba chip has stable video sync.
 bool Toshiba_TC358870_Have_Video_Sync(void);
 
+/// Writes an 8-bit byte to the given register over I2C.
+/// Does wait for the bus to become available, but returns other errors from I2C code as-is.
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8(TC358870_Reg_t reg, uint8_t val);
+
+/// Writes 16 bits starting at the given register address over I2C.
+/// Does wait for the bus to become available, but returns other errors from I2C code as-is.
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write16(TC358870_Reg_t reg, uint16_t val);
+
+/// Writes 32 bits starting at the given register address over I2C.
+/// Does wait for the bus to become available, but returns other errors from I2C code as-is.
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32(TC358870_Reg_t reg, uint32_t val);
+
 /// Send a short DSI command with no parameter.
 void Toshiba_TC358870_DSI_Write_Cmd_Short(uint8_t cmd);
 
@@ -43,5 +90,34 @@ void Toshiba_TC358870_DSI_Write_Cmd_Short_Param(uint8_t cmd, uint8_t param);
 
 /// Send a "long" DSI command with data (may be of length 0)
 // void Toshiba_TC358870_DSI_Write_Cmd_Long(uint8_t cmd, uint16_t len, uint8_t * data);
+
+void Toshiba_TC358870_Set_Address_AutoIncrement(bool value);
+
+typedef struct Toshiba_TC358870_MIPI_PLL_Conf
+{
+	enum
+	{
+		LBW_25PCT_OF_MAX = 0x00,
+		LBW_33PCT_OF_MAX = 0x01,
+		LBW_50PCT_OF_MAX = 0x02,
+		LBW_MAX = 0x03
+	} low_bandwidth_setting;
+
+	/// raw input divider value: max value of 9 (will have 1 subtracted then be fit into 4 bits)
+	uint8_t input_divider;
+	enum
+	{
+		FRS_500_1G = 0x00,
+		FRS_250_500 = 0x01,
+		FRS_125_250 = 0x02,
+		FRS_62_5_125 = 0x03
+	} hsck_freq_range_post_divider;
+	bool lower_freq_bound_removal;
+
+	/// feedback divider value: max value 2049 (will have 1 subtracted then be fit into 9 bits.)
+	uint16_t feedback_divider_value;
+} Toshiba_TC358870_MIPI_PLL_Conf_t;
+
+void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_PLL_Conf_t conf);
 
 #endif /* TOSHIBA_TC358870_H_ */

@@ -110,9 +110,12 @@ extern uint8_t
 #define TC358870_TWI_PORT (&TWIE)                       // Dennis Yeh 2016/03/14 : for TC358870
 
 /// This pin is used as address select during reset, interrupt the rest of the time.
-#define TC358870_ADDR_SEL_INT \
-	IOPORT_CREATE_PIN(PORTD, 2)  // out, Active high, It's also I2C address selection: Slave address = 0x0F if INT = Low
-// during reset, Slave address = 0x1F if INT = High during reset
+/// out, Active high, It's also I2C address selection: Slave address = 0x0F if INT = Low
+/// during reset, Slave address = 0x1F if INT = High during reset
+#define TC358870_ADDR_SEL_INT IOPORT_CREATE_PIN(PORTD, 2)
+/// in, 1.8v power good, asserts low if output voltage is low due to thermal shutdown,
+/// overcurrent, over/under-voltage or EN shut down.
+#define TC358870_PWR_GOOD IOPORT_CREATE_PIN(PORTD, 0)
 #endif  // SVR_HAVE_TOSHIBA_TC358870
 
 #ifdef SVR_IS_HDK_20
@@ -140,9 +143,6 @@ extern uint8_t
 #define AUD_MUTE IOPORT_CREATE_PIN(PORTC, 3)
 
 // port D
-#define PWR_GOOD_2V5 \
-	IOPORT_CREATE_PIN(PORTD, 0)  // in, 1.8v power good, asserts low if output voltage is low due to thermal shutdown,
-                                 // overcurrent, over/under-voltage or EN shut down.
 #define USB_SW_OC IOPORT_CREATE_PIN(PORTD, 1)  // out, HW NC, Don't care.
 
 #endif  // SVR_IS_HDK_20

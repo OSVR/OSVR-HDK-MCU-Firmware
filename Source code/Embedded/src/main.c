@@ -190,7 +190,7 @@ int main(void)
 	}
 #endif  // DSIGHT
 
-	// ProgramMTP0();
+// ProgramMTP0();
 #endif  // SVR_ENABLE_VIDEO_INPUT
 
 #ifdef BNO070
@@ -274,14 +274,14 @@ inline static void local_display_on(uint8_t id)
 	Display_Init(id);  // todo: add back after debug of board
 #endif
 	Display_On(id);
-	if (id == 1)
+	if (id == Display1)
 	{
 		VideoInput_Update_Resolution_Detection();
 #ifdef BNO070
 		Update_BNO_Report_Header();
 #endif
 	}
-/// @todo and similarly, why dipslay init again afterwards?
+/// @todo and similarly, why display init again afterwards?
 #if !defined(H546DLT01) && !defined(OSVRHDK)
 	Display_Init(id);  // todo: add back after debug of board
 #endif
@@ -289,7 +289,7 @@ inline static void local_display_on(uint8_t id)
 inline static void local_display_off(uint8_t id)
 {
 	Display_Off(id);
-	if (id == 1)
+	if (id == Display1)
 	{
 		VideoInput_Update_Resolution_Detection();
 #ifdef BNO070

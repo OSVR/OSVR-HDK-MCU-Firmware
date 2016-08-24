@@ -39,12 +39,15 @@
 // Vendor library header
 #include <libhdk20.h>
 
-// asf header
+// asf headers
 #include <ioport.h>
 #include <twi_master.h>
+#include <delay.h>
 
 // standard header
 #include <limits.h>
+
+#include "Toshiba_TC358870_Setup_Impl.h"
 
 // -- Basic support functionality -- //
 
@@ -54,6 +57,7 @@ static TC358870_Op_Status_t Toshiba_TC358870_I2C_Write_Impl(TC358870_Reg_t reg, 
 /// General implementation of the I2C read, used by all sizes of reads.
 static TC358870_Op_Status_t Toshiba_TC358870_I2C_Read_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len);
 
+/// The toshiba chip's registers have two-byte addresses. We need to split that up to fit into the address array.
 #define TC_REG_CONVERSION(REG)                                                                  \
 	{                                                                                           \
 		BITUTILS_GET_NTH_LEAST_SIG_BYTE(0, (REG)), BITUTILS_GET_NTH_LEAST_SIG_BYTE(1, (REG)), 0 \
@@ -88,15 +92,7 @@ static inline TC358870_Op_Status_t Toshiba_TC358870_I2C_Read_Impl(TC358870_Reg_t
 	    .length = len,                          //< buffer length
 	    .no_wait = false                        //< block until the bus is available to send this.
 	};
-	TC358870_Op_Status_t status = (TC358870_Op_Status_t)twi_master_read(TC358870_TWI_PORT, &packet_read);
-	while (TOSHIBA_TC358770_OK != status && TOSHIBA_TC358770_ERR_BUFFER != status &&
-	       TOSHIBA_TC358770_ERR_INVALID_ARG != status)
-	{
-		/// We think we can beat io and bus state errors.
-		/// buffer errors mean that the buffer is full, so don't bother re-trying those.
-		status = (TC358870_Op_Status_t)twi_master_read(TC358870_TWI_PORT, &packet_read);
-	}
-	return status;
+	return (TC358870_Op_Status_t)twi_master_read(TC358870_TWI_PORT, &packet_read);
 }
 
 TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8(TC358870_Reg_t reg, uint8_t val)
@@ -138,10 +134,15 @@ TC358870_Op_Status_t Toshiba_TC358870_I2C_Read16(TC358870_Reg_t reg, uint16_t* v
 // Select register addresses
 enum
 {
+	TC_REG_DSITX1_OFFSET = 0x0200,  //< add to any DSITX0 register address
 	TC_REG_SYS_CONTROL = 0x0002,
 	TC_REG_CONFIG_CONTROL_0 = 0x0004,
 	TC_REG_CONFIG_CONTROL_1 = 0x0006,
+	TC_REG_INT_STATUS = 0x0014,
+	TC_REG_INT_STATUS_HDMI_INT_BITMASK = BITUTILS_BIT(9),
 	TC_REG_DCSCMD_Q = 0x0504,
+	TC_REG_MISC_INT = 0x850B,
+	TC_REG_MISC_INT_SYNC_CHG_BITMASK = BITUTILS_BIT(1),
 	TC_REG_SYS_STATUS = 0x8520,
 #if 0
 	TC_REG_SYS_STATUS_HAVE_VIDEO_MASK = BITUTILS_BIT(7) | BITUTILS_BIT(3) /* PHY DE detect */ | BITUTILS_BIT(2) /* PHY PLL lock */ | BITUTILS_BIT(1) /* TMDS input amplitude */ | BITUTILS_BIT(0) /* DDC_Power input */
@@ -151,21 +152,51 @@ enum
 
 static uint8_t s_tc358870_init_count = 0;
 
-void Toshiba_TC358870_Init(void)
+void Toshiba_TC358870_Base_Init(void)
 {
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: Start");
 #endif
+	twi_master_options_t opt = {.speed = TC358870_TWI_SPEED,  //< used in twi_master_setup with the TWI_BAUD macro and
+	                                                          // the system clock to compute the .speed_reg member.
+	                            .chip = TC358870_ADDR};
+	/// twi_master_setup sets .speed_reg for you and starts appropriate clocks before calling twi_master_init.
+	twi_master_setup(TC358870_TWI_PORT, &opt);
+
+	WriteLn("Toshiba_TC358870_Init: Waiting for power");
+	while (!ioport_get_value(TC358870_PWR_GOOD))
+	{
+		delay_us(50);
+	}
+#if 0
 	// Dennis Yeh 2016/03/14 : for TC358870
 	uint8_t tc_data;
-	TC358870_i2c_Init();
-	TC358870_i2c_Read(0x0000, &tc_data);
+	/// dummy read?
+	Toshiba_TC358870_I2C_Read8(0x0000, &tc_data);
+#endif
+	ioport_set_pin_low(TC358870_Reset_Pin);
+	ioport_set_pin_low(PANEL_RESET);
+	svr_yield_ms(50);
+	ioport_set_pin_high(TC358870_Reset_Pin);
+	ioport_set_pin_high(PANEL_RESET);
+	svr_yield_ms(5);
 
-	PowerOnSeq();
+	// Turn on auto-increment.
+	Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_0, BITUTILS_BIT(2));
+
+	// Toshiba_TC358870_Init_Receiver();
 	s_tc358870_init_count++;
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: End");
 #endif
+}
+
+void Toshiba_TC358870_Init_Once(void)
+{
+	if (0 == s_tc358870_init_count)
+	{
+		Toshiba_TC358870_Base_Init();
+	}
 }
 
 void Toshiba_TC358870_Init_Receiver() { TC358870_Init_Receive_HDMI_Signal(); }
@@ -174,7 +205,7 @@ void Toshiba_TC358870_Trigger_Reset()
 {
 	WriteLn("Toshiba_TC358870 Resetting");
 	ioport_set_pin_low(TC358870_Reset_Pin);
-	svr_yield_ms(12);
+	svr_yield_ms(50);
 	ioport_set_pin_high(TC358870_Reset_Pin);
 }
 
@@ -192,10 +223,14 @@ void Toshiba_TC358870_Trigger_Reset()
 bool Toshiba_TC358870_Have_Video_Sync(void)
 {
 	uint8_t tc_data;
-
+#if 0
 	if (TC358870_i2c_Read(TC_REG_SYS_STATUS, &tc_data) != TC358870_OK)  // get SYS_STATUS
 		return false;
-
+#endif
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Read8(TC_REG_SYS_STATUS, &tc_data))
+	{
+		return false;
+	}
 	/// @todo - should we check the lower nybble too (PHY DE detect, PHY PLL, TMDS input amplitude, and DDC power
 	/// input)?
 	/// Bit 7 is input video sync - bits 6, 5, and 4 are unimportant to the task at hand, so equality to 0x9f is not
@@ -219,24 +254,6 @@ void Toshiba_TC358870_DSI_Write_Cmd_Short_Param(uint8_t cmd, uint8_t param)
 	Toshiba_TC358870_I2C_Write16(TC_REG_DCSCMD_Q, (((uint16_t)param) << sizeof(cmd)) | ((uint16_t)cmd));
 }
 
-#if 0
-void Toshiba_TC358870_Set_Address_AutoIncrement(bool value)
-{
-	static const uint8_t AutoIndexBit = 2;
-	uint8_t data;
-	if (TC358870_i2c_Read(TC_REG_CONFIG_CONTROL_0, &data) != TC358870_OK) {
-		// don't set if we couldn't read.
-		return;
-	}
-	if (value) {
-	data |= (0x01 << AutoIndexBit);
-	} else {
-	data &= !(0x01<<AutoIndexBit);
-	}
-	TC358870_i2c_Write
-}
-#endif
-
 void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_PLL_Conf_t conf)
 {
 	uint32_t val = 0;
@@ -257,5 +274,56 @@ void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_
 
 /// Send a "long" DSI command with data (may be of length 0)
 // void Toshiba_TC358870_DSI_Write_Cmd_Long(uint8_t cmd, uint16_t len, uint8_t * data);
+
+void Toshiba_TC358870_Clear_HDMI_Sync_Change_Int()
+{
+	Toshiba_TC358870_I2C_Write8(TC_REG_MISC_INT, TC_REG_MISC_INT_SYNC_CHG_BITMASK);
+	Toshiba_TC358870_I2C_Write16(TC_REG_INT_STATUS, TC_REG_INT_STATUS_HDMI_INT_BITMASK);
+}
+
+void Toshiba_TC358870_Enable_Video_TX()
+{
+	uint8_t data;
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Read8(TC_REG_CONFIG_CONTROL_0, &data))
+	{
+		WriteLn("TC358770: Could not read config control reg 0");
+		return;
+	}
+	// Enable Video TX0 and TX1
+	data |= BITUTILS_BIT(0) | BITUTILS_BIT(1);
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_0, data))
+	{
+		WriteLn("TC358770: Could not write config control reg 0");
+		return;
+	}
+	// Switch clock source to HDMI pixel clock
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_1, 0x0))
+	{
+		WriteLn("TC358770: Could not write config control reg 1");
+		return;
+	}
+}
+void Toshiba_TC358870_Disable_Video_TX()
+{
+	uint8_t data;
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Read8(TC_REG_CONFIG_CONTROL_0, &data))
+	{
+		WriteLn("TC358770: Could not read config control reg 0");
+		return;
+	}
+	// Disable Video TX0 and TX1
+	data &= ~((uint8_t)(BITUTILS_BIT(0) | BITUTILS_BIT(1)));
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_0, data))
+	{
+		WriteLn("TC358770: Could not write config control reg 0");
+		return;
+	}
+	// Switch clock source back to reference clock
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_1, BITUTILS_BIT(3)))
+	{
+		WriteLn("TC358770: Could not write config control reg 1");
+		return;
+	}
+}
 
 #endif  // SVR_HAVE_TOSHIBA_TC358870

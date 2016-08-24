@@ -7,6 +7,8 @@
  * - TC358870_TWI_PORT (to something like (&TWIE) )
  * - TC358870_TWI_SPEED (100000 or 400kHz or 2MHz)
  * - TC358870_ADDR_SEL_INT (an IOPORT_CREATE_PIN for where you connected INT/addr_select)
+ * - TC358870_PWR_GOOD (an IOPORT_CREATE_PIN that goes high when the TC power rail is good and the chip power-on
+ * sequence can continue)
  *
  * Created: 7/21/2016 8:29:17 AM
  *  Author: Coretronic, Sensics
@@ -53,9 +55,13 @@ typedef enum {
 
 typedef uint16_t TC358870_Reg_t;
 
-/// Sets up the i2c bus, does an initial read, then calls the "black-box" PowerOnSeq libhdk20 function that, among other
+/// Sets up the i2c bus, does an initial read, then resets the chip and the panel.
+/// Formerly called the the "black-box" PowerOnSeq libhdk20 function that, among other
 /// things, eventually calls the other libhdk20 function TC358870_Init_Receive_HDMI_Signal
-void Toshiba_TC358870_Init(void);
+void Toshiba_TC358870_Base_Init(void);
+
+/// Calls Toshiba_TC358870_Base_Init() only if it hasn't been called before.
+void Toshiba_TC358870_Init_Once(void);
 
 /// Wraps libhdk20 function TC358870_Init_Receive_HDMI_Signal
 void Toshiba_TC358870_Init_Receiver(void);
@@ -97,8 +103,6 @@ void Toshiba_TC358870_DSI_Write_Cmd_Short_Param(uint8_t cmd, uint8_t param);
 /// Send a "long" DSI command with data (may be of length 0)
 // void Toshiba_TC358870_DSI_Write_Cmd_Long(uint8_t cmd, uint16_t len, uint8_t * data);
 
-void Toshiba_TC358870_Set_Address_AutoIncrement(bool value);
-
 typedef struct Toshiba_TC358870_MIPI_PLL_Conf
 {
 	enum
@@ -125,5 +129,45 @@ typedef struct Toshiba_TC358870_MIPI_PLL_Conf
 } Toshiba_TC358870_MIPI_PLL_Conf_t;
 
 void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_PLL_Conf_t conf);
+
+/*
+/// approximation of TC358870_Init_Receive_HDMI_Signal in factored-out functions
+void TC358870_Init_Receive_HDMI_Signal() {
+  Toshiba_TC358870_SW_Reset();
+  Toshiba_TC358870_Prepare_TX();
+  AUO_H381DLN01_Init(0);
+  Toshiba_TC358870_Configure_Splitter();
+  Toshiba_TC358870_HDMI_Setup();
+
+  // strange waiting for video sync here, then...
+  Toshiba_TC358870_Enable_Video_TX();
+
+  if (this wasn't the first time in here) {
+    // this is TC358870_Reset_MIPI
+    AUO_H381DLN01_Reset();
+
+    // approximately:
+    Toshiba_TC358870_Disable_Video_TX();
+    set then clear bit 9 (CTxRst) of 0x0002 - software reset of DSI-TX
+    delay_ms(150);
+    Toshiba_TC358870_Prepare_TX();
+    AUO_H381DLN01_Init(1);
+    Toshiba_TC358870_Enable_Video_TX();
+  }
+}
+*/
+
+void Toshiba_TC358870_Clear_HDMI_Sync_Change_Int(void);
+void Toshiba_TC358870_Enable_Video_TX(void);
+void Toshiba_TC358870_Disable_Video_TX(void);
+
+/// Original first step of TC358870_Init_Receive_HDMI_Signal
+void Toshiba_TC358870_SW_Reset(void);
+/// This is the portion of TC358870_Init_Receive_HDMI_Signal after the software reset that preceded
+/// AUO_H381DLN01_Init(0) (which would send the setup commands to the panel and sleep out, but not display on)
+void Toshiba_TC358870_Prepare_TX(void);
+/// This is the portion of TC358870_Init_Receive_HDMI_Signal with DSI/panel related code following AUO_H381DLN01_Init
+void Toshiba_TC358870_Configure_Splitter(void);
+void Toshiba_TC358870_HDMI_Setup(void);
 
 #endif /* TOSHIBA_TC358870_H_ */

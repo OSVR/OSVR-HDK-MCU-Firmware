@@ -82,24 +82,21 @@ void custom_board_init(void)
 /// the HDK_20. Unclear how much of this is actually required for proper operation and how much is just extraneous: the
 /// system did work with just the level shifter output enable setup.
 #ifdef SVR_IS_HDK_20
-	/// @todo Is this an MCU feature that just the HDK20 needs, or is this effectively dead code?
 	ioport_configure_pin(
 	    MCU_LEVEL_SHIFT_OE,
 	    IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // I/O level shift gate enable. (i2c, hdmi_rst, 2848_reset).
-/// @todo the device was functional without these configured.
-#if 0
-		ioport_configure_pin(ANA_PWR_IN, IOPORT_DIR_INPUT);                       // 5v power good indicator.
-		ioport_configure_pin(EDID_EEP_WP, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // EDID EEP write protect (Low protect)
+	ioport_configure_pin(TC358870_PWR_GOOD, IOPORT_DIR_INPUT);  // TPS54478 (U16) 1.8v power good indicator.
+	/// @todo the device was functional without these configured.
+	ioport_configure_pin(ANA_PWR_IN, IOPORT_DIR_INPUT);                       // 5v power good indicator.
+	ioport_configure_pin(EDID_EEP_WP, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // EDID EEP write protect (Low protect)
 
-		// audio block IO   (All of this block are reserved !! HW NC)
-		ioport_configure_pin(AUD_JACK_DETECT, IOPORT_DIR_INPUT);               // audio phone jack detection.
-		ioport_configure_pin(AUD_DEEM, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // AUD_DEEM,  de-emphasis , 0:off, 1:on
-		ioport_configure_pin(AUD_MUTE,
-		IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // audio soft mute, low: mute off, high: mute on.
-		// AUD_PCS, it's DAC output for audio codec operation mode. (Reserve)
+	// audio block IO   (All of this block are reserved !! HW NC)
+	ioport_configure_pin(AUD_JACK_DETECT, IOPORT_DIR_INPUT);               // audio phone jack detection.
+	ioport_configure_pin(AUD_DEEM, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // AUD_DEEM,  de-emphasis , 0:off, 1:on
+	ioport_configure_pin(AUD_MUTE,
+	                     IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // audio soft mute, low: mute off, high: mute on.
+// AUD_PCS, it's DAC output for audio codec operation mode. (Reserve)
 
-		ioport_configure_pin(PWR_GOOD_2V5, IOPORT_DIR_INPUT);  // TPS54478 (U16) 1.8v power good indicator.
-#endif  // 0
 #endif
 
 // Solomon SSD2848 IO Init.
@@ -132,8 +129,8 @@ void custom_board_init(void)
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 	ioport_configure_pin(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, > 12ms.
-	/// @todo why is this being initialized as input? The pin is used as Int_HDMI_A on other variants, but on HDK_20
-	/// it's TC358870_ADDR_SEL_INT
+
+	/// This is both address selection and an interrupt pin.
 	ioport_configure_pin(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT);
 #endif
 

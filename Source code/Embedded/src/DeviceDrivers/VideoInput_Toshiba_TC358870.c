@@ -16,6 +16,7 @@
 #include "my_hardware.h"
 #include "Console.h"
 #include "SvrYield.h"
+#include "BitUtilsC.h"
 
 #include <stdio.h>  // for sprintf
 
@@ -69,17 +70,36 @@ bool HDMI_IsVideoExisting()
 }
 #endif
 static bool haveInitOnce = false;
+
+static void VideoInput_Init_Impl(void)
+{
+	Toshiba_TC358870_Disable_Video_TX();
+	// software reset HDMI
+	Toshiba_TC358870_I2C_Write16(0x0002, BITUTILS_BIT(8));
+	Toshiba_TC358870_I2C_Write16(0x0002, 0);
+	Toshiba_TC358870_HDMI_Setup();
+}
+
 void VideoInput_Init(void)
 {
-	// No separate init required - all done in Display_System_Init() since it's just one chip.
 	if (haveInitOnce)
 	{
 		// This is a repeat init - presumably from serial console - so we'll actually call over to the TC358870 driver
 		// (used in Display_System_Init()) since that's where the meat of initializing the chip happens.
-		Toshiba_TC358870_Init();
+		// Toshiba_TC358870_Base_Init();
+		bool haveVideo = VideoInput_Get_Status();
+		VideoInput_Init_Impl();
+		if (haveVideo)
+		{
+			Toshiba_TC358870_Enable_Video_TX();
+		}
 	}
 	else
 	{
+		// start the chip, if it hasn't been started.
+		Toshiba_TC358870_Init_Once();
+
+		VideoInput_Init_Impl();
 		haveInitOnce = true;
 	}
 
@@ -96,13 +116,14 @@ void VideoInput_Update_Resolution_Detection(void)
 void VideoInput_Task(void) {}
 void VideoInput_Reset(uint8_t inputId)
 {
-	if (inputId == 1)
+	if (inputId != 1)
 	{
-		WriteLn("reset HDMI1");
-		Toshiba_TC358870_Trigger_Reset();
-	}
-	else
 		WriteLn("Wrong HDMI num");
+		return;
+	}
+
+	WriteLn("reset HDMI1");
+	Toshiba_TC358870_Trigger_Reset();
 }
 
 static const char LIBHDK2_NOT_SUPPORTED[] = "TC358870 via libhdk20 does not support this feature.";

@@ -81,18 +81,18 @@ int TC358870_i2c_Init(void)
 	return TC358870_OK;
 }
 
-int TC358870_i2c_Read(ui16_t RegNum, ui8_t *data)
+int TC358870_i2c_Read(uint16_t RegNum, uint8_t *data)
 {
 	static status_code_t nResult = 0;
-	ui8_t data_received[2] = {0x00, 0x00};
+	uint8_t data_received[2] = {0x00, 0x00};
 
 	twi_package_t packet_read = {
-	    .addr[0] = (ui8_t)((RegNum >> 8) & 0xFF),  // TWI slave memory address data
-	    .addr[1] = (ui8_t)(RegNum & 0xFF),         // TWI slave memory address data
-	    .addr_length = sizeof(ui16_t),             // TWI slave memory address data size
-	    .chip = TC358870_ADDR,                     // TWI slave bus address
-	    .buffer = data_received,                   // transfer data source buffer
-	    .length = sizeof(data_received)            // transfer data size (bytes)
+	    .addr[0] = (uint8_t)((RegNum >> 8) & 0xFF),  // TWI slave memory address data
+	    .addr[1] = (uint8_t)(RegNum & 0xFF),         // TWI slave memory address data
+	    .addr_length = sizeof(uint16_t),             // TWI slave memory address data size
+	    .chip = TC358870_ADDR,                       // TWI slave bus address
+	    .buffer = data_received,                     // transfer data source buffer
+	    .length = sizeof(data_received)              // transfer data size (bytes)
 	};
 
 	nResult = twi_master_read(TWI_TC358870_PORT, &packet_read);
@@ -106,39 +106,39 @@ int TC358870_i2c_Read(ui16_t RegNum, ui8_t *data)
 	return TC358870_ERROR;
 }
 
-int TC358870_i2c_Write(ui16_t RegNum, ui32_t nValue, int nLength)
+int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength)
 {
 	static status_code_t nResult = 0;
-	ui8_t sendData[4];
+	uint8_t sendData[4];
 
-	memset(sendData, 0x00, sizeof(ui8_t *) * 4);
+	memset(sendData, 0x00, sizeof(uint8_t *) * 4);
 	if (nLength == 1)
 	{
-		sendData[0] = (ui8_t)nValue;
+		sendData[0] = (uint8_t)nValue;
 	}
 	else if (nLength == 2)
 	{
-		sendData[0] = (ui8_t)(nValue & 0xFF);
-		sendData[1] = (ui8_t)((nValue >> 8) & 0xFF);
+		sendData[0] = (uint8_t)(nValue & 0xFF);
+		sendData[1] = (uint8_t)((nValue >> 8) & 0xFF);
 	}
 	else if (nLength == 4)
 	{
-		sendData[0] = (ui8_t)(nValue & 0xFF);
-		sendData[1] = (ui8_t)((nValue >> 8) & 0xFF);
-		sendData[2] = (ui8_t)((nValue >> 16) & 0xFF);
-		sendData[3] = (ui8_t)((nValue >> 24) & 0xFF);
+		sendData[0] = (uint8_t)(nValue & 0xFF);
+		sendData[1] = (uint8_t)((nValue >> 8) & 0xFF);
+		sendData[2] = (uint8_t)((nValue >> 16) & 0xFF);
+		sendData[3] = (uint8_t)((nValue >> 24) & 0xFF);
 	}
 	else
 		return TC358870_ERROR;
 
 	twi_package_t packet = {
-	    .addr[0] = (ui8_t)((RegNum >> 8) & 0xFF),  // TWI slave memory address data
-	    .addr[1] = (ui8_t)(RegNum & 0xFF),         // TWI slave memory address data
-	    .addr_length = sizeof(ui16_t),             // TWI slave memory address data size
-	    .chip = TC358870_ADDR,                     // TWI slave bus address
-	    .buffer = sendData,                        // transfer data source buffer
-	    .length = nLength,                         // transfer data size (bytes)
-	    .no_wait = true                            // return immediately if not available
+	    .addr[0] = (uint8_t)((RegNum >> 8) & 0xFF),  // TWI slave memory address data
+	    .addr[1] = (uint8_t)(RegNum & 0xFF),         // TWI slave memory address data
+	    .addr_length = sizeof(uint16_t),             // TWI slave memory address data size
+	    .chip = TC358870_ADDR,                       // TWI slave bus address
+	    .buffer = sendData,                          // transfer data source buffer
+	    .length = nLength,                           // transfer data size (bytes)
+	    .no_wait = true                              // return immediately if not available
 	};
 
 	nResult = twi_master_write(TWI_TC358870_PORT, &packet);
@@ -314,7 +314,7 @@ bool IsVideoExistingPolling(void)
 bool PowerOnSeq(void)
 {
 	while (ioport_get_value(PWR_GOOD_2V5) == 0)
-	{   // waiting for power good.
+	{  // waiting for power good.
 		// time out
 		delay_us(50);
 	}
@@ -354,7 +354,7 @@ void Toshiba_TC358870_Reset(void)
 
 int TC358870_Reset_MIPI(void)
 {
-	ui8_t tc_data;
+	uint8_t tc_data;
 
 	AUO_H381DLN01_Reset();
 
@@ -476,7 +476,7 @@ int TC358870_Reset_MIPI(void)
 
 int TC358870_CheckLANEStatus(void)
 {
-	ui8_t tc_data;
+	uint8_t tc_data;
 
 	if (TC358870_i2c_Read(0x0290, &tc_data) != TC358870_OK)  // get SYS_STATUS
 		return TC358870_ERROR;
@@ -495,7 +495,7 @@ int TC358870_CheckLANEStatus(void)
 
 int TC358870_Check0x0294tatus(void)
 {
-	ui8_t tc_data;
+	uint8_t tc_data;
 
 	delay_ms(20);
 
@@ -612,7 +612,7 @@ void OSVR_HDK_EDID(void)
 
 int TC358870_Init_Receive_HDMI_Signal(void)
 {
-	ui8_t tc_data;
+	uint8_t tc_data;
 	static int InitFlag = 0;
 
 	// Initialization to receive HDMI signal
@@ -740,8 +740,8 @@ int TC358870_Init_Receive_HDMI_Signal(void)
 	// TC358870_i2c_Write(0x5014,0x0000, 2); // STX0_DBPX
 	TC358870_i2c_Write(0x508A, 0x1C00, 2);  // STX1_DPX
                                             // TC358870_i2c_Write(0x5090,0x0000, 2); // STX1_DRPX
-// TC358870_i2c_Write(0x5092,0x0000, 2); // STX1_DGPX
-// TC358870_i2c_Write(0x5094,0x0000, 2); // STX1_DBPX
+                                            // TC358870_i2c_Write(0x5092,0x0000, 2); // STX1_DGPX
+                                            // TC358870_i2c_Write(0x5094,0x0000, 2); // STX1_DBPX
 #endif
 
 	// HDMI PHY
@@ -844,7 +844,7 @@ int TC358870_Init_Receive_HDMI_Signal(void)
 
 int TC358870_VideoSyncSignalStatus(void)
 {
-	ui8_t tc_data;
+	uint8_t tc_data;
 
 	if (TC358870_i2c_Read(0x8520, &tc_data) != TC358870_OK)  // get SYS_STATUS
 		return TC358870_ERROR;

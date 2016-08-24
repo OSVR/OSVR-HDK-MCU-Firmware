@@ -24,6 +24,8 @@
 #include "twi_master.h"
 #include "status_codes.h"
 
+#include <stdint.h>
+
 #define TC358870 0
 
 #define TC358870_OK 0
@@ -43,10 +45,6 @@
 
 inline uint8_t ascii_to_dec_8(uint8_t *buf) { return (buf[0] - '0') * 10 + (buf[1] - '0'); }
 extern unsigned char sn[SN_LENGTH];
-
-typedef unsigned char ui8_t;
-typedef unsigned short ui16_t;
-typedef unsigned long ui32_t;
 
 #if 1  // Dennis Yeh : for Toshiba I2C
 #define i2c1_uh2d_write8(x, y) TC358870_i2c_Write(x, y, 1)

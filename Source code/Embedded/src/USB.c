@@ -24,7 +24,7 @@
 #include "TimingDebug.h"
 
 #ifdef OSVRHDK
-#include "nxp\i2c.h"
+#include "NXP/i2c.h"
 #include "string.h"
 #endif
 

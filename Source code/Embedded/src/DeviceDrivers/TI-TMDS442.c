@@ -15,7 +15,7 @@
 // application headers
 #include "Console.h"
 #include "Solomon.h"
-#include "nxp/i2c.h"
+#include "NXP/i2c.h"
 #include "my_hardware.h"
 #include "SideBySide.h"
 

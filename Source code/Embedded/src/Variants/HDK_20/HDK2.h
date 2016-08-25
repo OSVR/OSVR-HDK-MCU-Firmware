@@ -25,6 +25,7 @@
 #include "status_codes.h"
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define TC358870_OK 0
 #define TC358870_ERROR -1
@@ -55,16 +56,15 @@ int TC358870_i2c_Init(void);
 int TC358870_i2c_Read(uint16_t RegNum, uint8_t *data);
 int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength);
 
-int AUO_H381DLN01_Init(int bDisplayON);
-int TC358870_Init_Receive_HDMI_Signal(void);
+void AUO_H381DLN01_Init(int bDisplayON);
+void TC358870_Init_Receive_HDMI_Signal(void);
 
 bool IsVideoExistingPolling(void);
 bool PowerOnSeq(void);
 void AUO_H381DLN01_Reset(void);
 void Toshiba_TC358870_Reset(void);
 
-void Debug_LED_Reset(void);
-int TC358870_VideoSyncSignalStatus(void);
+bool TC358870_VideoSyncSignalStatus(void);
 
 int TC358870_Reset_MIPI(void);
 int TC358870_CheckLANEStatus(void);

@@ -74,7 +74,7 @@ int TC358870_i2c_Init(void)
 
 	opt_TC358870.speed = TC358870_TWI_SPEED;
 	opt_TC358870.chip = TC358870_ADDR;
-	tmpResult = twi_master_setup(TWI_TC358870_PORT, &opt_TC358870);
+	tmpResult = twi_master_setup(TC358870_TWI_PORT, &opt_TC358870);
 	if (tmpResult != STATUS_OK)
 		return TC358870_ERROR;
 
@@ -95,7 +95,7 @@ int TC358870_i2c_Read(uint16_t RegNum, uint8_t *data)
 	    .length = sizeof(data_received)              // transfer data size (bytes)
 	};
 
-	nResult = twi_master_read(TWI_TC358870_PORT, &packet_read);
+	nResult = twi_master_read(TC358870_TWI_PORT, &packet_read);
 
 	if (nResult == STATUS_OK)
 	{
@@ -141,7 +141,7 @@ int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength)
 	    .no_wait = true                              // return immediately if not available
 	};
 
-	nResult = twi_master_write(TWI_TC358870_PORT, &packet);
+	nResult = twi_master_write(TC358870_TWI_PORT, &packet);
 	if (nResult == STATUS_OK)
 		return TC358870_OK;
 
@@ -160,7 +160,7 @@ void debugPrintf(const char *format, ...)
 }
 
 // LCD Initialization --
-int AUO_H381DLN01_Init(int bDisplayON)
+void AUO_H381DLN01_Init(int bDisplayON)
 {
 	TC358870_i2c_Write(0x0504, 0x0015, 2);  // DCSCMD_Q
 	TC358870_i2c_Write(0x0504, 0x07FE, 2);  // DCSCMD_Q
@@ -253,19 +253,19 @@ static void VideoStatusHandler(bool video_status)
 {
 	static int bTCPwrInit = 1;
 
-	if (video_status == VIDEO_NOT_EXIST)
+	if (video_status == false)
 	{  // NO VIDEO
 		AUO_H381DLN01_Reset();
 
 		UpdateResolutionDetection();
 		Update_BNO_Report_Header();
-		ioport_set_value(Debug_LED, DEBUG_LED_OFF);
+		gpio_set_pin_low(Debug_LED);
 	}
 	else
-	{                                             // VIDEO IS READY
-		ioport_set_value(TC358870_Reset_Pin, 0);  // TC358870 reset active
+	{                                          // VIDEO IS READY
+		gpio_set_pin_low(TC358870_Reset_Pin);  // TC358870 reset active
 		delay_ms(50);
-		ioport_set_value(TC358870_Reset_Pin, 1);  // TC358870 reset active
+		gpio_set_pin_high(TC358870_Reset_Pin);  // TC358870 reset active
 		delay_ms(5);
 
 		TC358870_Init_Receive_HDMI_Signal();  // re-initial TC358870 if HDMI unplug.
@@ -273,7 +273,7 @@ static void VideoStatusHandler(bool video_status)
 		UpdateResolutionDetection();
 		Update_BNO_Report_Header();
 
-		ioport_set_value(Debug_LED, DEBUG_LED_ON);
+		gpio_set_pin_high(Debug_LED);
 	}
 }
 
@@ -287,14 +287,14 @@ bool IsVideoExistingPolling(void)
 {
 	uint16_t new_cnt;
 	static uint16_t cnt = 0;
-	static bool last_video_status = VIDEO_NOT_EXIST;
+	static bool last_video_status = false;
 	bool status;
 
 	new_cnt = tc_read_count(&VIDEO_POLLING_TIMER);
 
 	if (new_cnt - cnt > VIDEO_POLLING_PERIOD)
 	{
-		if ((status = HDMI_IsVideoExisting()) != last_video_status)
+		if ((status = TC358870_VideoSyncSignalStatus()) != last_video_status)
 		{  // status is changed...
 			last_video_status = status;
 			VideoStatusHandler(status);
@@ -313,7 +313,7 @@ bool IsVideoExistingPolling(void)
 */
 bool PowerOnSeq(void)
 {
-	while (ioport_get_value(PWR_GOOD_2V5) == 0)
+	while (ioport_get_value(TC358870_PWR_GOOD) == 0)
 	{  // waiting for power good.
 		// time out
 		delay_us(50);
@@ -471,7 +471,9 @@ int TC358870_Reset_MIPI(void)
 		return TC358870_ERROR;
 
 	tc_data = tc_data | 0x0003;
+
 	TC358870_i2c_Write(0x0004, tc_data, 2);
+	return TC358870_OK;
 }
 
 int TC358870_CheckLANEStatus(void)
@@ -524,9 +526,10 @@ void OSVR_HDK_EDID(void)
 	uint8_t edid_year;
 	uint8_t edid_sn_hex[4];
 	uint32_t edid_sn_dec;
-	uint8_t hex[2], buf[20];
+	uint8_t hex[2];
+	char buf[20];
 
-	if (sn_status = eep_read_sn(sn) != 0)
+	if ((sn_status = eep_read_sn(sn)) != 0)
 	{
 		// WriteLn ("Read S/N NG.");
 
@@ -552,7 +555,7 @@ void OSVR_HDK_EDID(void)
 		edid_sn_hex[3] = (uint8_t)((edid_sn_dec & 0xFF000000) >> 24);
 	}
 
-	if (DebugLevel == 0xAA)
+	if (GetDebugLevel() == 0xAA)
 	{  // debug message.
 		WriteLn("S/N Info...\n");
 		sprintf(buf, "Year: %d", edid_year);
@@ -610,7 +613,7 @@ void OSVR_HDK_EDID(void)
 	}
 }
 
-int TC358870_Init_Receive_HDMI_Signal(void)
+void TC358870_Init_Receive_HDMI_Signal(void)
 {
 	uint8_t tc_data;
 	static int InitFlag = 0;
@@ -842,17 +845,14 @@ int TC358870_Init_Receive_HDMI_Signal(void)
 	InitFlag = 1;
 }
 
-int TC358870_VideoSyncSignalStatus(void)
+bool TC358870_VideoSyncSignalStatus(void)
 {
 	uint8_t tc_data;
 
 	if (TC358870_i2c_Read(0x8520, &tc_data) != TC358870_OK)  // get SYS_STATUS
 		return TC358870_ERROR;
 
-	if (tc_data & 0x80)
-		return TC358870_Sync;
-	else
-		return TC358870_NoSync;
+	return ((tc_data & 0x80) != 0);
 }
 
 /*    ==============================================================
@@ -927,7 +927,7 @@ void ProcessFactoryCommand(void)
 			eep_write_sn();
 
 			// verify...
-			i = eep_read_sn(OutString);
+			i = eep_read_sn((unsigned char *)OutString);
 			OutString[SN_LENGTH - 1] = '\0';
 			sn[SN_LENGTH - 1] = '\0';
 
@@ -942,7 +942,7 @@ void ProcessFactoryCommand(void)
 
 		case 'r':  // Read S/N from eeprom.
 		case 'R':
-			if (eep_read_sn(OutString))
+			if (eep_read_sn((unsigned char *)OutString))
 				WriteLn("NG");  // send NG to host.
 			else
 			{

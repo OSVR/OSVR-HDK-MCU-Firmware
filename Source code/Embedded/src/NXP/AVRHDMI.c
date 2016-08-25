@@ -11,17 +11,17 @@
 #include "DeviceDrivers/VideoInput_Protected.h"
 
 // Internal headers for NXP driver
-#include "NXP_AVR_Internal.h"
-#include "tmdlHdmiRx_cfg.h"
-#include "tmbslTDA1997X_functions.h"
 #include "AVRHDMI.h"
-#include "I2C.h"
+#include "NXP_AVR_Internal.h"
+#include "i2c.h"
 #include "my_bit.h"
+#include "tmbslTDA1997X_Functions.h"
+#include "tmdlHdmiRx_cfg.h"
 
 // application headers
-#include "main.h"
-#include "debugStrings.h"
 #include "Console.h"
+#include "debugStrings.h"
+#include "main.h"
 #include "my_hardware.h"
 
 // avr-libc headers
@@ -29,8 +29,8 @@
 
 // asf headers
 #include <delay.h>
-#include <util/delay.h> // yes it uses both delay headers
 #include <ioport.h>
+#include <util/delay.h> // yes it uses both delay headers
 
 // standard headers
 #include <stdio.h>
@@ -39,7 +39,7 @@ void WriteLn_progmem(const char* Msg);
 
 /// @todo ensure this is either a: not called during interrupts or b: all config functions disable interrupts during their operation, or they could result in conflicts/corruption.
 void WriteLn_progmem(const char* Msg)
-// this function prints a string that is stored in program memory to the console. 
+// this function prints a string that is stored in program memory to the console.
 {
 //#ifdef HDMI_DEBUG
     uint8_t i;
@@ -125,14 +125,14 @@ tmdlHdmiRxResolutionID_t ResolutionID0=-1; // identifies detected resolution of 
 
 /* drivers includes */
 #include "tmdlHdmiRx.h"
-#include "tmdlHdmiRx_cfg.h"
 #include "tmdlHdmiRx_IW.h"
+#include "tmdlHdmiRx_cfg.h"
 #ifdef TMFL_TDA19972_FAMILY
     #include "tmbslTDA1997X_local.h"
 #endif
 
 /* drivers infrastructure */
-#include "I2C.h"
+#include "i2c.h"
 
 /*============================================================================*/
 /*                   INTERNAL TYPES                                           */
@@ -323,12 +323,12 @@ const UInt8 edid1080p6050xvYCC[256] =
     0x01,0x00,0x01,0x00,0x01,0x01,0x01,0x01,0x01,0x01,
     0x01,0x01,0x01,0x01,0x65,0x33,0x38,0x30,0x40,0x80,
     0x17,0x70,0x20,0x05,0xC5,0x00,0x46,0x78,0x00,0x00,
-    0x00,0x1C,0x00,0x00,0x00,0xFF,0x00,0x53,0x45,0x4E, 
+    0x00,0x1C,0x00,0x00,0x00,0xFF,0x00,0x53,0x45,0x4E,
     0x53,0x49,0x43,0x53,0x0A,0x20,0x20,0x20,0x20,0x20,
     0x00,0x00,0x00,0xFC,0x00,0x4f,0x53,0x56,0x52,0x20,
     0x48,0x44,0x4B,0x0A,0x20,0x20,0x20,0x20,0x00,0x00,
     0x00,0xFD,0x00,0x3B,0x3C,0x64,0x78,0x11,0x00,0x0A,
-    0x20,0x20,0x20,0x20,0x20,0x20,0x00,0xF3, 
+    0x20,0x20,0x20,0x20,0x20,0x20,0x00,0xF3,
 	#endif
 
 	// optional timing extension, not used
@@ -545,7 +545,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
         NXP_Private_PRINTIF(tmdlHdmiRxManualHPD(gDlHdmiRxInstance0, TMDL_HDMIRX_HPD_LOW), __LINE__);
 #endif
 
-        
+
 
 //		sprintf(Msg,"Inst0=%d",gDlHdmiRxInstance0);
 //		WriteLn(Msg);
@@ -577,7 +577,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
                                             (ptmdlHdmiRxInfoCallback_t)     eventCallback0
                                            ), __LINE__);
 
-        
+
         InstanceOpened0=true;
     }
 #endif
@@ -592,11 +592,11 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     gDlHdmiRxSetupInfo0.hdcpRepeaterEnable = False;
     gDlHdmiRxSetupInfo0.internalEdid = true;
 
-    
+
 #ifndef BYPASS_FIRST_NXP
     NXP_Private_PRINTIF(tmdlHdmiRxInstanceSetup(gDlHdmiRxInstance0, &gDlHdmiRxSetupInfo0), __LINE__);
 #endif
-    
+
 
 
 
@@ -618,7 +618,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 #endif
 #else
     NXP_Private_PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, (UInt8 *) edid1080p6050xvYCC, (UInt16 *) sPAEdid, sPAOffsetEdid), __LINE__);
-    
+
 #endif
 
 
@@ -641,20 +641,20 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 
 
 
-    
+
     /* Set output mode to 4:4:4, blanking and timing code are not inserted, clock mode is single edge */
 
 #ifndef BYPASS_FIRST_NXP
-    NXP_Private_PRINTIF(tmdlHdmiRxSetVideoOutputFormat(gDlHdmiRxInstance0, TMDL_HDMIRX_OUTPUTFORMAT_444, False, False, TMDL_HDMIRX_OUTCLKMODE_SINGLE_EDGE), __LINE__); 
+    NXP_Private_PRINTIF(tmdlHdmiRxSetVideoOutputFormat(gDlHdmiRxInstance0, TMDL_HDMIRX_OUTPUTFORMAT_444, False, False, TMDL_HDMIRX_OUTCLKMODE_SINGLE_EDGE), __LINE__);
 #endif
-    
+
 
     /* Route the video port according to board configuration */
     /* Video port resolution must always be 10 bits */
     /* Here, Blue is output on video port A, Green is output on video port B, Red is output on video port C */
 
 
-    
+
 
 
     VPConf[0].pinGroup = TMDL_HDMI_RX_VP24_G4_3_0;
@@ -680,7 +680,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 #endif
 
 
-    
+
 
 
 
@@ -690,7 +690,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
                                            TMDL_HDMIRX_AUDIOFORMAT_I2S32,
                                            TMDL_HDMIRX_AUDIOSYSCLK_256FS), __LINE__);
 #endif
-    
+
 
 
 
@@ -700,7 +700,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ACTIVITY_DETECTED), __LINE__);                 /* New activity has been detected */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ACTIVITY_LOST), __LINE__);                     /* Activity has been lost */
 #endif
-    
+
 
 
 
@@ -716,36 +716,36 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_SPD_INFOFRAME_RECEIVED), __LINE__);            /* Source product Description infoframe has been received */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUD_INFOFRAME_RECEIVED), __LINE__);            /* Audio infoframe has been received */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_MPS_INFOFRAME_RECEIVED), __LINE__);            /* MPEG Source infoframe has been received */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_ENCRYPTION_DETECTED), __LINE__);               /* Indicates that the active digital input is receiving HDCP encrypted data */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_EESS_HDCP_DETECTED), __LINE__);                /* Indicates that the active digital input is receiving data in EESS mode */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_GBD_PACKET_RECEIVED), __LINE__);               /* Indicates a GAMUT packet has been received */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_SAMPLE_PACKET_DETECTED), __LINE__);      /* Indicates that audio samples packets are detected */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_HBR_PACKET_DETECTED), __LINE__);         /* Indicates that audio HBR packets are detected */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_OBA_PACKET_DETECTED), __LINE__);         /* Indicates that audio OBA packets are detected */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_DST_PACKET_DETECTED), __LINE__);         /* Indicates that audio DST packets are detected */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_HDMI_DETECTED), __LINE__);                     /* Indicates that HDMI stream is detected */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DVI_DETECTED), __LINE__);                      /* Indicates that DVI stream is detected */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_NO_ENCRYPTION_DETECTED), __LINE__);            /* Indicates the the active digital input is not receiving HDCP encrypted data */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_OESS_HDCP_DETECTED), __LINE__);                /* Indicates that the active digital input is receiving data in OESS mode */
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AVI_AVMUTE_ACTIVE), __LINE__);                 /* AV mute active received */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AVI_AVMUTE_INACTIVE), __LINE__);               /* AV mute inactive received */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_AUDIO_SAMPLE_FREQ_CHANGED), __LINE__);         /* Indicates that audio sampling frequency has changed */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_INPUT_LOCKED), __LINE__);                      /* Indicates that clocks are locked on the new active input */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_REPEATER), __LINE__);                          /* Indicates that the HDCP repeater authentication can start */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_24BITS), __LINE__);            /* Indicates that deep color mode is 24 bits */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_30BITS), __LINE__);            /* Indicates that deep color mode is 30 bits */
-    
+
     NXP_Private_PRINTIF(tmdlHdmiRxEnableEvent(gDlHdmiRxInstance0, TMDL_HDMIRX_DEEP_COLOR_MODE_36BITS), __LINE__);            /* Indicates that deep color mode is 36 bits */
 #endif
-    
+
 
 #ifdef HDMI_DEBUG
     WriteLn("End init");
@@ -839,7 +839,7 @@ static void infoFrameCallback0(tmdlHdmiRxEvent_t  event,
     //WriteLn("Info CB 0");
     tmdlHdmiRxAVIInfoframe_t*   pAVIInfoFrame;
 
-    
+
     HDMI_debug_progmem(cReceiverA);
     HDMI_debug_progmem(cInfoframe);
     switch (event)
@@ -919,9 +919,9 @@ static void infoFrameCallback0(tmdlHdmiRxEvent_t  event,
         }
 
         /* Configure the receiver with the new color space */
-        
+
         NXP_Private_PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
-        
+
         break;
 
 #ifndef SUPPORT_3D_FP
@@ -983,11 +983,11 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
 
         /* Display on the terminal the name of the detected resolution */
         HDMI_debug_progmem(cAutomaticDetectionOfResolution);
-		
+
 		// the following lines force the resolution. Uncomment for test if you wish
-        //resolutionID=TMDL_HDMIRX_VIDEORES_1920_1080p_60HZ; 
-        //resolutionID=TMDL_HDMIRX_VIDEORES_1080_1920p_60HZ; 
-		
+        //resolutionID=TMDL_HDMIRX_VIDEORES_1920_1080p_60HZ;
+        //resolutionID=TMDL_HDMIRX_VIDEORES_1080_1920p_60HZ;
+
 		VideoInput_Protected_Report_Signal(); // tell main that it might need to reconfigure Solomon
         storeResolution0(resolutionID);
 
@@ -1002,9 +1002,9 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
         gColorSpaceManagement0.colorimetry = TMEX_APPLI_COLORIMETRY_NO_DATA;
 
         /* Configure the receiver with the new color space */
-        
+
         NXP_Private_PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
-        
+
         break;
 
     case TMDL_HDMIRX_HDMI_DETECTED:
@@ -1018,9 +1018,9 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
         gColorSpaceManagement0.colorimetry = TMEX_APPLI_COLORIMETRY_NO_DATA;
 
         /* Configure the receiver with the new color space */
-        
+
         NXP_Private_PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
-        
+
         break;
 
     case TMDL_HDMIRX_ENCRYPTION_DETECTED:
@@ -1121,7 +1121,7 @@ static void eventCallback0 (tmdlHdmiRxEvent_t  event)
         HDMI_debug_progmem(cErroneousEvent);
         break;
     }
-    
+
 }
 
 
@@ -1277,7 +1277,7 @@ static void storeResolution0(tmdlHdmiRxResolutionID_t resolutionID)
 void NXP_Video_On(void)
 
 {
-	
+
     // FPGA_reset();
 
     //if (NXP_HDMIShadow)
@@ -1306,7 +1306,7 @@ void NXP_Video_Off(void)
 
 static tmErrorCode_t tmExAppliConfigureConversion0(void)
 {
-    
+
     HDMI_debug_progmem(cReceiverA);
     /* In this example application, the chosen output color space is RGB 4:4:4 */
 
@@ -1394,7 +1394,7 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void)
     default:
         HDMI_debug_progmem(SwitchProblem);
     }
-    
+
     return TM_OK;
 }
 
@@ -1496,7 +1496,7 @@ void NXP_HDMI_Task(void)
 
     {
         {
-            //errCode = tmdlHdmiRxHandleInterrupt(0); 
+            //errCode = tmdlHdmiRxHandleInterrupt(0);
             //NXP_Private_PRINTIF(errCode, __LINE__);
         }
     }
@@ -1545,7 +1545,7 @@ void NXP_Report_HDMI_status()
     errCode = tmbslTDA1997XGetFrameMeasurements(instance,&pInterlaced,&pLineMatch,&pFrameFormat,&pLines,&pPixels);
     sprintf(Msg,"L %d P %d I %d",pLines,pPixels,pInterlaced);
     WriteLn(Msg);
-		
+
 	#ifdef SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 		if (ioport_get_pin_level(FPGA_unlocked))
 			WriteLn("No Video detected");

@@ -47,7 +47,7 @@
 
 #include "conf_usb.h"
 /// @todo Sensics modification
-#include "usb.h"
+#include "USB.h"
 
 // Read Modify Write opcode is implemented after IAR AVR 5.51
 #ifdef __ICCAVR__

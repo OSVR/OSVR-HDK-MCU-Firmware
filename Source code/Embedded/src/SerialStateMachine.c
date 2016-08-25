@@ -47,7 +47,7 @@
 #include "stdio.h"
 #include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/VideoInput.h"
-#include "boot.h"
+#include "Boot.h"
 #include "Console.h"
 #include "main.h"
 #include "TimingDebug.h"
@@ -72,14 +72,14 @@
 #endif
 
 #ifdef SVR_USING_NXP
-#include "nxp/AVRHDMI.h"
-#include "nxp/tmbslHdmiRx_types.h"
-#include "nxp/tmdlHdmiRx.h"
-#include "nxp/tmdlHdmiRx_cfg.h"
-#include "nxp/tmbslTDA1997X_functions.h"
-#include "nxp/tmbslTDA1997X_local.h"
-#include "nxp/i2c.h"
-#include "nxp/my_bit.h"
+#include "NXP/AVRHDMI.h"
+#include "NXP/tmbslHdmiRx_types.h"
+#include "NXP/tmdlHdmiRx.h"
+#include "NXP/tmdlHdmiRx_cfg.h"
+#include "NXP/tmbslTDA1997X_Functions.h"
+#include "NXP/tmbslTDA1997X_local.h"
+#include "NXP/i2c.h"
+#include "NXP/my_bit.h"
 #endif
 
 #ifdef SVR_IS_HDK_20

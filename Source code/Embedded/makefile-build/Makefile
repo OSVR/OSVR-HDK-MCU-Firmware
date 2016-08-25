@@ -19,6 +19,9 @@ EXTRA_ASFLAGS :=
 
 LIBHDK20_VER := 1.01
 
+# Optional config file.
+-include config.mk
+
 # Other useful things you could define on the command line:
 # ATMEL_STUDIO_ROOT
 # NO_ATMEL_STUDIO (for a Windows avrgcc toolchain without atmel studio - any value is true)

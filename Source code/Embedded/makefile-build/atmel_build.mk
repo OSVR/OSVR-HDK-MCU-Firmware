@@ -7,13 +7,18 @@ ifeq ($(OS),Windows_NT)
 
 PATH_SEPARATOR = \
 PATH_CONVERT = $(subst /,$(PATH_SEPARATOR),$1)
-
+ifndef ATMEL_STUDIO_ROOT
 ifdef ProgramFiles(x86)
 ATMEL_STUDIO_ROOT := ${subst \,/,${ProgramFiles(x86)}}/Atmel/Studio/7.0
 else
 ATMEL_STUDIO_ROOT := $(subst \,/,${ProgramFiles})/Atmel/Studio/7.0
 endif
+endif
+
+ifndef TOOLCHAIN_ROOT
 TOOLCHAIN_ROOT := $(ATMEL_STUDIO_ROOT)/toolchain/avr8/avr8-gnu-toolchain
+endif
+
 TOOL_EXTENSION := .exe
 
 ifeq ($(strip $(NO_ATMEL_STUDIO)),)
@@ -41,7 +46,7 @@ TOOL_EXTENSION :=
 PATH_SEPARATOR = /
 PATH_CONVERT = $1
 RM := rm -f
-FUNC_CP := cp
+FUNC_CP = cp "$1" "$2"
 FUNC_MKDIR_P = mkdir -p "$1"
 
 FUNC_PRINT_LIST = foreach elt in $($1); do echo $2 $$elt; done

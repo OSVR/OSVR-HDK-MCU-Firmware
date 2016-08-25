@@ -26,8 +26,6 @@
 
 #include <stdint.h>
 
-#define TC358870 0
-
 #define TC358870_OK 0
 #define TC358870_ERROR -1
 

@@ -30,9 +30,6 @@
 #define TC358870_OK 0
 #define TC358870_ERROR -1
 
-#define TC358870_NoSync 0
-#define TC358870_Sync 1
-
 #define TC358870_TWI_SPEED 100000  // or 400kHz or 2MHz
 #define TC358870_ADDR 0x1F         // or 0x1F
 
@@ -42,14 +39,7 @@
 #define EEP_ADDR_SN 0x008  // 20160605, fctu, change from 0xFF0 to 0x008 due to RAZER asked.
 #define SN_LENGTH 16       // include 1 byte check sum.
 
-inline uint8_t ascii_to_dec_8(uint8_t *buf) { return (buf[0] - '0') * 10 + (buf[1] - '0'); }
 extern unsigned char sn[SN_LENGTH];
-
-#if 1  // Dennis Yeh : for Toshiba I2C
-#define i2c1_uh2d_write8(x, y) TC358870_i2c_Write(x, y, 1)
-#define i2c1_uh2d_write16(x, y) TC358870_i2c_Write(x, y, 2)
-#define i2c1_uh2d_write32(x, y) TC358870_i2c_Write(x, y, 4)
-#endif
 
 int TC358870_i2c_Init(void);
 

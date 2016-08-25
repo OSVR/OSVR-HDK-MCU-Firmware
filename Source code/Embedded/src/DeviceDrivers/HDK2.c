@@ -47,6 +47,18 @@
 #define CORE_KEY_LENGTH 8
 #define CORE_KEY_RETRY_TIME 3
 
+inline uint8_t ascii_to_dec_8(uint8_t *buf) { return (buf[0] - '0') * 10 + (buf[1] - '0'); }
+#if 1  // Dennis Yeh : for Toshiba I2C
+static inline void i2c1_uh2d_write8(uint16_t x, uint8_t y) { TC358870_i2c_Write(x, y, 1); }
+static inline void i2c1_uh2d_write16(uint16_t x, uint16_t y) { TC358870_i2c_Write(x, y, 2); }
+static inline void i2c1_uh2d_write32(uint16_t x, uint32_t y) { TC358870_i2c_Write(x, y, 4); }
+#endif
+
+static inline void UpdateResolutionDetection(void)
+{
+	// dummy function to satisfy old code.
+}
+
 static uint8_t core_key_pass = 0;
 
 const unsigned char EDID_LUT[256] = {
@@ -251,8 +263,6 @@ void AUO_H381DLN01_Init(int bDisplayON)
 */
 static void VideoStatusHandler(bool video_status)
 {
-	static int bTCPwrInit = 1;
-
 	if (video_status == false)
 	{  // NO VIDEO
 		AUO_H381DLN01_Reset();
@@ -524,7 +534,7 @@ void OSVR_HDK_EDID(void)
 	int sn_status;
 	uint8_t edid_week;
 	uint8_t edid_year;
-	uint8_t edid_sn_hex[4];
+	uint8_t edid_sn_hex[4] = {0};
 	uint32_t edid_sn_dec;
 	uint8_t hex[2];
 	char buf[20];
@@ -535,7 +545,6 @@ void OSVR_HDK_EDID(void)
 
 		edid_year = 26;  // 26 => 2016.
 		edid_week = 1;
-		memset(edid_sn_hex, 0, sizeof(uint8_t) * 4);
 	}
 	else
 	{                                               // parsing s/n info
@@ -808,10 +817,10 @@ void TC358870_Init_Receive_HDMI_Signal(void)
 	int times = InitFlag ? 100 : 10;
 	for (int idx = 0; idx < times; idx++)
 	{
-		if (TC358870_VideoSyncSignalStatus() == TC358870_Sync)
+		if (TC358870_VideoSyncSignalStatus())
 			break;
-		else
-			delay_ms(20);
+
+		delay_ms(20);
 	}
 
 	TC358870_i2c_Write(0x850B, 0xFF, 1);    // MISC_INT
@@ -821,10 +830,9 @@ void TC358870_Init_Receive_HDMI_Signal(void)
 	// Sequence: Check bit7 of 8x8520
 	for (int idx = 0; idx < times; idx++)
 	{
-		if (TC358870_VideoSyncSignalStatus() == TC358870_Sync)
+		if (TC358870_VideoSyncSignalStatus())
 			break;
-		else
-			delay_ms(20);
+		delay_ms(20);
 	}
 
 	// Start Video TX

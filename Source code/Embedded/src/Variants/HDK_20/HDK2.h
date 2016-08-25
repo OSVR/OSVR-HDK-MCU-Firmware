@@ -54,8 +54,8 @@ extern unsigned char sn[SN_LENGTH];
 
 int TC358870_i2c_Init(void);
 
-int TC358870_i2c_Read(ui16_t RegNum, ui8_t *data);
-int TC358870_i2c_Write(ui16_t RegNum, ui32_t nValue, int nLength);
+int TC358870_i2c_Read(uint16_t RegNum, uint8_t *data);
+int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength);
 
 int AUO_H381DLN01_Init(int bDisplayON);
 int TC358870_Init_Receive_HDMI_Signal(void);

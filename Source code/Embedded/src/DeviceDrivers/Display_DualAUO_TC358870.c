@@ -107,7 +107,6 @@ void Display_On(uint8_t deviceID)
 	svr_yield_ms(120);
 	Toshiba_TC358870_Init_Receiver();
 #endif
-	Toshiba_TC358870_Enable_Video_TX();
 	// display power on - wait 120 ms in case this is after a reset.
 	svr_yield_ms(120);
 
@@ -121,10 +120,13 @@ void Display_On(uint8_t deviceID)
 
 	// Sleep Out
 	AUO_Null_Param_DSI_Cmd(0x11);
-	svr_yield_ms(166);  //>10 frame
+	// Spec says, >166ms. Best
+	svr_yield_ms(167);  //>10 frame
 
 	// Display On
 	AUO_Null_Param_DSI_Cmd(0x29);
+
+	Toshiba_TC358870_Enable_Video_TX();
 }
 
 void Display_Off(uint8_t deviceID)

@@ -27,6 +27,7 @@ $(COPIED_OUTPUT_$(VARIANT_NAME)): $(BUILD_DIR)/$(OUTPUT_HEX) $(BUILD_DIR)/$(OUTP
 	@echo [$(VARIANT)] Copied output hex to $@
 # set target-specific variable
 $(COPIED_OUTPUT_$(VARIANT_NAME)): VARIANT := $(VARIANT)
+$(COPIED_OUTPUT_$(VARIANT_NAME)): SUFFIX := $(SUFFIX)
 
 $(SHORT_NAME): $(COPIED_OUTPUT_$(VARIANT_NAME))
 	@echo [$(FULL_VARIANT_NAME_$(@)) - $@] Build finished.
@@ -47,13 +48,15 @@ ALL_C_SRCS := $(C_SRCS) $(EXTRA_C_SRCS)
 
 C_OBJS := $(addprefix $(BUILD_DIR)/,$(ALL_C_SRCS:%.c=%.o))
 
+# set target-specific variables
+$(BUILD_DIR)/%: SUFFIX := $(SUFFIX)
+$(BUILD_DIR)/%: VARIANT := $(VARIANT)
+
 # Build .c -> .o
 $(BUILD_DIR)/%.o: $(REL_ROOT)/%.c
-	@echo [$(VARIANT)$(SUFFIX)] (-O$(strip $(OPTIMIZATION))) $< : $@
+	@echo [$(VARIANT)$(SUFFIX)] [-O$(strip $(OPTIMIZATION))] $< : $@
 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
-# set pattern-specific variable for the variant
-$(BUILD_DIR)/%.o: VARIANT := $(VARIANT)
 
 S_OBJS := $(addprefix $(BUILD_DIR)/,$(PREPROCESSING_SRCS:%.s=%.o))
 
@@ -62,8 +65,6 @@ $(BUILD_DIR)/%.o: $(REL_ROOT)/%.s
 	@echo [$(VARIANT)$(SUFFIX)] $< : $@
 	$(QUIETRULE)$(call FUNC_MKDIR_P,$(@D))
 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g -o "$@" "$<"
-# set pattern-specific variable for the variant
-$(BUILD_DIR)/%.o: VARIANT := $(VARIANT)
 
 CURRENT_OBJS := $(C_OBJS) $(S_OBJS)
 
@@ -72,9 +73,6 @@ $(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS) $(LIBS) $(LIBS_$(VARIANT))
 	@echo [$(VARIANT)$(SUFFIX)] Linking $@
 	$(QUIETRULE)$(CC) -o"$@" $^ $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(BUILD_DIR)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
 	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
-# set target-specific variables
-$(BUILD_DIR)/%: SUFFIX := $(SUFFIX)
-$(BUILD_DIR)/%: VARIANT := $(VARIANT)
 
 # Compiler database generation - optional, for clang tool usage.
 json_stringify = jq -R "." >>"$@"
@@ -86,9 +84,7 @@ $(BUILD_DIR)/command_parts.json: Makefile add_variant.mk
 	$(QUIETRULE)echo $(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP | $(json_stringify)
 	$(QUIETRULE)echo $(abspath $(strip .))| $(json_stringify)
 	$(QUIETRULE)echo $(abspath $(strip $(BUILD_DIR)))| $(json_stringify)
-	echo REL_ROOT $(REL_ROOT)
 	$(QUIETRULE)echo $(abspath $(REL_ROOT))| $(json_stringify)
-#$(QUIETRULE)echo $(strip $(RELROOT))| $(json_stringify)
 
 $(BUILD_DIR)/compile_commands.json: make-compiledatabase.jq $(BUILD_DIR)/command_parts.json add_variant.mk
 	@echo [$(VARIANT)$(SUFFIX)] $@

@@ -20,6 +20,8 @@ bool CDCWriteInProgress = false;  // true if USB is being used to write console 
 uint8_t DebugLevel = 0xff;  // start by opening all debug messages
 
 int MaxTimerCounter = 0;
+
+uint8_t GetDebugLevel() { return DebugLevel; }
 void Write(const char *const Data)
 {
 	if (!usb_cdc_is_active())

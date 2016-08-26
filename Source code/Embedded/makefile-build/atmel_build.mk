@@ -15,13 +15,22 @@ ATMEL_STUDIO_ROOT := $(subst \,/,${ProgramFiles})/Atmel/Studio/7.0
 endif
 endif
 
-ifndef TOOLCHAIN_ROOT
-TOOLCHAIN_ROOT := $(ATMEL_STUDIO_ROOT)/toolchain/avr8/avr8-gnu-toolchain
+ifneq (,$(ATMEL_STUDIO_ROOT))
+ATMEL_STUDIO_TOOLCHAIN_ROOT := $(ATMEL_STUDIO_ROOT)/toolchain/avr8/avr8-gnu-toolchain
 endif
+
 
 TOOL_EXTENSION := .exe
 
 ifeq ($(strip $(NO_ATMEL_STUDIO)),)
+
+ifndef TOOLCHAIN_ROOT
+TOOLCHAIN_ROOT := $(ATMEL_STUDIO_TOOLCHAIN_ROOT)
+endif
+
+# Flags implied by the build system but that libtooling/clang wouldn't know
+SYSTEM_FLAGS ?= -isystem "$(ATMEL_STUDIO_TOOLCHAIN_ROOT)/avr/include"
+
 # Can use "shellutils" folder of utilities.
 RM := "$(ATMEL_STUDIO_ROOT)/shellutils/rm.exe" -f
 # must be recursively evaluated - it's a function

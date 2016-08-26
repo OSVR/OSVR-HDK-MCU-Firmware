@@ -56,7 +56,9 @@ OUTPUT_LSS := $(OUTPUT_STEM).lss
 # Relative path from makefile to source root
 REL_ROOT := ..
 
-MCU=atxmega256a3bu
+MCU:=atxmega256a3bu
+# Used for compilation databases, for code analysis tools
+MIXED_CASE_MCU:=ATxmega256A3BU
 
 C_SRCS :=  \
 src/Boot.c \
@@ -350,6 +352,8 @@ clean:
 	$(QUIETRULE)-$(RM) $(C_DEPS)
 	@echo [clean$(SUFFIX)] Removing linker and related outputs.
 	$(QUIETRULE)-$(RM) $(call make_build_dirs,$(OUTPUT_FILE_PATH) $(OUTPUT_MAP) $(OUTPUT_HEX) $(OUTPUT_LSS))
+	@echo [clean$(SUFFIX)] Removing other files.
+	$(QUIETRULE)-$(RM) $(EXTRA_CLEAN_FILES)
 .PHONY: clean
 
 realclean: clean

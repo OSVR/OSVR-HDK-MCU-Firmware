@@ -42,8 +42,8 @@ void TC358870_Init_Receive_HDMI_Signal() {
   Toshiba_TC358870_SW_Reset();
   Toshiba_TC358870_Prepare_TX();
   AUO_H381DLN01_Init(0);
-  Toshiba_TC358870_Configure_Splitter(void);
-  Toshiba_TC358870_HDMI_Setup(void);
+  Toshiba_TC358870_Configure_Splitter();
+  Toshiba_TC358870_HDMI_Setup();
 
   // strange waiting for video sync here, then...
   Toshiba_TC358870_Enable_Video_TX();

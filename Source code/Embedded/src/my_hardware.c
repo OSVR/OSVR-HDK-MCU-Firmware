@@ -128,10 +128,10 @@ void custom_board_init(void)
 	ioport_configure_pin(Debug_LED, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
-	ioport_configure_pin(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, > 12ms.
+	ioport_configure_pin(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // HW power on reset, > 12ms.
 
 	/// This is both address selection and an interrupt pin.
-	ioport_configure_pin(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT);
+	ioport_configure_pin(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT | IOPORT_TOTEM | IOPORT_RISING);
 #endif
 
 #ifdef SVR_HAVE_NXP1

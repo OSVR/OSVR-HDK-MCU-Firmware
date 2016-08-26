@@ -13,6 +13,7 @@
 #include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/HDK2.h"
 #include "DeviceDrivers/Toshiba_TC358870.h"
+#include "DeviceDrivers/Toshiba_TC358870_ISR.h"
 #include "my_hardware.h"
 #include "Console.h"
 #include "SvrYield.h"
@@ -22,8 +23,6 @@
 
 #define SVR_DEBUG_LIBHDK2_BEHAVIOR
 
-static bool haveInitOnce = false;
-
 static void VideoInput_Init_Impl(void)
 {
 	Toshiba_TC358870_Disable_Video_TX();
@@ -31,11 +30,22 @@ static void VideoInput_Init_Impl(void)
 	Toshiba_TC358870_I2C_Write16(0x0002, BITUTILS_BIT(8));
 	Toshiba_TC358870_I2C_Write16(0x0002, 0);
 	Toshiba_TC358870_HDMI_Setup();
+	Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
 }
 
 void VideoInput_Init(void)
 {
-	if (haveInitOnce)
+	static bool haveInit = false;
+	if (!haveInit)
+	{
+		// This is real-deal, first time initialization.
+		haveInit = true;
+		// start the chip, if it hasn't been started.
+		Toshiba_TC358870_Init_Once();
+
+		VideoInput_Init_Impl();
+	}
+	else
 	{
 		// This is a repeat init - presumably from serial console - so we'll actually call over to the TC358870 driver
 		// (used in Display_System_Init()) since that's where the meat of initializing the chip happens.
@@ -46,14 +56,6 @@ void VideoInput_Init(void)
 		{
 			Toshiba_TC358870_Enable_Video_TX();
 		}
-	}
-	else
-	{
-		// start the chip, if it hasn't been started.
-		Toshiba_TC358870_Init_Once();
-
-		VideoInput_Init_Impl();
-		haveInitOnce = true;
 	}
 
 	VideoInput_Protected_Init_Succeeded();
@@ -66,7 +68,40 @@ void VideoInput_Update_Resolution_Detection(void)
 	HDMIStatus = (VideoInput_Get_Status() ? VIDSTATUS_VIDEO_LANDSCAPE : VIDSTATUS_NOVIDEO);
 }
 
-void VideoInput_Task(void) {}
+static volatile bool s_gotVideoInterrupt = false;
+TC358870_ISR()
+{
+	s_gotVideoInterrupt = true;
+	Toshiba_TC358870_MCU_Ints_Clear_Flag();
+}
+static bool gotVideoInterrupt(void)
+{
+	bool gotInterrupt;
+	{
+		/// Get the state of the "got interrupt" flag atomically.
+		Toshiba_TC358870_MCU_Ints_Suspend();
+		gotInterrupt = s_gotVideoInterrupt;
+		s_gotVideoInterrupt = false;
+		barrier();
+		Toshiba_TC358870_MCU_Ints_Resume();
+	}
+	return gotInterrupt;
+}
+
+void VideoInput_Task(void)
+{
+	/// Get the state of the "got interrupt" flag atomically.
+	bool gotInterrupt = gotVideoInterrupt();
+	if (gotInterrupt)
+	{
+		WriteLn("Got a video sync change interrupt!");
+		// Retrieve the new video sync status.
+		VideoInput_Protected_Report_Status(Toshiba_TC358870_Have_Video_Sync());
+		// Clear the interrupt flag on the toshiba chip.
+		Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
+	}
+}
+
 void VideoInput_Reset(uint8_t inputId)
 {
 	if (inputId != 1)
@@ -77,6 +112,7 @@ void VideoInput_Reset(uint8_t inputId)
 
 	WriteLn("reset HDMI1");
 	Toshiba_TC358870_Trigger_Reset();
+	VideoInput_Poll_Status();
 }
 
 static const char LIBHDK2_NOT_SUPPORTED[] = "TC358870 via libhdk20 does not support this feature.";
@@ -87,20 +123,20 @@ void VideoInput_Poll_Status(void) { VideoInput_Protected_Report_Status(Toshiba_T
 // to console
 void VideoInput_Report_Status(void)
 {
-	Write("Last time libhdk20:IsVideoExistingPolling() called HDMI_IsVideoExisting(), ");
+	Write("Video input status: ");
 	if (VideoInput_Get_Status())
 	{
-		WriteLn("video input was available.");
+		WriteLn(" signal available.");
 	}
 	else
 	{
-		WriteLn("no video input was available.");
+		WriteLn("no signal available.");
 	}
 	char myMessage[50];
 	sprintf(myMessage, "TC358870_Init called %d times", Toshiba_TC358870_Get_Init_Count());
 	WriteLn(myMessage);
 
-	sprintf(myMessage, "VideoInput_Init called once: %d", (haveInitOnce ? 1 : 0));
+	sprintf(myMessage, "Address select/interrupt pin: %d", ioport_get_value(TC358870_ADDR_SEL_INT));
 	WriteLn(myMessage);
 }
 #endif

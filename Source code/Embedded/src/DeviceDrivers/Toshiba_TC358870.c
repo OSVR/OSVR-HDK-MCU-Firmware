@@ -29,6 +29,7 @@
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 
 #include "Toshiba_TC358870.h"
+#include "Toshiba_TC358870_ISR.h"
 
 // Application headers
 #include "Console.h"
@@ -157,38 +158,71 @@ static uint8_t s_tc358870_init_count = 0;
 
 void Toshiba_TC358870_Base_Init(void)
 {
+	static bool repeat = false;
+	bool firstTime = false;
+	if (!repeat)
+	{
+		// this is the first time we've been in here!
+		firstTime = true;
+		repeat = true;
+	}
+
+	Toshiba_TC358870_MCU_Ints_Clear_Flag();
+	Toshiba_TC358870_MCU_Ints_Suspend();
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: Start");
 #endif
-	twi_master_options_t opt = {.speed = TC358870_TWI_SPEED,  //< used in twi_master_setup with the TWI_BAUD macro and
-	                                                          // the system clock to compute the .speed_reg member.
-	                            .chip = TC358870_ADDR};
-	/// twi_master_setup sets .speed_reg for you and starts appropriate clocks before calling twi_master_init.
-	twi_master_setup(TC358870_TWI_PORT, &opt);
+	if (firstTime)
+	{
+		twi_master_options_t opt = {
+		    .speed = TC358870_TWI_SPEED,  //< used in twi_master_setup with the TWI_BAUD macro and
+		                                  // the system clock to compute the .speed_reg member.
+		    .chip = TC358870_ADDR};
+		/// twi_master_setup sets .speed_reg for you and starts appropriate clocks before calling twi_master_init.
+		twi_master_setup(TC358870_TWI_PORT, &opt);
+	}
+
+	ioport_set_pin_low(TC358870_Reset_Pin);
+	ioport_set_pin_low(PANEL_RESET);
 
 	WriteLn("Toshiba_TC358870_Init: Waiting for power");
 	while (!ioport_get_value(TC358870_PWR_GOOD))
 	{
 		delay_us(50);
 	}
+	svr_yield_ms(50);
+	ioport_set_pin_high(TC358870_Reset_Pin);
+	ioport_set_pin_high(PANEL_RESET);
+	svr_yield_ms(5);
+
 #if 0
 	// Dennis Yeh 2016/03/14 : for TC358870
 	uint8_t tc_data;
 	/// dummy read?
 	Toshiba_TC358870_I2C_Read8(0x0000, &tc_data);
 #endif
-	ioport_set_pin_low(TC358870_Reset_Pin);
-	ioport_set_pin_low(PANEL_RESET);
-	svr_yield_ms(50);
-	ioport_set_pin_high(TC358870_Reset_Pin);
-	ioport_set_pin_high(PANEL_RESET);
-	svr_yield_ms(5);
 
 	// Turn on auto-increment.
-	Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_0, BITUTILS_BIT(2));
+	// Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_0, BITUTILS_BIT(2));
+	Toshiba_TC358870_SW_Reset();
+	Toshiba_TC358870_Prepare_TX();
+	Toshiba_TC358870_Configure_Splitter();
+	Toshiba_TC358870_HDMI_Setup();
 
 	// Toshiba_TC358870_Init_Receiver();
 	s_tc358870_init_count++;
+
+	static bool pinSetupForInterrupts = false;
+	if (!pinSetupForInterrupts)
+	{
+		pinSetupForInterrupts = true;
+		Toshiba_TC358870_MCU_Ints_Init();
+	}
+	else
+	{
+		// not our first go-round, we'll just resume ints here.
+		Toshiba_TC358870_MCU_Ints_Resume();
+	}
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: End");
 #endif

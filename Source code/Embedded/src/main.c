@@ -144,6 +144,8 @@ int main(void)
 	// Sets up video input part of data path: switch (if present), HDMI receiver.
 	VideoInput_Init();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
 	                    // already been initialized
+	// Poll once on startup to see if we have video at start.
+	VideoInput_Poll_Status();
 
 	/// @todo can this be folded into HandleHDMI?
 	if (VideoInput_Events.videoDetected)
@@ -260,13 +262,10 @@ int main(void)
 			{
 				videoPollCounter = 0;
 				VideoInput_Poll_Status();
-				/// @todo Because of interrupts, do we really need to put this inside the poll interval?
-				HandleHDMI();
 			}
 		}
-#else   // SVR_VIDEO_INPUT_POLL_INTERVAL ^ / v !SVR_VIDEO_INPUT_POLL_INTERVAL
-		HandleHDMI();
 #endif  // SVR_VIDEO_INPUT_POLL_INTERVAL
+		HandleHDMI();
 #endif  // SVR_ENABLE_VIDEO_INPUT
 	}
 }

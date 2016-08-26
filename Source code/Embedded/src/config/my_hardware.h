@@ -113,6 +113,19 @@ extern uint8_t
 /// out, Active high, It's also I2C address selection: Slave address = 0x0F if INT = Low
 /// during reset, Slave address = 0x1F if INT = High during reset
 #define TC358870_ADDR_SEL_INT IOPORT_CREATE_PIN(PORTD, 2)
+
+// Warning - because IOPORT_CREATE_PIN doesn't do expansion before token pasting, we can't use this as an input, so it
+// has to be kept in sync manually... and you need the trailing underscore since PORTD is a define itself
+#define TC358870_ADDR_SEL_INT_PORT PORTD_INT
+
+// We'll use interrupt 1 on this port - interrupt 0 is used by BNO already.
+#define TC358870_PORT_INT 1
+
+// Display interrupts will be medium level
+#define TC358870_INT_LEVEL MED
+
+// To get the ISR definition, use DeviceDrivers/Toshiba_TC358870_ISR.h
+
 /// in, 1.8v power good, asserts low if output voltage is low due to thermal shutdown,
 /// overcurrent, over/under-voltage or EN shut down.
 #define TC358870_PWR_GOOD IOPORT_CREATE_PIN(PORTD, 0)

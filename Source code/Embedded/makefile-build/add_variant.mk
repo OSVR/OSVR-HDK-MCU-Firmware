@@ -94,6 +94,44 @@ COMPILATION_DATABASE_FILENAME := compile_commands.json
 COMPILATION_DATABASE_PARAMS := command_parts.json
 json_stringify = jq -R "." >>"$@"
 
+# These complement SYSTEM_FLAGS (which typically is something like -isystem path/to/your/avr/includes)
+# by including notable things from avr-gcc -mmcu=$(MCU) -dM -E dummy.c output
+
+WELL_KNOWN_SYSTEM_FLAGS = -DAVR -D__AVR=1 -D__AVR__=1 -D__WITH_AVRLIBC__=1 -D__AVR_DEVICE_NAME__=$(MCU) -D__AVR_$(MIXED_CASE_MCU)__=1
+
+ARCH5_FLAGS := -D__AVR_ENHANCED__=1 \
+               -D__AVR_HAVE_JMP_CALL__=1 \
+               -D__AVR_HAVE_MOVW__=1 \
+               -D__AVR_HAVE_LPMX__=1 \
+               -D__AVR_HAVE_MUL__=1
+ARCH106_FLAGS := $(ARCH5_FLAGS) \
+               -D__AVR_HAVE_16BIT_SP__=1 \
+               -D__AVR_HAVE_EIJMP_EICALL__=1 \
+               -D__AVR_HAVE_ELPM__=1 \
+               -D__AVR_HAVE_ELPMX__=1 \
+               -D__AVR_HAVE_LPMX__=1 \
+               -D__AVR_HAVE_RAMPZ__=1 \
+               -D__AVR_HAVE_SPH__=1 \
+               -D__AVR_ISA_RMW__=1
+
+ifneq (,$(findstring mega,$(MCU)))
+WELL_KNOWN_SYSTEM_FLAGS += -D__AVR_MEGA__=1
+# default to an atmega328p, for approximation sake
+DEFAULT_ARCH_SYSTEM_FLAGS := -D__AVR_ARCH__=5 $(ARCH5_FLAGS) -D__AVR_2_BYTE_PC__=1
+endif
+ifneq (,$(findstring xmega,$(MCU)))
+WELL_KNOWN_SYSTEM_FLAGS += -D__AVR_XMEGA__=1
+DEFAULT_ARCH_SYSTEM_FLAGS := -D__AVR_ARCH__=106 $(ARCH106_FLAGS) -D__AVR_3_BYTE_PC__=1
+endif
+
+ifeq ($(strip $(MCU)),atxmega256a3bu)
+WELL_KNOWN_SYSTEM_FLAGS += -D__AVR_ARCH__=106 $(ARCH106_FLAGS) -D__AVR_3_BYTE_PC__=1
+else
+WELL_KNOWN_SYSTEM_FLAGS += $(DEFAULT_ARCH_SYSTEM_FLAGS)
+$(warning Do not know the pre-defined constants for that MCU, sorry! your compiledb $(COMPILATION_DATABASE_FILENAME) might be insufficient!)
+endif
+
+
 # the PARAMS get sucked in as a string array: lines as follows:
 # the main part of the compile command (some must be manually kept in sync!)
 # "build directory" (makefile dir) absolute path
@@ -103,7 +141,7 @@ EXTRA_CLEAN_FILES += $(BUILD_DIR)/$(COMPILATION_DATABASE_PARAMS)
 $(BUILD_DIR)/$(COMPILATION_DATABASE_PARAMS): Makefile add_variant.mk
 	$(CANNED_RECIPE_BEGINNING_SHOW_OUT)
 	$(QUIETRULE)-$(RM) "$@"
-	$(QUIETRULE)echo $(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP | $(json_stringify)
+	$(QUIETRULE)echo $(CC) $(WELL_KNOWN_SYSTEM_FLAGS) $(SYSTEM_FLAGS) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP | $(json_stringify)
 	$(QUIETRULE)echo $(abspath $(strip .))| $(json_stringify)
 	$(QUIETRULE)echo $(abspath $(strip $(BUILD_DIR)))| $(json_stringify)
 	$(QUIETRULE)echo $(abspath $(REL_ROOT))| $(json_stringify)

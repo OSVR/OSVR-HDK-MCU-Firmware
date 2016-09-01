@@ -47,9 +47,9 @@ static bool bitUtils_checkBit(uint8_t value, uint8_t mask);
 /// Checks that all the bits in the mask are set in the given value. (uint8_t)
 static bool bitUtils_checkMask(uint8_t value, uint8_t mask);
 
-static inline bool bitUtils_checkBit(uint8_t value, uint8_t mask) { return (value & mask) != 0; }
+static inline bool bitUtils_checkBit(uint8_t value, uint8_t mask) { return (value & mask) != 0 ? true : false; }
 /// Generic macro-based version of bitUtils_checkBit
-#define BITUTILS_CHECKBIT(VALUE, MASK) (((VALUE) & (MASK)) != 0)
+#define BITUTILS_CHECKBIT(VALUE, MASK) (((VALUE) & (MASK)) != 0x0)
 
 /// Checks that all the bits in the mask are set in the given value. (uint8_t)
 static inline bool bitUtils_checkMask(uint8_t value, uint8_t mask)
@@ -69,12 +69,19 @@ static inline bool bitUtils_checkMask(uint8_t value, uint8_t mask)
 #define BITUTILS_CHECKMASK(VALUE, MASK) ((((VALUE) ^ (MASK)) & (MASK)) == 0x0)
 
 /// Get the nth least significant byte of a given value (the nth byte in little-endian format)
-#define BITUTILS_GET_NTH_LEAST_SIG_BYTE(BYTENUM, VALUE) ((uint8_t)(((VALUE) >> ((BYTENUM)*CHAR_BIT)) & 0xff))
+#define BITUTILS_GET_NTH_LEAST_SIG_BYTE(BYTENUM, VALUE) \
+	((uint8_t)((((BYTENUM) == 0) ? (VALUE) : ((VALUE) >> ((BYTENUM)*CHAR_BIT))) & UINT8_MAX))
+
+static inline __always_inline uint8_t bitUtils_lowByte(uint16_t val) { return (uint8_t)(val & UINT8_MAX); }
+static inline __always_inline uint8_t bitUtils_highByte(uint16_t val)
+{
+	return (uint8_t)((val >> CHAR_BIT) & UINT8_MAX);
+}
 
 /// Get a value with the lowest BITS bits set, where bits < 8.
-#define BITUTILS_GET_SET_LOW_BITS_MAX8(BITS) (0xff >> (CHAR_BIT - (BITS)))
+#define BITUTILS_GET_SET_LOW_BITS_MAX8(BITS) (UINT8_MAX >> (CHAR_BIT - (BITS)))
 /// Get a value with the lowest BITS bits set, where BITS < 16.
-#define BITUTILS_GET_SET_LOW_BITS_MAX16(BITS) (0xffff >> ((2 * CHAR_BIT) - (BITS)))
+#define BITUTILS_GET_SET_LOW_BITS_MAX16(BITS) (UINT16_MAX >> ((2 * CHAR_BIT) - (BITS)))
 
 /// Mask off all but the BITS low bits of VAL, where BITS < 8.
 #define BITUTILS_KEEP_LOW_BITS_MAX8(BITS, VAL) (BITUTILS_GET_SET_LOW_BITS_MAX8(BITS) & (VAL))
@@ -82,6 +89,6 @@ static inline bool bitUtils_checkMask(uint8_t value, uint8_t mask)
 #define BITUTILS_KEEP_LOW_BITS_MAX16(BITS, VAL) (BITUTILS_GET_SET_LOW_BITS_MAX16(BITS) & (VAL))
 
 /// Portable equivalent of _BV
-#define BITUTILS_BIT(B) (0x1 << (B))
+#define BITUTILS_BIT(B) (0x01 << (B))
 
 #endif

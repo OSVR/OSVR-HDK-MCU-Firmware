@@ -71,6 +71,8 @@
 #include "DeviceDrivers/BNO070.h"
 #endif
 
+#include "DeviceDrivers/Toshiba_TC358870_Console.h"
+
 #ifdef SVR_USING_NXP
 #include "NXP/AVRHDMI.h"
 #include "NXP/tmbslHdmiRx_types.h"
@@ -668,6 +670,7 @@ void ProcessCommand(void)
 			WriteLn(";Unrecognized command");
 		}
 	}
+	WriteEndl();
 	SerialState = AwaitingCommand;  // todo: should this be here?
 }
 
@@ -1101,9 +1104,14 @@ void ProcessSPICommand(void)
 		break;
 	}
 #endif  // SVR_HAVE_SOLOMON
+#ifdef SVR_HAVE_TOSHIBA_TC358870
+	default:
+	{
+		Toshiba_TC358870_Console_S(statusBufCreate(&(CommandToExecute[1])));
+		break;
 	}
-
-	WriteLn("");
+#endif
+	}
 }
 
 // send one or more bytes to the I2C interface and prints the received bytes
@@ -1377,11 +1385,22 @@ void ProcessHDMICommand(void)
 		HDMI_task = true;
 		break;
 	}
+	case 'p':
+	case 'P':
+	{
+		VideoInput_Poll_Status();
+		break;
+	}
 	case '0':
 	{
 		VideoInput_Reset(HexDigitToDecimal(2));
 		break;
 	}
+#ifdef SVR_HAVE_TOSHIBA_TC358870
+	default:
+		Toshiba_TC358870_Console_H(statusBufCreate(&(CommandToExecute[1])));
+		break;
+#endif
 #ifdef SVR_HAVE_NXP
 	case 'S':
 	case 's':

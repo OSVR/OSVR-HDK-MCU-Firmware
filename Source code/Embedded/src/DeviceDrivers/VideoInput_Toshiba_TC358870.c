@@ -95,6 +95,12 @@ void VideoInput_Task(void)
 	if (gotInterrupt)
 	{
 		WriteLn("Got a video sync change interrupt!");
+		char myMessage[50];
+		uint8_t data = 0;
+		Toshiba_TC358870_I2C_Read8(0x8520, &data);
+		sprintf(myMessage, "System status reg 0x8520: %#04x", data);
+		WriteLn(myMessage);
+
 		// Retrieve the new video sync status.
 		VideoInput_Protected_Report_Status(Toshiba_TC358870_Have_Video_Sync());
 		// Clear the interrupt flag on the toshiba chip.
@@ -138,5 +144,21 @@ void VideoInput_Report_Status(void)
 
 	sprintf(myMessage, "Address select/interrupt pin: %d", ioport_get_value(TC358870_ADDR_SEL_INT));
 	WriteLn(myMessage);
+	{
+		uint16_t data = 0;
+		Toshiba_TC358870_I2C_Read16(0x0000, &data);
+		uint8_t highByte = (uint8_t)((data >> 8) & 0xff);
+		uint8_t lowByte = (uint8_t)(data & 0xff);
+		sprintf(myMessage, "Chip ID: %#04x (expected 0x47)", highByte);
+		WriteLn(myMessage);
+		sprintf(myMessage, "Rev ID: %#04x (expected 0x00)", lowByte);
+		WriteLn(myMessage);
+	}
+	{
+		uint8_t data = 0;
+		Toshiba_TC358870_I2C_Read8(0x8520, &data);
+		sprintf(myMessage, "System status reg 0x8520: %#04x", data);
+		WriteLn(myMessage);
+	}
 }
 #endif

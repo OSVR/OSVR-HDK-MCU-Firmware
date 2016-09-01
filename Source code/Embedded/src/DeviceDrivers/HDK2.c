@@ -99,7 +99,7 @@ int TC358870_i2c_Read(uint16_t RegNum, uint8_t *data)
 		*data = data_received[0];
 		return TC358870_OK;
 	}
-
+	WriteLn("TC358870_i2c_Read err");
 	return TC358870_ERROR;
 }
 
@@ -141,6 +141,7 @@ int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength)
 	if (nResult == STATUS_OK)
 		return TC358870_OK;
 
+	WriteLn("TC358870_i2c_Write err");
 	return TC358870_ERROR;
 }
 
@@ -840,8 +841,8 @@ void TC358870_Init_Receive_HDMI_Signal(void)
 	TC358870_i2c_Write(0x0006, 0x0000, 2);  // ConfCtl1
 
 	// Command Transmission After Video Start.
-	// TC358870_i2c_Write(0x0110, 0x00000006, 4); // MODE_CONFIG
-	// TC358870_i2c_Write(0x0310, 0x00000006, 4); // MODE_CONFIG
+	// TC358870_i2c_Write(0x0110, 0x00000006, 4); // MODE_CONFIG PIC_SYN_LINE_A hsync-
+	// TC358870_i2c_Write(0x0310, 0x00000006, 4); // MODE_CONFIG PIC_COM_FRAME_A vsync-
 	if (InitFlag == 1)
 	{
 		TC358870_Reset_MIPI();

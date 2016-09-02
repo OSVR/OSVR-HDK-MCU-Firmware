@@ -162,6 +162,12 @@ void Toshiba_TC358870_Clear_HDMI_Sync_Change_Int(void);
 void Toshiba_TC358870_Enable_Video_TX(void);
 void Toshiba_TC358870_Disable_Video_TX(void);
 
+/// Perform a software reset of the HDMI receiver portion of the chip.
+void Toshiba_TC358870_HDMI_SW_Reset(void);
+
+/// Perform a software reset of the DSI transmitters (both DSI-TX0 and DSI-TX1) portion of the chip.
+void Toshiba_TC358870_DSITX_SW_Reset(void);
+
 /// Original first step of TC358870_Init_Receive_HDMI_Signal
 void Toshiba_TC358870_SW_Reset(void);
 /// This is the portion of TC358870_Init_Receive_HDMI_Signal after the software reset that preceded

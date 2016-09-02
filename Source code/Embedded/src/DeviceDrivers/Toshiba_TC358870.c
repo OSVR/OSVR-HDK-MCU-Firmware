@@ -282,6 +282,22 @@ bool Toshiba_TC358870_Have_Video_Sync(void)
 	return bitUtils_checkBit(tc_data, TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK);
 }
 
+/// Perform a software reset of the HDMI receiver portion of the chip.
+void Toshiba_TC358870_HDMI_SW_Reset()
+{
+	Toshiba_TC358870_I2C_Write16(TC_REG_SYS_CONTROL, BITUTILS_BIT(8));
+	Toshiba_TC358870_I2C_Write16(TC_REG_SYS_CONTROL, 0);
+	svr_yield_ms(150);
+}
+
+void Toshiba_TC358870_DSITX_SW_Reset()
+{
+	Toshiba_TC358870_I2C_Write16(TC_REG_SYS_CONTROL, BITUTILS_BIT(9));
+	Toshiba_TC358870_I2C_Write16(TC_REG_SYS_CONTROL, 0);
+
+	svr_yield_ms(150);
+}
+
 /// Send a short DSI command with no parameter.
 void Toshiba_TC358870_DSI_Write_Cmd_Short(uint8_t cmd)
 {

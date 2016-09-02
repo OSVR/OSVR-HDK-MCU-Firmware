@@ -88,9 +88,10 @@ void custom_board_init(void)
 	/// @todo the device was functional without these configured.
 	ioport_configure_pin(ANA_PWR_IN, IOPORT_DIR_INPUT);                       // 5v power good indicator.
 	ioport_configure_pin(EDID_EEP_WP, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // EDID EEP write protect (Low protect)
-
+#if 0
 	ioport_set_pin_low(HDMI_HPD);
 	ioport_set_pin_dir(HDMI_HPD, IOPORT_DIR_OUTPUT);
+#endif
 
 	// audio block IO   (All of this block are reserved !! HW NC)
 	ioport_configure_pin(AUD_JACK_DETECT, IOPORT_DIR_INPUT);               // audio phone jack detection.

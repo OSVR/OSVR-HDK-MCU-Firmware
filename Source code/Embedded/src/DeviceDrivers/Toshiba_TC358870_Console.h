@@ -221,6 +221,23 @@ static inline void Toshiba_TC358870_Console_H(BufWithStatus_t cmd)
 		ioport_set_pin_low(HDMI_HPD);
 		break;
 	}
+	case 'd':
+	case 'D':
+	{
+		statusBufConsumeByte(&cmd);
+		switch (statusBufPeekFront(&cmd))
+		{
+		case '0':
+
+			ioport_set_pin_low(HDMI_HPD);
+			break;
+		case '1':
+
+			ioport_set_pin_high(HDMI_HPD);
+			break;
+		}
+		break;
+	}
 
 	default:
 		break;

@@ -19,7 +19,8 @@
 #include "SvrYield.h"
 #include "BitUtilsC.h"
 
-#include <stdio.h>  // for sprintf
+#include <stdio.h>     // for sprintf
+#include <inttypes.h>  // for stdint.h-matching format specifier macros
 
 #define SVR_DEBUG_LIBHDK2_BEHAVIOR
 
@@ -147,15 +148,15 @@ void VideoInput_Report_Status(void)
 		Toshiba_TC358870_I2C_Read16(0x0000, &data);
 		uint8_t highByte = (uint8_t)((data >> 8) & 0xff);
 		uint8_t lowByte = (uint8_t)(data & 0xff);
-		sprintf(myMessage, "Chip ID: %#04x (expected 0x47)", highByte);
+		sprintf(myMessage, "Chip ID: %#04" PRIX8 " (expected 0x47)", highByte);
 		WriteLn(myMessage);
-		sprintf(myMessage, "Rev ID: %#04x (expected 0x00)", lowByte);
+		sprintf(myMessage, "Rev ID: %#04" PRIX8 " (expected 0x00)", lowByte);
 		WriteLn(myMessage);
 	}
 	{
 		uint8_t data = 0;
 		Toshiba_TC358870_I2C_Read8(0x8520, &data);
-		sprintf(myMessage, "System status reg 0x8520: %#04x", data);
+		sprintf(myMessage, "System status reg 0x8520: %#04" PRIX8, data);
 		WriteLn(myMessage);
 	}
 }

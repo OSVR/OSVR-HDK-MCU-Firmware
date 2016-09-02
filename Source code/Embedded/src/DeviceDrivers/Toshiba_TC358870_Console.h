@@ -71,7 +71,7 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				WriteLn("write one byte: w1xxxxyy");
 				break;
 			}
-			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIX16 "] %#04" PRIX8, addr, data);
+			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIx16 "] %#04" PRIx8, addr, data);
 			WriteLn(message);
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Write8(addr, data);
 			Toshiba_TC358870_Print_Status(status);
@@ -88,7 +88,7 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				WriteLn("write two bytes: w2xxxxyyyy");
 				break;
 			}
-			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIX16 "] %#06" PRIX16, addr, data);
+			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIx16 "] %#06" PRIx16, addr, data);
 			WriteLn(message);
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Write16(addr, data);
 			Toshiba_TC358870_Print_Status(status);
@@ -105,7 +105,7 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				WriteLn("write four bytes: w4xxxxyyyyyyyy");
 				break;
 			}
-			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIX16 "] %#08" PRIX32, addr, data);
+			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIx16 "] %#010" PRIx32, addr, data);
 			WriteLn(message);
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Write32(addr, data);
 			Toshiba_TC358870_Print_Status(status);
@@ -132,12 +132,12 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				WriteLn("read one byte: r1xxxx");
 				break;
 			}
-			sprintf(message, "Toshiba_TC358870: read 8 bits from reg [%#06" PRIX16 "]", addr);
+			sprintf(message, "Toshiba_TC358870: read 8 bits from reg [%#06" PRIx16 "]", addr);
 			WriteLn(message);
 			uint8_t data = 0;
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read8(addr, &data);
 			Toshiba_TC358870_Print_Status(status);
-			sprintf(message, "Data: %#04" PRIX8, data);
+			sprintf(message, "Data: %#04" PRIx8, data);
 			WriteLn(message);
 			break;
 		}
@@ -152,14 +152,14 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				break;
 			}
 
-			sprintf(message, "Toshiba_TC358870: read 16 bits from reg [%#06" PRIX16 "]", addr);
+			sprintf(message, "Toshiba_TC358870: read 16 bits from reg [%#06" PRIx16 "]", addr);
 			WriteLn(message);
 
 			uint16_t data = 0;
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read16(addr, &data);
 			Toshiba_TC358870_Print_Status(status);
 
-			sprintf(message, "Data: %#06" PRIX16, data);
+			sprintf(message, "Data: %#06" PRIx16, data);
 			WriteLn(message);
 			break;
 		}
@@ -174,14 +174,14 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				break;
 			}
 
-			sprintf(message, "Toshiba_TC358870: read 32 bits from reg [%#06" PRIX16 "]", addr);
+			sprintf(message, "Toshiba_TC358870: read 32 bits from reg [%#06" PRIx16 "]", addr);
 			WriteLn(message);
 
 			uint32_t data = 0;
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read32(addr, &data);
 			Toshiba_TC358870_Print_Status(status);
 
-			sprintf(message, "Data: %#08" PRIX32, data);
+			sprintf(message, "Data: %#010" PRIx32, data);
 			WriteLn(message);
 			break;
 		}

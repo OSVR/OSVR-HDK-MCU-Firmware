@@ -72,17 +72,18 @@ inline static void AUO_Null_Param_DSI_Cmd(uint8_t cmd)
 	Toshiba_TC358870_DSI_Write_Cmd_Short(cmd);
 #endif
 }
-
+static bool s_shouldRestoreVideo = false;
 void Display_System_Init()
 {
 	// start the chip, if it hasn't been started.
 	if (!Toshiba_TC358870_Init_Once())
 	{
 		// if it has been started, do a mini reset
+
+		s_shouldRestoreVideo = VideoInput_Get_Status();
+		Toshiba_TC358870_Disable_Video_TX();
 		/// Software reset of TC358870's DSI-TX
-		Toshiba_TC358870_I2C_Write16(0x0002, BITUTILS_BIT(9));
-		Toshiba_TC358870_I2C_Write16(0x0002, 0);
-		svr_yield_ms(150);
+		Toshiba_TC358870_DSITX_SW_Reset();
 		Toshiba_TC358870_Prepare_TX();
 		Toshiba_TC358870_Configure_Splitter();
 	}
@@ -93,10 +94,24 @@ void Display_Init(uint8_t deviceID)
 	ioport_set_pin_high(PANEL_RESET);
 	svr_yield_ms(120);
 	AUO_H381DLN01_Send_Panel_Init_Commands();
-	/*
-	    AUO_H381DLN01_Panel_Reset();
-	    AUO_H381DLN01_Send_Panel_Init_Commands();
-	    */
+
+	if (s_shouldRestoreVideo)
+	{
+		// this was a repeat init that started out with video.
+		s_shouldRestoreVideo = false;
+
+		// Sleep Out
+		AUO_Null_Param_DSI_Cmd(0x11);
+		// Spec says, >166ms. Best
+		svr_yield_ms(167);  //>10 frame
+
+		// Display On
+		AUO_Null_Param_DSI_Cmd(0x29);
+
+		svr_yield_ms(10);
+
+		Toshiba_TC358870_Enable_Video_TX();
+	}
 }
 void Display_On(uint8_t deviceID)
 {
@@ -185,9 +200,7 @@ void Display_Reset(uint8_t deviceID)
 	WriteLn("TC358870 DSI-TX soft power cycle");
 	Toshiba_TC358870_Disable_Video_TX();
 	/// Software reset of TC358870's DSI-TX
-	Toshiba_TC358870_I2C_Write16(0x0002, BITUTILS_BIT(9));
-	Toshiba_TC358870_I2C_Write16(0x0002, 0);
-	svr_yield_ms(150);
+	Toshiba_TC358870_DSITX_SW_Reset();
 	Toshiba_TC358870_Prepare_TX();
 	WriteLn("Panel setup");
 	AUO_H381DLN01_Send_Panel_Init_Commands();
@@ -201,6 +214,7 @@ void Display_Reset(uint8_t deviceID)
 
 		// Display On
 		AUO_Null_Param_DSI_Cmd(0x29);
+		svr_yield_ms(10);
 		Toshiba_TC358870_Enable_Video_TX();
 	}
 }

@@ -215,13 +215,16 @@ void AUO_H381DLN01_Init(int bDisplayON)
 	TC358870_i2c_Write(0x0504, 0x0F4B, 2);  // DCSCMD_Q
 	delay_us(AUO_INIT_DELAY_US);
 	TC358870_i2c_Write(0x0504, 0x0015, 2);  // DCSCMD_Q
-	TC358870_i2c_Write(0x0504, 0xFE53, 2);  // DCSCMD_Q // change command
+	TC358870_i2c_Write(0x0504, 0xFE53,
+	                   2);  // DCSCMD_Q // change command //< @todo what does this mean? matches app note
 	delay_us(AUO_INIT_DELAY_US);
 	TC358870_i2c_Write(0x0504, 0x0015, 2);  // DCSCMD_Q
 	TC358870_i2c_Write(0x0504, 0x00FE, 2);  // DCSCMD_Q
 	delay_us(AUO_INIT_DELAY_US);
 	TC358870_i2c_Write(0x0504, 0x0015, 2);  // DCSCMD_Q
-	TC358870_i2c_Write(0x0504, 0x03C2, 2);  // DCSCMD_Q 03C2 -> 0BC2
+	TC358870_i2c_Write(
+	    0x0504, 0x03C2,
+	    2);  // DCSCMD_Q 03C2 -> 0BC2 //< @todo what does this mean? app note indicates c2, 03 as implemented.
 	delay_us(AUO_INIT_DELAY_US);
 	TC358870_i2c_Write(0x0504, 0x0015, 2);  // DCSCMD_Q
 	TC358870_i2c_Write(0x0504, 0xFF51, 2);  // DCSCMD_Q

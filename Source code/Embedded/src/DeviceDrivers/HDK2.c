@@ -258,7 +258,7 @@ static void VideoStatusHandler(bool video_status)
 
 		UpdateResolutionDetection();
 		Update_BNO_Report_Header();
-		ioport_set_pin_low(Debug_LED);
+		// Debug_LED_Turn_On();
 	}
 	else
 	{                                            // VIDEO IS READY
@@ -272,7 +272,7 @@ static void VideoStatusHandler(bool video_status)
 		UpdateResolutionDetection();
 		Update_BNO_Report_Header();
 
-		ioport_set_pin_high(Debug_LED);
+		// Debug_LED_Turn_Off();
 	}
 }
 

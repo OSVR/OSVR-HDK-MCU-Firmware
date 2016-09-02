@@ -59,9 +59,9 @@ static TC358870_Op_Status_t Toshiba_TC358870_I2C_Write_Impl(TC358870_Reg_t reg, 
 static TC358870_Op_Status_t Toshiba_TC358870_I2C_Read_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len);
 
 /// The toshiba chip's registers have two-byte addresses. We need to split that up to fit into the address array.
-#define TC_REG_CONVERSION(REG)                                                                  \
-	{                                                                                           \
-		BITUTILS_GET_NTH_LEAST_SIG_BYTE(0, (REG)), BITUTILS_GET_NTH_LEAST_SIG_BYTE(1, (REG)), 0 \
+#define TC_REG_CONVERSION(REG)                        \
+	{                                                 \
+		bitUtils_highByte(REG), bitUtils_lowByte(REG) \
 	}
 
 static inline TC358870_Op_Status_t Toshiba_TC358870_I2C_Write_Impl(TC358870_Reg_t reg, uint8_t* buf, uint8_t len)
@@ -133,26 +133,25 @@ TC358870_Op_Status_t Toshiba_TC358870_I2C_Read16(TC358870_Reg_t reg, uint16_t* v
 }
 
 // Select register addresses
-enum
-{
-	TC_REG_DSITX1_OFFSET = 0x0200,  //< add to any DSITX0 register address
-	TC_REG_SYS_CONTROL = 0x0002,
-	TC_REG_CONFIG_CONTROL_0 = 0x0004,
-	TC_REG_CONFIG_CONTROL_1 = 0x0006,
-	TC_REG_INT_STATUS = 0x0014,
-	TC_REG_INT_STATUS_HDMI_INT_BITMASK = BITUTILS_BIT(9),
-	TC_REG_INT_STATUS_NONRESERVED_BITS = BITUTILS_GET_SET_LOW_BITS_MAX16(12) & (~BITUTILS_BIT(6)),
-	TC_REG_INT_MASK = 0x0016,
-	TC_REG_DCSCMD_Q = 0x0504,
-	TC_REG_MISC_INT = 0x850B,
-	TC_REG_MISC_INT_SYNC_CHG_BITMASK = BITUTILS_BIT(1),
-	TC_REG_MISC_INT_MASK = 0x851B,
-	TC_REG_SYS_STATUS = 0x8520,
+
+static const TC358870_Reg_t TC_REG_DSITX1_OFFSET = 0x0200;  //< add to any DSITX0 register address
+static const TC358870_Reg_t TC_REG_SYS_CONTROL = 0x0002;
+static const TC358870_Reg_t TC_REG_CONFIG_CONTROL_0 = 0x0004;
+static const TC358870_Reg_t TC_REG_CONFIG_CONTROL_1 = 0x0006;
+static const TC358870_Reg_t TC_REG_INT_STATUS = 0x0014;
+static const TC358870_Reg_t TC_REG_INT_MASK = 0x0016;
+static const TC358870_Reg_t TC_REG_DCSCMD_Q = 0x0504;
+static const TC358870_Reg_t TC_REG_MISC_INT = 0x850B;
+static const TC358870_Reg_t TC_REG_MISC_INT_MASK = 0x851B;
+static const TC358870_Reg_t TC_REG_SYS_STATUS = 0x8520;
 #if 0
 	TC_REG_SYS_STATUS_HAVE_VIDEO_MASK = BITUTILS_BIT(7) | BITUTILS_BIT(3) /* PHY DE detect */ | BITUTILS_BIT(2) /* PHY PLL lock */ | BITUTILS_BIT(1) /* TMDS input amplitude */ | BITUTILS_BIT(0) /* DDC_Power input */
 #endif
-	TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK = BITUTILS_BIT(7)
-};
+
+#define TC_REG_INT_STATUS_HDMI_INT_BITMASK BITUTILS_BIT(9)
+#define TC_REG_INT_STATUS_NONRESERVED_BITS (BITUTILS_GET_SET_LOW_BITS_MAX16(12) & (~BITUTILS_BIT(6)))
+#define TC_REG_MISC_INT_SYNC_CHG_BITMASK BITUTILS_BIT(1)
+static const uint8_t TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK = BITUTILS_BIT(7);
 
 static uint8_t s_tc358870_init_count = 0;
 
@@ -167,11 +166,12 @@ void Toshiba_TC358870_Base_Init(void)
 		repeat = true;
 	}
 
-	Toshiba_TC358870_MCU_Ints_Clear_Flag();
-	Toshiba_TC358870_MCU_Ints_Suspend();
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: Start");
 #endif
+
+	// disable interrupts
+	Toshiba_TC358870_MCU_Ints_Suspend();
 	if (firstTime)
 	{
 		twi_master_options_t opt = {
@@ -185,7 +185,13 @@ void Toshiba_TC358870_Base_Init(void)
 	ioport_set_pin_low(TC358870_Reset_Pin);
 	ioport_set_pin_low(PANEL_RESET);
 
-	WriteLn("Toshiba_TC358870_Init: Waiting for power");
+	WriteLn("Toshiba_TC358870_Base_Init: Waiting for 5V power rail");
+	while (!ioport_get_value(ANA_PWR_IN))
+	{
+		delay_us(50);
+	}
+	svr_yield_ms(10);
+	WriteLn("Toshiba_TC358870_Base_Init: Waiting for low-voltage power rail");
 	while (!ioport_get_value(TC358870_PWR_GOOD))
 	{
 		delay_us(50);

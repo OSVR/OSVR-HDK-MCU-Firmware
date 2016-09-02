@@ -44,6 +44,7 @@
 #ifndef _UART_H_
 #define _UART_H_
 
+#ifdef USB_USE_UART
 /*! \brief Called by CDC interface
  * Callback running when CDC device have received data
  */
@@ -62,5 +63,5 @@ void uart_open(uint8_t port);
 /*! \brief Closes communication line
  */
 void uart_close(uint8_t port);
-
+#endif
 #endif  // _UART_H_

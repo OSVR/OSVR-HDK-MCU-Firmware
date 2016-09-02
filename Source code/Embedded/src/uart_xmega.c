@@ -51,6 +51,7 @@
 #include "SerialStateMachine.h"
 #include "my_hardware.h"
 
+#if 0
 void uart_config(uint8_t port, usb_cdc_line_coding_t* cfg)
 {
 	uint8_t reg_ctrlc;
@@ -198,3 +199,4 @@ ISR(USART_DRE_Vect)
 		ui_com_rx_stop();
 	}
 }
+#endif

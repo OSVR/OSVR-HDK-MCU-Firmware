@@ -34,6 +34,8 @@
 #include "VideoInput.h"
 #include "SvrYield.h"
 
+#include <inttypes.h>  // for the PRI__ format string specifiers matching stdint.h types.
+
 static inline void Toshiba_TC358870_Print_Status(TC358870_Op_Status_t status)
 {
 	char message[50];
@@ -69,7 +71,7 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				WriteLn("write one byte: w1xxxxyy");
 				break;
 			}
-			sprintf(message, "Toshiba_TC358870: write reg [%#06x] %#04x", addr, data);
+			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIX16 "] %#04" PRIX8, addr, data);
 			WriteLn(message);
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Write8(addr, data);
 			Toshiba_TC358870_Print_Status(status);
@@ -86,7 +88,7 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				WriteLn("write two bytes: w2xxxxyyyy");
 				break;
 			}
-			sprintf(message, "Toshiba_TC358870: write reg [%#06x] %#06x", addr, data);
+			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIX16 "] %#06" PRIX16, addr, data);
 			WriteLn(message);
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Write16(addr, data);
 			Toshiba_TC358870_Print_Status(status);
@@ -113,19 +115,12 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				WriteLn("read one byte: r1xxxx");
 				break;
 			}
-			sprintf(message, "Toshiba_TC358870: read 8 bits from reg [%#06x]", addr);
+			sprintf(message, "Toshiba_TC358870: read 8 bits from reg [%#06" PRIX16 "]", addr);
 			WriteLn(message);
 			uint8_t data = 0;
-#if 0
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read8(addr, &data);
 			Toshiba_TC358870_Print_Status(status);
-#else
-			if (TC358870_ERROR == Toshiba_TC358870_I2C_Read8(addr, &data))
-			{
-				WriteLn("Err");
-			}
-#endif
-			sprintf(message, "Data: %#04x", data);
+			sprintf(message, "Data: %#04" PRIX8, data);
 			WriteLn(message);
 			break;
 		}
@@ -140,14 +135,14 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 				break;
 			}
 
-			sprintf(message, "Toshiba_TC358870: read 16 bits from reg [%#06x]", addr);
+			sprintf(message, "Toshiba_TC358870: read 16 bits from reg [%#06" PRIX16 "]", addr);
 			WriteLn(message);
 
 			uint16_t data = 0;
 			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read16(addr, &data);
 			Toshiba_TC358870_Print_Status(status);
 
-			sprintf(message, "Data: %#06x", data);
+			sprintf(message, "Data: %#06" PRIX16, data);
 			WriteLn(message);
 			break;
 		}
@@ -168,7 +163,7 @@ static inline void Toshiba_TC358870_Console_H(BufWithStatus_t cmd)
 	case 'e':
 	case 'E':
 	{
-		WriteLn("Pulse HPD");
+		WriteLn("Pulse HPD 1ms");
 		ioport_set_pin_high(HDMI_HPD);
 		barrier();
 		svr_yield_ms(1);

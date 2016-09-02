@@ -254,13 +254,13 @@ static void VideoStatusHandler(bool video_status)
 
 		UpdateResolutionDetection();
 		Update_BNO_Report_Header();
-		gpio_set_pin_low(Debug_LED);
+		ioport_set_pin_low(Debug_LED);
 	}
 	else
-	{                                          // VIDEO IS READY
-		gpio_set_pin_low(TC358870_Reset_Pin);  // TC358870 reset active
+	{                                            // VIDEO IS READY
+		ioport_set_pin_low(TC358870_Reset_Pin);  // TC358870 reset active
 		delay_ms(50);
-		gpio_set_pin_high(TC358870_Reset_Pin);  // TC358870 reset active
+		ioport_set_pin_high(TC358870_Reset_Pin);  // TC358870 reset active
 		delay_ms(5);
 
 		TC358870_Init_Receive_HDMI_Signal();  // re-initial TC358870 if HDMI unplug.
@@ -268,7 +268,7 @@ static void VideoStatusHandler(bool video_status)
 		UpdateResolutionDetection();
 		Update_BNO_Report_Header();
 
-		gpio_set_pin_high(Debug_LED);
+		ioport_set_pin_high(Debug_LED);
 	}
 }
 
@@ -316,13 +316,13 @@ bool PowerOnSeq(void)
 
 	delay_ms(100);
 
-	ioport_set_value(TC358870_Reset_Pin, 0);  // TC358870 reset active
-	ioport_set_value(PANEL_RESET, 0);         // AUO panel reset active
+	ioport_set_pin_low(TC358870_Reset_Pin);  // TC358870 reset active
+	ioport_set_pin_low(PANEL_RESET);         // AUO panel reset active
 
 	delay_ms(50);
 
-	ioport_set_value(TC358870_Reset_Pin, 1);  // TC358870 reset active
-	ioport_set_value(PANEL_RESET, 1);         // AUO panel reset active
+	ioport_set_pin_high(TC358870_Reset_Pin);  // TC358870 reset active
+	ioport_set_pin_high(PANEL_RESET);         // AUO panel reset active
 
 	delay_ms(5);
 	// AUO_H381DLN01_Reset();
@@ -341,9 +341,9 @@ void AUO_H381DLN01_Reset(void)
 
 void Toshiba_TC358870_Reset(void)
 {
-	ioport_set_value(TC358870_Reset_Pin, 0);  // TC358870 reset active
+	ioport_set_pin_low(TC358870_Reset_Pin);  // TC358870 reset active
 	delay_ms(50);
-	ioport_set_value(TC358870_Reset_Pin, 1);  // TC358870 reset active
+	ioport_set_pin_high(TC358870_Reset_Pin);  // TC358870 reset active
 	delay_ms(1);
 }
 

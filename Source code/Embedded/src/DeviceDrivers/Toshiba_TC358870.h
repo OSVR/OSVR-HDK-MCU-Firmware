@@ -89,6 +89,18 @@ TC358870_Op_Status_t Toshiba_TC358870_I2C_Write16(TC358870_Reg_t reg, uint16_t v
 /// Does wait for the bus to become available, but returns other errors from I2C code as-is.
 TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32(TC358870_Reg_t reg, uint32_t val);
 
+/// Like Write8, but expects a register in the DSI-TX0 range (0x0100-0x02ff) - it will write both to that register and its DSI-TX1 counterpart in the range (0x0300-0x04FF)
+/// Return value is the minimum of the two independent return values.
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8_BothDSITX(TC358870_Reg_t reg, uint8_t val);
+
+/// Like Write16, but expects a register in the DSI-TX0 range (0x0100-0x02ff) - it will write both to that register and its DSI-TX1 counterpart in the range (0x0300-0x04FF)
+/// Return value is the minimum of the two independent return values.
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write16_BothDSITX(TC358870_Reg_t reg, uint16_t val);
+
+/// Like Write32, but expects a register in the DSI-TX0 range (0x0100-0x02ff) - it will write both to that register and its DSI-TX1 counterpart in the range (0x0300-0x04FF)
+/// Return value is the minimum of the two independent return values.
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32_BothDSITX(TC358870_Reg_t reg, uint32_t val);
+
 /// Reads an 8-bit byte from the given register over I2C.
 TC358870_Op_Status_t Toshiba_TC358870_I2C_Read8(TC358870_Reg_t reg, uint8_t* val);
 

@@ -49,7 +49,7 @@ inline static void AUO_H381DLN01_Send_Panel_Init_Commands()
 	{
 		Toshiba_TC358870_DSI_Write_Cmd_Short_Param(AUO_H381DLN01_Init_Commands[i].addr,
 		                                           AUO_H381DLN01_Init_Commands[i].param);
-		svr_yield_ms(1);
+		svr_yield_ms(5);
 	}
 }
 
@@ -76,12 +76,22 @@ inline static void AUO_Null_Param_DSI_Cmd(uint8_t cmd)
 void Display_System_Init()
 {
 	// start the chip, if it hasn't been started.
-	Toshiba_TC358870_Init_Once();
-	Toshiba_TC358870_Prepare_TX();
-	Toshiba_TC358870_Configure_Splitter();
+	if (!Toshiba_TC358870_Init_Once())
+	{
+		// if it has been started, do a mini reset
+		/// Software reset of TC358870's DSI-TX
+		Toshiba_TC358870_I2C_Write16(0x0002, BITUTILS_BIT(9));
+		Toshiba_TC358870_I2C_Write16(0x0002, 0);
+		svr_yield_ms(150);
+		Toshiba_TC358870_Prepare_TX();
+		Toshiba_TC358870_Configure_Splitter();
+	}
 }
 void Display_Init(uint8_t deviceID)
 {
+	// make sure we aren't held in reset mode.
+	ioport_set_pin_high(PANEL_RESET);
+	svr_yield_ms(120);
 	AUO_H381DLN01_Send_Panel_Init_Commands();
 	/*
 	    AUO_H381DLN01_Panel_Reset();
@@ -89,18 +99,19 @@ void Display_Init(uint8_t deviceID)
 	    */
 }
 void Display_On(uint8_t deviceID)
-
 {
 #ifdef HDMI_VERBOSE
 	WriteLn("Turning display on");
 #endif
 	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
+	ioport_set_pin_high(Debug_LED);
 
 /// @todo ugly workaround for resetting things.
 #if 1
-	TC358870_Init_Receive_HDMI_Signal();
+// TC358870_Init_Receive_HDMI_Signal();
 // Toshiba_TC358870_Init();
 #endif
+	AUO_H381DLN01_Send_Panel_Init_Commands();
 #if 0
 	/// This one is at least a little bit less extreme
 	AUO_H381DLN01_Panel_Reset();
@@ -127,6 +138,8 @@ void Display_On(uint8_t deviceID)
 	// Display On
 	AUO_Null_Param_DSI_Cmd(0x29);
 
+	svr_yield_ms(10);
+
 	Toshiba_TC358870_Enable_Video_TX();
 }
 
@@ -135,15 +148,8 @@ void Display_Off(uint8_t deviceID)
 #ifdef HDMI_VERBOSE
 	WriteLn("Turning display off");
 #endif
-#if 0  // Not for SSD2848
-	// video mode off
-    TC358870_i2c_Write(0x0504, 0x8029, 2); // DCSCMD Long Write
-    TC358870_i2c_Write(0x0504, 0x0006, 2); // Number of data
-    TC358870_i2c_Write(0x0504, 0xB700, 2); // 0xB7
-    TC358870_i2c_Write(0x0504, 0x0000, 2); // DCSCMD_Q
-    TC358870_i2c_Write(0x0504, 0x2103, 2); // DCSCMD_Q
-	svr_yield_ms(16);
-#endif
+	ioport_set_pin_low(Debug_LED);
+	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 
 	// Display Off
 	AUO_Null_Param_DSI_Cmd(0x28);
@@ -197,13 +203,6 @@ void Display_Reset(uint8_t deviceID)
 		AUO_Null_Param_DSI_Cmd(0x29);
 		Toshiba_TC358870_Enable_Video_TX();
 	}
-
-	ioport_set_pin_low(TC358870_Reset_Pin);
-	ioport_set_pin_low(PANEL_RESET);
-	svr_yield_ms(50);
-	ioport_set_pin_high(TC358870_Reset_Pin);
-	ioport_set_pin_high(PANEL_RESET);
-	svr_yield_ms(5);
 }
 
 void Display_Powercycle(uint8_t deviceID)

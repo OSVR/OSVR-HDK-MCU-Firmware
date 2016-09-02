@@ -218,10 +218,8 @@ void Toshiba_TC358870_Base_Init(void)
 	// Toshiba_TC358870_Init_Receiver();
 	s_tc358870_init_count++;
 
-	static bool pinSetupForInterrupts = false;
-	if (!pinSetupForInterrupts)
+	if (firstTime)
 	{
-		pinSetupForInterrupts = true;
 		Toshiba_TC358870_MCU_Ints_Init();
 	}
 	else
@@ -229,6 +227,7 @@ void Toshiba_TC358870_Base_Init(void)
 		// not our first go-round, we'll just resume ints here.
 		Toshiba_TC358870_MCU_Ints_Resume();
 	}
+
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: End");
 #endif
@@ -244,7 +243,7 @@ bool Toshiba_TC358870_Init_Once(void)
 	return false;
 }
 
-void Toshiba_TC358870_Init_Receiver() { TC358870_Init_Receive_HDMI_Signal(); }
+// void Toshiba_TC358870_Init_Receiver() { TC358870_Init_Receive_HDMI_Signal(); }
 uint8_t Toshiba_TC358870_Get_Init_Count() { return s_tc358870_init_count; }
 void Toshiba_TC358870_Trigger_Reset()
 {

@@ -225,9 +225,7 @@ uint8_t GetValidConfigValueOrDefault(SvrEepromOffset_t oset, uint8_t defaultValu
 // the default value.
 bool GetValidConfigValueOrWriteDefault(SvrEepromOffset_t oset, uint8_t defaultValue, uint8_t *outValue);
 
-#ifdef Debug_LED
 void Debug_LED_Turn_On(void);
 void Debug_LED_Turn_Off(void);
-#endif
 
 #endif /* MY_HARDWARE_H_ */

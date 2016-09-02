@@ -387,5 +387,8 @@ bool GetValidConfigValueOrWriteDefault(SvrEepromOffset_t oset, uint8_t defaultVa
 
 #ifdef Debug_LED
 void Debug_LED_Turn_On() { ioport_set_pin_low(Debug_LED); }
-void Debug_LED_Turn_Off(void) { ioport_set_pin_high(Debug_LED); }
+void Debug_LED_Turn_Off() { ioport_set_pin_high(Debug_LED); }
+#else
+void Debug_LED_Turn_On() {}
+void Debug_LED_Turn_Off() {}
 #endif

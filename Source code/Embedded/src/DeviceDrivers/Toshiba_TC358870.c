@@ -126,9 +126,22 @@ TC358870_Op_Status_t Toshiba_TC358870_I2C_Read8(TC358870_Reg_t reg, uint8_t* val
 
 TC358870_Op_Status_t Toshiba_TC358870_I2C_Read16(TC358870_Reg_t reg, uint16_t* val)
 {
-	uint8_t buf[2];
-	TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read_Impl(reg, buf, sizeof(uint16_t));
-	*val = (((uint16_t)(buf[1])) << CHAR_BIT) | ((uint16_t)(buf[0]));
+	typedef uint16_t T;
+	uint8_t buf[sizeof(T)];
+	TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read_Impl(reg, buf, sizeof(T));
+	*val = (((T)(buf[1])) << CHAR_BIT) | ((T)(buf[0]));
+	return status;
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Read32(TC358870_Reg_t reg, uint32_t* val)
+{
+	typedef uint32_t T;
+	uint8_t buf[sizeof(T)];
+	TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read_Impl(reg, buf, sizeof(T));
+	*val = (((T)buf[3]) << (3 * CHAR_BIT)) |  //< byte 3
+	       (((T)buf[2]) << (2 * CHAR_BIT)) |  //< byte 2
+	       (((T)buf[1]) << CHAR_BIT) |        //< byte 1
+	       ((T)buf[0]);                       //< LSB
 	return status;
 }
 

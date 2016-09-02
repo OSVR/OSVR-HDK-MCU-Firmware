@@ -1088,10 +1088,10 @@ void ProcessSPICommand(void)
 		{
 			WriteLn("OE high");
 			ioport_configure_pin(SPI_Mux_OE, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-			gpio_set_pin_high(SPI_Mux_OE);
+			ioport_set_pin_low(SPI_Mux_OE);
 		}
 		else if (CommandToExecute[2] == '4')
-			gpio_toggle_pin(SPI_Mux_OE);
+			ioport_toggle_pin_level(SPI_Mux_OE);
 #endif
 		else
 			WriteLn("Wrong Solomon ID");

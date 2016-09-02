@@ -23,16 +23,7 @@
 
 #define SVR_DEBUG_LIBHDK2_BEHAVIOR
 
-static void VideoInput_Init_Impl(void)
-{
-	Toshiba_TC358870_Disable_Video_TX();
-	// software reset HDMI
-	Toshiba_TC358870_I2C_Write16(0x0002, BITUTILS_BIT(8));
-	Toshiba_TC358870_I2C_Write16(0x0002, 0);
-	Toshiba_TC358870_HDMI_Setup();
-	Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
-}
-
+static void VideoInput_Init_Impl(void) { Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts(); }
 void VideoInput_Init(void)
 {
 	static bool haveInit = false;
@@ -51,6 +42,13 @@ void VideoInput_Init(void)
 		// (used in Display_System_Init()) since that's where the meat of initializing the chip happens.
 		// Toshiba_TC358870_Base_Init();
 		bool haveVideo = VideoInput_Get_Status();
+
+		Toshiba_TC358870_Disable_Video_TX();
+		// software reset HDMI
+		Toshiba_TC358870_HDMI_SW_Reset();
+
+		Toshiba_TC358870_HDMI_Setup();
+
 		VideoInput_Init_Impl();
 		if (haveVideo)
 		{
@@ -74,11 +72,11 @@ TC358870_ISR()
 	s_gotVideoInterrupt = true;
 	Toshiba_TC358870_MCU_Ints_Clear_Flag();
 }
+/// Get the state of the "got interrupt" flag atomically.
 static bool gotVideoInterrupt(void)
 {
 	bool gotInterrupt;
 	{
-		/// Get the state of the "got interrupt" flag atomically.
 		Toshiba_TC358870_MCU_Ints_Suspend();
 		gotInterrupt = s_gotVideoInterrupt;
 		s_gotVideoInterrupt = false;

@@ -166,6 +166,27 @@ static const TC358870_Reg_t TC_REG_SYS_STATUS = 0x8520;
 #define TC_REG_MISC_INT_SYNC_CHG_BITMASK BITUTILS_BIT(1)
 static const uint8_t TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK = BITUTILS_BIT(7);
 
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8_BothDSITX(TC358870_Reg_t reg, uint8_t val)
+{
+	TC358870_Op_Status_t status1 = Toshiba_TC358870_I2C_Write8(reg, val);
+	TC358870_Op_Status_t status2 = Toshiba_TC358870_I2C_Write8(reg + TC_REG_DSITX1_OFFSET, val);
+	return min(status1, status2);
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write16_BothDSITX(TC358870_Reg_t reg, uint16_t val)
+{
+	TC358870_Op_Status_t status1 = Toshiba_TC358870_I2C_Write16(reg, val);
+	TC358870_Op_Status_t status2 = Toshiba_TC358870_I2C_Write16(reg + TC_REG_DSITX1_OFFSET, val);
+	return min(status1, status2);
+}
+
+TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32_BothDSITX(TC358870_Reg_t reg, uint32_t val)
+{
+	TC358870_Op_Status_t status1 = Toshiba_TC358870_I2C_Write32(reg, val);
+	TC358870_Op_Status_t status2 = Toshiba_TC358870_I2C_Write32(reg + TC_REG_DSITX1_OFFSET, val);
+	return min(status1, status2);
+}
+
 static uint8_t s_tc358870_init_count = 0;
 
 void Toshiba_TC358870_Base_Init(void)

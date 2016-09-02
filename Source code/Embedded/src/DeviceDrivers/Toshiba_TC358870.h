@@ -60,8 +60,9 @@ typedef uint16_t TC358870_Reg_t;
 /// things, eventually calls the other libhdk20 function TC358870_Init_Receive_HDMI_Signal
 void Toshiba_TC358870_Base_Init(void);
 
-/// Calls Toshiba_TC358870_Base_Init() only if it hasn't been called before.
-void Toshiba_TC358870_Init_Once(void);
+/// Calls Toshiba_TC358870_Base_Init() only if it hasn't been called before - returns false if it doesn't actually call
+/// init.
+bool Toshiba_TC358870_Init_Once(void);
 
 /// Wraps libhdk20 function TC358870_Init_Receive_HDMI_Signal
 void Toshiba_TC358870_Init_Receiver(void);

@@ -234,12 +234,14 @@ void Toshiba_TC358870_Base_Init(void)
 #endif
 }
 
-void Toshiba_TC358870_Init_Once(void)
+bool Toshiba_TC358870_Init_Once(void)
 {
 	if (0 == s_tc358870_init_count)
 	{
 		Toshiba_TC358870_Base_Init();
+		return true;
 	}
+	return false;
 }
 
 void Toshiba_TC358870_Init_Receiver() { TC358870_Init_Receive_HDMI_Signal(); }

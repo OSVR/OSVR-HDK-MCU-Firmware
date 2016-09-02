@@ -78,13 +78,12 @@ void set_pwm_values(uint8_t Display1, uint8_t Display2)
 void custom_board_init(void)
 
 {
+	ioport_init();
+
 /// @todo This is pin setup code for part of the block of pins that are referred to nowhere else in the source code for
 /// the HDK_20. Unclear how much of this is actually required for proper operation and how much is just extraneous: the
 /// system did work with just the level shifter output enable setup.
 #ifdef SVR_IS_HDK_20
-	ioport_configure_pin(
-	    MCU_LEVEL_SHIFT_OE,
-	    IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // I/O level shift gate enable. (i2c, hdmi_rst, 2848_reset).
 	ioport_configure_pin(TC358870_PWR_GOOD, IOPORT_DIR_INPUT);  // TPS54478 (U16) 1.8v power good indicator.
 	/// @todo the device was functional without these configured.
 	ioport_configure_pin(ANA_PWR_IN, IOPORT_DIR_INPUT);                       // 5v power good indicator.
@@ -128,10 +127,17 @@ void custom_board_init(void)
 	ioport_configure_pin(Debug_LED, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
-	ioport_configure_pin(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // HW power on reset, > 12ms.
+	// ioport_configure_pin(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // HW power on reset, > 12ms.
+	ioport_set_pin_low(TC358870_Reset_Pin);  // HW power on reset, > 12ms.
+	ioport_set_pin_dir(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT);
 
-	/// This is both address selection and an interrupt pin.
-	ioport_configure_pin(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT | IOPORT_TOTEM | IOPORT_RISING);
+	/// This is both address selection and an interrupt pin. We will not impose our own pull-up or pull-down
+	/// (IOPORT_TOTEM), but we will sense rising edges.
+	// ioport_configure_pin(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT | IOPORT_TOTEM | IOPORT_RISING);
+	ioport_set_pin_dir(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT);
+	ioport_set_pin_mode(TC358870_ADDR_SEL_INT, IOPORT_TOTEM);
+	ioport_set_pin_sense_mode(TC358870_ADDR_SEL_INT, IOPORT_SENSE_RISING);
+
 #endif
 
 #ifdef SVR_HAVE_NXP1
@@ -154,7 +160,20 @@ void custom_board_init(void)
 /// @todo initialize USB_SW_OC except on SVR_IS_HDK_20 where it may be HW NC?
 
 #ifdef SVR_IS_HDK_20
-	ioport_configure_pin(PANEL_RESET, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, low > 10us
+	// ioport_configure_pin(PANEL_RESET, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, low > 10us
+	ioport_set_pin_low(PANEL_RESET);  // Reset active on low
+	ioport_set_pin_dir(PANEL_RESET, IOPORT_DIR_OUTPUT);
+
+	// configure the level shifter last, since it holds the panel and toshiba chip reset low (open drain) when OE is
+	// disabled.
+	// there's an external pullup (to the low-voltage side of the level shifter) on this pin, so it's really nOE.
+	ioport_set_pin_low(MCU_LEVEL_SHIFT_OE);
+	ioport_set_pin_dir(MCU_LEVEL_SHIFT_OE, IOPORT_DIR_OUTPUT);
+#if 0
+	ioport_configure_pin(
+	MCU_LEVEL_SHIFT_OE,
+	IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // I/O level shift gate enable. (i2c, hdmi_rst, 2848_reset).
+#endif
 #endif
 
 #ifdef SVR_IS_HDK_1_x

@@ -74,9 +74,9 @@ void Toshiba_TC358870_SW_Reset()
 
 void Toshiba_TC358870_Prepare_TX()
 {
-#if 0
+#if 1
 
-// version from init receive hdmi - identical registers and order, just different values.
+	// version from init receive hdmi - identical registers and order, just different values.
 
 	// DSI-TX0 Transition Timing
 	TC358870_i2c_Write(0x0108, 0x00000001, 4);  // DSI_TX_CLKEN

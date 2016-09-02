@@ -86,6 +86,8 @@
 #include <libhdk20.h>
 #endif
 
+#include <limits.h>  // for CHAR_BIT
+
 #define USBNotConnected 0
 #define AwaitingCommand 1
 #define ReceivingCommand 2
@@ -277,6 +279,13 @@ uint8_t ParseHexDigit(const char *buf)
 	}
 	return ParseHexDigitDirectly(*buf);
 }
+
+enum
+{
+	BITS_PER_HEX_DIGIT = 4,
+	HEX_DIGITS_PER_BYTE = CHAR_BIT / BITS_PER_HEX_DIGIT
+};
+
 /// Utility function for parsing the first two characters of a given C string as
 /// a pair of hex digits.
 uint8_t ParseHexDigits2_8(const char *buf)
@@ -304,19 +313,23 @@ uint8_t ParseHexDigits2_8(const char *buf)
 	}
 
 	// shift the previous digit over, and parse the new one.
-	ret = ret << 4 | ParseHexDigitDirectly(c);
+	ret = (ret << BITS_PER_HEX_DIGIT) | ParseHexDigitDirectly(c);
 	return ret;
 }
 uint16_t ParseHexDigits4_16(const char *buf)
 {
-	uint16_t ret = 0;
-
+	typedef uint16_t T;
+	T ret = 0;
+	enum
+	{
+		HEX_DIGITS = sizeof(T) * HEX_DIGITS_PER_BYTE
+	};
 	if (!buf)
 	{
 		return ret;
 	}
 	char c;
-	for (uint8_t i = 0; i < 4; ++i)
+	for (uint8_t i = 0; i < HEX_DIGITS; ++i)
 	{
 		c = *buf;
 		// if we ran out of data, just return the digits we did parse.
@@ -324,8 +337,9 @@ uint16_t ParseHexDigits4_16(const char *buf)
 		{
 			return ret;
 		}
-		ret = ret << 4 | ParseHexDigitDirectly(c);
-		// hopefully this loop gets unrolled and this dead store gets eliminated on the last iteration.
+		ret = (ret << BITS_PER_HEX_DIGIT) | ((T)ParseHexDigitDirectly(c));
+		// hopefully this loop gets unrolled and this dead store gets eliminated on the last iteration,
+		// since it serves no purpose in this "non-consuming" variation of the parser.
 		buf++;
 	}
 	return ret;
@@ -353,12 +367,18 @@ uint8_t statusBufConsumeHexDigits2_8(BufWithStatus_t *b)
 	}
 
 	// shift the previous digit over, and parse the new one.
-	ret = ret << 4 | ParseHexDigitDirectly(c);
+	ret = (ret << BITS_PER_HEX_DIGIT) | ParseHexDigitDirectly(c);
 	return ret;
 }
 uint16_t statusBufConsumeHexDigits4_16(BufWithStatus_t *b)
 {
-	uint16_t ret = 0;
+	typedef uint16_t T;
+	T ret = 0;
+
+	enum
+	{
+		HEX_DIGITS = sizeof(T) * HEX_DIGITS_PER_BYTE
+	};
 
 	// using the checked call the first time (a bit redundantly) to handle invalid buffers
 	char c = statusBufPeekFront(b);
@@ -366,7 +386,7 @@ uint16_t statusBufConsumeHexDigits4_16(BufWithStatus_t *b)
 	{
 		return ret;
 	}
-	for (uint8_t i = 0; i < 4; ++i)
+	for (uint8_t i = 0; i < HEX_DIGITS; ++i)
 	{
 		c = statusBufPeekFront_Unchecked(b);
 		// if we ran out of data, just return the digits we did parse.
@@ -374,7 +394,37 @@ uint16_t statusBufConsumeHexDigits4_16(BufWithStatus_t *b)
 		{
 			return ret;
 		}
-		ret = ret << 4 | ParseHexDigitDirectly(c);
+		ret = (ret << BITS_PER_HEX_DIGIT) | ((T)(ParseHexDigitDirectly(c)));
+		// Advance the buffer.
+		statusBufConsumeByte_Unchecked(b);
+	}
+	return ret;
+}
+uint32_t statusBufConsumeHexDigits8_32(BufWithStatus_t *b)
+{
+	typedef uint32_t T;
+	T ret = 0;
+
+	enum
+	{
+		HEX_DIGITS = sizeof(T) * HEX_DIGITS_PER_BYTE
+	};
+
+	// using the checked call the first time (a bit redundantly) to handle invalid buffers
+	char c = statusBufPeekFront(b);
+	if ('\0' == c)
+	{
+		return ret;
+	}
+	for (uint8_t i = 0; i < HEX_DIGITS; ++i)
+	{
+		c = statusBufPeekFront_Unchecked(b);
+		// if we ran out of data, just return the digits we did parse.
+		if (c == '\0')
+		{
+			return ret;
+		}
+		ret = (ret << BITS_PER_HEX_DIGIT) | ((T)(ParseHexDigitDirectly(c)));
 		// Advance the buffer.
 		statusBufConsumeByte_Unchecked(b);
 	}

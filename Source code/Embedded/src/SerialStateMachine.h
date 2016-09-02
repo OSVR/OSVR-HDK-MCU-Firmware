@@ -80,4 +80,8 @@ uint8_t statusBufConsumeHexDigits2_8(BufWithStatus_t *b);
 /// correspond
 uint16_t statusBufConsumeHexDigits4_16(BufWithStatus_t *b);
 
+/// Consume 4 bytes (if available) from the buf with status, parse them as hex, and return the uint32 to which they
+/// correspond
+uint32_t statusBufConsumeHexDigits8_32(BufWithStatus_t *b);
+
 #endif /* SERIALSTATEMACHINE_H_ */

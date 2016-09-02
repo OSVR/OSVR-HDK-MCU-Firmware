@@ -94,6 +94,23 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 			Toshiba_TC358870_Print_Status(status);
 			break;
 		}
+
+		case '4':
+		{
+			statusBufConsumeByte(&cmd);
+			uint16_t addr = statusBufConsumeHexDigits4_16(&cmd);
+			uint32_t data = statusBufConsumeHexDigits8_32(&cmd);
+			if (!cmd.valid)
+			{
+				WriteLn("write four bytes: w4xxxxyyyyyyyy");
+				break;
+			}
+			sprintf(message, "Toshiba_TC358870: write reg [%#06" PRIX16 "] %#08" PRIX32, addr, data);
+			WriteLn(message);
+			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Write32(addr, data);
+			Toshiba_TC358870_Print_Status(status);
+			break;
+		}
 		default:
 			break;
 		}
@@ -143,6 +160,28 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 			Toshiba_TC358870_Print_Status(status);
 
 			sprintf(message, "Data: %#06" PRIX16, data);
+			WriteLn(message);
+			break;
+		}
+
+		case '4':
+		{
+			statusBufConsumeByte(&cmd);
+			uint16_t addr = statusBufConsumeHexDigits4_16(&cmd);
+			if (!cmd.valid)
+			{
+				WriteLn("read four bytes: r4xxxx");
+				break;
+			}
+
+			sprintf(message, "Toshiba_TC358870: read 32 bits from reg [%#06" PRIX16 "]", addr);
+			WriteLn(message);
+
+			uint32_t data = 0;
+			TC358870_Op_Status_t status = Toshiba_TC358870_I2C_Read32(addr, &data);
+			Toshiba_TC358870_Print_Status(status);
+
+			sprintf(message, "Data: %#08" PRIX32, data);
 			WriteLn(message);
 			break;
 		}

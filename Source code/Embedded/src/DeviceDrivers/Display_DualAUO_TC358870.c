@@ -43,13 +43,15 @@ static const CommandSequenceElt_t AUO_H381DLN01_Init_Commands[] = {
 
 inline static void AUO_H381DLN01_Send_Panel_Init_Commands()
 {
+	/// Need at least 10ms from reset going back high before initial setting.
+	svr_yield_ms(10);
 	/// Run all display setup commands for these panels from the app note.
 	unsigned int numCommands = sizeof(AUO_H381DLN01_Init_Commands) / sizeof(AUO_H381DLN01_Init_Commands[0]);
 	for (unsigned int i = 0; i < numCommands; ++i)
 	{
 		Toshiba_TC358870_DSI_Write_Cmd_Short_Param(AUO_H381DLN01_Init_Commands[i].addr,
 		                                           AUO_H381DLN01_Init_Commands[i].param);
-		svr_yield_ms(5);
+		svr_yield_ms(1);
 	}
 }
 
@@ -72,15 +74,28 @@ inline static void AUO_Null_Param_DSI_Cmd(uint8_t cmd)
 	Toshiba_TC358870_DSI_Write_Cmd_Short(cmd);
 #endif
 }
-static bool s_shouldRestoreVideo = false;
+/// Note that must have 120ms since reset!
+inline static void AUO_DSI_Sleep_Out(void) { AUO_Null_Param_DSI_Cmd(0x11); }
+inline static void AUO_DSI_Display_On(void)
+{
+	// Spec says, >166ms. Best to be safe.
+	svr_yield_ms(167);  //>10 frame
+	AUO_Null_Param_DSI_Cmd(0x29);
+}
+
+inline static void AUO_DSI_Display_Off(void)
+{
+	AUO_Null_Param_DSI_Cmd(0x28);
+	// Spec says, >166ms before bringing reset low. Best to be safe.
+	svr_yield_ms(167);  //>10 frame
+}
+inline static void AUO_DSI_Sleep_In(void) { AUO_Null_Param_DSI_Cmd(0x10); }
 void Display_System_Init()
 {
 	// start the chip, if it hasn't been started.
 	if (!Toshiba_TC358870_Init_Once())
 	{
 		// if it has been started, do a mini reset
-
-		s_shouldRestoreVideo = VideoInput_Get_Status();
 		Toshiba_TC358870_Disable_Video_TX();
 		/// Software reset of TC358870's DSI-TX
 		Toshiba_TC358870_DSITX_SW_Reset();
@@ -93,21 +108,37 @@ void Display_Init(uint8_t deviceID)
 	// make sure we aren't held in reset mode.
 	ioport_set_pin_high(PANEL_RESET);
 	svr_yield_ms(120);
+	static bool repeat = false;
+	bool firstTime = false;
+	if (!repeat)
+	{
+		repeat = true;
+		firstTime = true;
+	}
+
+	bool shouldRestoreVideo = false;
+
+	if (!firstTime)
+	{
+		// if it has been started, do a mini reset
+		shouldRestoreVideo = VideoInput_Get_Status();
+		Toshiba_TC358870_Disable_Video_TX();
+		/// Software reset of TC358870's DSI-TX
+		Toshiba_TC358870_DSITX_SW_Reset();
+		Toshiba_TC358870_Prepare_TX();
+		Toshiba_TC358870_Configure_Splitter();
+	}
+
 	AUO_H381DLN01_Send_Panel_Init_Commands();
 
-	if (s_shouldRestoreVideo)
+	if (shouldRestoreVideo)
 	{
 		// this was a repeat init that started out with video.
-		s_shouldRestoreVideo = false;
 
-		// Sleep Out
-		AUO_Null_Param_DSI_Cmd(0x11);
-		// Spec says, >166ms. Best
-		svr_yield_ms(167);  //>10 frame
+		AUO_DSI_Sleep_Out();
+		AUO_DSI_Display_On();
 
-		// Display On
-		AUO_Null_Param_DSI_Cmd(0x29);
-
+		// seemed like a good idea at the time
 		svr_yield_ms(10);
 
 		Toshiba_TC358870_Enable_Video_TX();
@@ -145,15 +176,8 @@ void Display_On(uint8_t deviceID)
 	TC358870_i2c_Write(0x0504, 0x2903, 2); // DCSCMD_Q
 #endif
 
-	// Sleep Out
-	AUO_Null_Param_DSI_Cmd(0x11);
-	// Spec says, >166ms. Best
-	svr_yield_ms(167);  //>10 frame
-
-	// Display On
-	AUO_Null_Param_DSI_Cmd(0x29);
-
-	svr_yield_ms(10);
+	AUO_DSI_Sleep_Out();
+	AUO_DSI_Display_On();
 
 	Toshiba_TC358870_Enable_Video_TX();
 }
@@ -166,15 +190,12 @@ void Display_Off(uint8_t deviceID)
 	ioport_set_pin_low(Debug_LED);
 	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 
-	// Display Off
-	AUO_Null_Param_DSI_Cmd(0x28);
-	svr_yield_ms(1);
-
-	// Sleep in
-	AUO_Null_Param_DSI_Cmd(0x10);
-	svr_yield_ms(1);
+	AUO_DSI_Display_Off();
+	AUO_DSI_Sleep_In();
 
 	Toshiba_TC358870_Disable_Video_TX();
+
+/// @todo could power down the display completely here
 
 /// @todo ugly workaround for resetting things.
 /// This first version is uglier (more binary blob) but avoids a 1-2second period of a bright horizontal stripe on the
@@ -199,6 +220,8 @@ void Display_Reset(uint8_t deviceID)
 {
 	WriteLn("TC358870 DSI-TX soft power cycle");
 	Toshiba_TC358870_Disable_Video_TX();
+	AUO_DSI_Display_Off();
+	AUO_DSI_Sleep_In();
 	/// Software reset of TC358870's DSI-TX
 	Toshiba_TC358870_DSITX_SW_Reset();
 	Toshiba_TC358870_Prepare_TX();
@@ -208,12 +231,9 @@ void Display_Reset(uint8_t deviceID)
 	if (VideoInput_Get_Status())
 	{
 		WriteLn("VideoInput says we have video, turning display on");
-		// Sleep Out
-		AUO_Null_Param_DSI_Cmd(0x11);
-		svr_yield_ms(166);  //>10 frame
-
-		// Display On
-		AUO_Null_Param_DSI_Cmd(0x29);
+		AUO_DSI_Sleep_Out();
+		AUO_DSI_Display_On();
+		// seemed like a good idea.
 		svr_yield_ms(10);
 		Toshiba_TC358870_Enable_Video_TX();
 	}
@@ -224,13 +244,10 @@ void Display_Powercycle(uint8_t deviceID)
 	bool hadVideo = VideoInput_Get_Status();
 	WriteLn("Display Power Cycle");
 	Toshiba_TC358870_Disable_Video_TX();
-	// Display Off
-	AUO_Null_Param_DSI_Cmd(0x28);
-
-	svr_yield_ms(120);
-
-	//  Sleep In
-	AUO_Null_Param_DSI_Cmd(0x10);
+	AUO_DSI_Display_Off();
+	AUO_DSI_Sleep_In();
+	// just to be sure we've made the timings.
+	svr_yield_ms(10);
 
 	// Pull reset low.
 	ioport_set_pin_low(PANEL_RESET);
@@ -240,16 +257,15 @@ void Display_Powercycle(uint8_t deviceID)
 	// pull reset high again
 	ioport_set_pin_high(PANEL_RESET);
 
+	// Reset after this signal takes at most 5ms during sleep mode, 120ms during non-sleep mode (and can't "sleep out"
+	// for 120ms)
+	svr_yield_ms(120);
+
 	AUO_H381DLN01_Send_Panel_Init_Commands();
 	if (hadVideo)
 	{
-		// Exit Sleep
-		AUO_Null_Param_DSI_Cmd(0x11);
-
-		svr_yield_ms(166);  //>10 frame
-
-		// Display On
-		AUO_Null_Param_DSI_Cmd(0x29);
+		AUO_DSI_Sleep_Out();
+		AUO_DSI_Display_On();
 
 		Toshiba_TC358870_Enable_Video_TX();
 	}

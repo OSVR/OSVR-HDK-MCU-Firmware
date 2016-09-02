@@ -135,12 +135,14 @@ extern uint8_t
 #define PANEL_RESET IOPORT_CREATE_PIN(PORTF, 4)  // out, panel reset. hw power reset.
 #endif
 
-/// @todo This section is pins that are entirely unreferenced anywhere in the HDK_20 Coretronic fork except in
-/// custom_board_init
 #ifdef SVR_IS_HDK_20
 #define MCU_LEVEL_SHIFT_OE IOPORT_CREATE_PIN(PORTA, 1)  // out, level shift enable, low enable. U55
-#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)          // out, Right Panel SWIRE //< @todo NC
+#define HDMI_HPD IOPORT_CREATE_PIN(PORTF, 3)            //< @todo out, HDMI_HPD on schematic?
+#define MCU_LED_R IOPORT_CREATE_PIN(PORTA, 3)           //< @todo LD17 - aka MCU_EDID_R - just an LED or something more?
+
+#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)   // out, Left Panel SWIRE //< @todo NC?
 #define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)  // out, Right Panel SWIRE //< @todo PF3 is HDMI_HPD on schematic?
+
 #define ANA_PWR_IN IOPORT_CREATE_PIN(PORTA, 6)   // in, 5v power good. "ANA_TMP1" - there is also PA4 HDMI_D5V
 #define EDID_EEP_WP IOPORT_CREATE_PIN(PORTA, 7)  // out, edid eeprom write protection, 0: write protect
 

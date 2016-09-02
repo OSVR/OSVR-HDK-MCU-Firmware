@@ -8,6 +8,8 @@
 #ifndef USB_H_
 #define USB_H_
 
+#include <usb_protocol_cdc.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -22,6 +24,11 @@ bool main_cdc_enable(uint8_t port);
  * This is called by CDC interface when USB Host disable it.
  */
 void main_cdc_disable(uint8_t port);
+
+/// Called when somebody opens the CDC port
+void main_cdc_config(uint8_t port, usb_cdc_line_coding_t* cfg);
+
+void main_cdc_rx_notify(uint8_t port);
 
 /// @brief Check to see if USB CDC is active.
 bool usb_cdc_is_active(void);

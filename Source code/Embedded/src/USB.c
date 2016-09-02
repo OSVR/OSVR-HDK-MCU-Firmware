@@ -63,10 +63,12 @@ void main_cdc_set_dtr(uint8_t port, bool b_enable)
 	{
 		// Host terminal has open COM
 		ui_com_open(port);
+		main_b_cdc_enable = true;
 	}
 	else
 	{
 		// Host terminal has close COM
+		main_b_cdc_enable = false;
 		ui_com_close(port);
 	}
 }

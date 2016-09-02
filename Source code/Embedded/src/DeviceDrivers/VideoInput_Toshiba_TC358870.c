@@ -209,10 +209,10 @@ void VideoInput_Report_Status(void)
 	Write("System Status ");
 	vi_tc_dump_reg_status(0x8520, 1);
 
-	Write("LANE_STATUS_HS (DSI-TX0) ");
+	Write("LANE_STATUS_HS (DSI-TX0) - want 8f - ");
 	vi_tc_dump_reg_status(0x0290, 4);
 
-	Write("LANE_STATUS_LS (DSI-TX0) ");
+	Write("LANE_STATUS_LS (DSI-TX0) - want 0 - ");
 	vi_tc_dump_reg_status(0x0294, 4);
 
 	Write("MIPI_PLL_CNF (DSI-TX0) ");

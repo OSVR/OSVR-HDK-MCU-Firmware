@@ -1159,7 +1159,13 @@
     <Compile Include="src\DeviceDrivers\Toshiba_TC358870.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\DeviceDrivers\Toshiba_TC358870_Console.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\DeviceDrivers\Toshiba_TC358870_ISR.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\DeviceDrivers\Toshiba_TC358870_Setup_Impl.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\DeviceDrivers\VideoInput.c">

@@ -51,7 +51,7 @@ inline static void AUO_H381DLN01_Send_Panel_Init_Commands()
 	{
 		Toshiba_TC358870_DSI_Write_Cmd_Short_Param(AUO_H381DLN01_Init_Commands[i].addr,
 		                                           AUO_H381DLN01_Init_Commands[i].param);
-		svr_yield_ms(1);
+		svr_yield_ms(16);
 	}
 }
 
@@ -150,14 +150,19 @@ void Display_On(uint8_t deviceID)
 	WriteLn("Turning display on");
 #endif
 	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
-	ioport_set_pin_high(Debug_LED);
+	// Debug_LED_Turn_On();
 
-/// @todo ugly workaround for resetting things.
-#if 1
-// TC358870_Init_Receive_HDMI_Signal();
-// Toshiba_TC358870_Init();
-#endif
+	/// @todo ugly workaround for resetting things.
+	// TC358870_Init_Receive_HDMI_Signal();
+	// Toshiba_TC358870_Init();
+	// Toshiba_TC358870_SW_Reset();
+	AUO_H381DLN01_Panel_Reset();
+	Toshiba_TC358870_DSITX_SW_Reset();
+	Toshiba_TC358870_Prepare_TX();
+	svr_yield_ms(16);
 	AUO_H381DLN01_Send_Panel_Init_Commands();
+	svr_yield_ms(120);
+
 #if 0
 	/// This one is at least a little bit less extreme
 	AUO_H381DLN01_Panel_Reset();
@@ -165,8 +170,6 @@ void Display_On(uint8_t deviceID)
 	svr_yield_ms(120);
 	Toshiba_TC358870_Init_Receiver();
 #endif
-	// display power on - wait 120 ms in case this is after a reset.
-	svr_yield_ms(120);
 
 #if 0  // Not for SSD2848
 	TC358870_i2c_Write(0x0504, 0x8029, 2); // DCSCMD Long Write
@@ -187,7 +190,7 @@ void Display_Off(uint8_t deviceID)
 #ifdef HDMI_VERBOSE
 	WriteLn("Turning display off");
 #endif
-	ioport_set_pin_low(Debug_LED);
+	// Debug_LED_Turn_Off();
 	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 
 	AUO_DSI_Display_Off();
@@ -225,6 +228,7 @@ void Display_Reset(uint8_t deviceID)
 	/// Software reset of TC358870's DSI-TX
 	Toshiba_TC358870_DSITX_SW_Reset();
 	Toshiba_TC358870_Prepare_TX();
+	Toshiba_TC358870_Configure_Splitter();
 	WriteLn("Panel setup");
 	AUO_H381DLN01_Send_Panel_Init_Commands();
 

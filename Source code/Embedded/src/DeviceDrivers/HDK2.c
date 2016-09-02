@@ -40,6 +40,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <inttypes.h>  // for stdint.h-matching format specifier macros
 
 #define AUO_INIT_DELAY_US 1000
 #define EDID_ADDR_YEAR 0x11
@@ -145,7 +146,7 @@ int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength)
 	return TC358870_ERROR;
 }
 
-void debugPrintf(const char *format, ...)
+static inline void debugPrintf(const char *format, ...)
 {
 	char buffer[256];
 
@@ -283,7 +284,7 @@ bool IsVideoExistingPolling(void)
 	uint16_t new_cnt;
 	static uint16_t cnt = 0;
 	static bool last_video_status = false;
-	bool status;
+	bool status = last_video_status;
 
 	new_cnt = tc_read_count(&VIDEO_POLLING_TIMER);
 
@@ -631,8 +632,7 @@ void OSVR_HDK_EDID(void)
 	uint8_t edid_week;
 	uint8_t edid_year;
 	uint8_t edid_sn_hex[4] = {0};
-	uint32_t edid_sn_dec;
-	uint8_t hex[2];
+	uint32_t edid_sn_dec = 0;
 	char buf[20];
 
 	if ((sn_status = eep_read_sn(sn)) != 0)
@@ -671,7 +671,7 @@ void OSVR_HDK_EDID(void)
 		sprintf(buf, "int32=%d", sizeof(uint32_t));
 		WriteLn(buf);
 
-		sprintf(buf, "S/N: %d", (uint32_t)edid_sn_dec);
+		sprintf(buf, "S/N: %" PRId32, (uint32_t)edid_sn_dec);
 		WriteLn(buf);
 		sprintf(buf, "%02X-%02X-%02X-%02X", edid_sn_hex[3], edid_sn_hex[2], edid_sn_hex[1], edid_sn_hex[0]);
 		WriteLn(buf);
@@ -720,7 +720,6 @@ void OSVR_HDK_EDID(void)
 
 void TC358870_Init_Receive_HDMI_Signal(void)
 {
-	uint8_t tc_data;
 	static int InitFlag = 0;
 
 	// Initialization to receive HDMI signal

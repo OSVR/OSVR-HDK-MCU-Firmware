@@ -8,6 +8,7 @@
 #ifndef BOOT_H_
 #define BOOT_H_
 
+void CheckForBootloaderSwitchOnStartup(void);
 void PrepareForSoftwareUpgrade(void);
 
 #endif /* BOOT_H_ */

@@ -23,9 +23,8 @@
 
 #include "TimingDebug.h"
 
-#ifdef OSVRHDK
-#include "nxp\i2c.h"
-#include "string.h"
+#if defined(OSVRHDK) && defined(HDK_ENABLE_HID_SXS)
+#include "SideBySide.h"
 #endif
 
 #include "USB.h"

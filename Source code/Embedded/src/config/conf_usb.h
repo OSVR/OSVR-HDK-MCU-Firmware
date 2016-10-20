@@ -190,8 +190,10 @@
 //#define  UDI_CDC_SET_CODING_EXT(port,cfg) uart_config(port,cfg)
 //#define  UDI_CDC_SET_CODING_EXT(port,cfg)
 #define  UDI_CDC_SET_CODING_EXT(port,cfg) main_cdc_config(port,cfg)
-//#define  UDI_CDC_SET_DTR_EXT(port,set)    main_cdc_set_dtr(port,set)
-#define  UDI_CDC_SET_DTR_EXT(port,set)
+
+// To learn when the CDC port is opened/closed
+#define  UDI_CDC_SET_DTR_EXT(port,set)    main_cdc_set_dtr(port,set)
+//#define  UDI_CDC_SET_DTR_EXT(port,set)
 #define  UDI_CDC_SET_RTS_EXT(port,set)
 /*
  * #define UDI_CDC_ENABLE_EXT(port) my_callback_cdc_enable()

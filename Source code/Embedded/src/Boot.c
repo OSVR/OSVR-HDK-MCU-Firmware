@@ -6,8 +6,13 @@
  */
 
 #include <udc.h>
-
+#include <delay.h>
 #include "Boot.h"
+#if 0
+#define BOOTLOADER_ENTRY_POINT_OFFSET 0x1FC
+typedef void(*bootloader_fn)(void);
+bootloader_fn enter_bootloader = (bootloader_fn)( (BOOT_SECTION_START + BOOTLOADER_ENTRY_POINT_OFFSET)/2);
+#endif
 
 void PrepareForSoftwareUpgrade(void)
 
@@ -20,6 +25,12 @@ void PrepareForSoftwareUpgrade(void)
 	/* Disable interrupts from BNO070 */
 	PORTD.INTCTRL &= ~PORT_INT0LVL0_bm;  // Disable PORT D Interrupt
 #endif
+
+	// "disconnect" from USB
+	udc_detach();
+
+	// Give host time to recognize the disconnect.
+	delay_ms(250);
 
 	/* Jump to 0x401FC = BOOT_SECTION_START + 0x1FC which is
 	 * the stated location of the bootloader entry (AVR1916).

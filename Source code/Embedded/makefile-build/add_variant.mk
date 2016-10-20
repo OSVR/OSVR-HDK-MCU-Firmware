@@ -79,11 +79,13 @@ endef
 # We skip ASF files here because there are lots of duplicate filenames, and generally we suspect they aren't as interesting to preprocess anyway.
 $(foreach src,$(filter-out src/ASF/%,$(ALL_C_SRCS)),$(eval $(call make_preprocess_phony_target,$(src))))
 
+NON_OBJECT_DEPS := Makefile add_variant.mk
+
 # Makes the elf file
-$(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS) $(LIBS) $(LIBS_$(VARIANT))
+$(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS) $(LIBS) $(LIBS_$(VARIANT)) $(NON_OBJECT_DEPS)
 	$(CANNED_RECIPE_BEGINNING_SHOW_OUT)
-	$(QUIETRULE)$(CC) -o"$@" $^ $(LIBS) $(LIBS_$(VARIANT)) -Wl,-Map="$(BUILD_DIR)/$(OUTPUT_MAP)" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -mmcu=$(MCU) -Wl,--relax -Wl,--section-start=.BOOT=0x40000
-	$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
+	$(QUIETRULE)$(CC) $(ALL_LDFLAGS) -o"$@" $(filter-out makefile $(NON_OBJECT_DEPS),$^) -lm -Wl,-Map="$(BUILD_DIR)/$(OUTPUT_MAP)"
+	-$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
 %.elf: DISPLAY_OP := Linking
 
 ###

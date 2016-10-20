@@ -178,6 +178,17 @@ ALL_DEFINES := $(BASE_DEFINES) $(DEFINES)
 
 COMMON_FLAGS := -mmcu=$(MCU) -mrelax $(patsubst %, -D%,$(ALL_DEFINES))
 
+BASE_LDFLAGS := $(COMMON_FLAGS) -Wl,--relax -Wl,--gc-sections
+
+#LDFLAGS := -Wl,--section-start=.BOOT=0x40000
+
+# Not defining a location for .BOOT because we shouldn't need to keep the sections of ASF that assign
+# themselves to it (the flash writing routines) and if we put stuff at that offset, we risk destroying the
+# bootloader.
+LDFLAGS :=
+
+ALL_LDFLAGS := $(BASE_LDFLAGS) $(LDFLAGS)
+
 ALL_CFLAGS = $(COMMON_FLAGS) -c -std=gnu99 \
               -ffunction-sections -fdata-sections \
               -fpack-struct -fshort-enums -fno-strict-aliasing \

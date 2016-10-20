@@ -50,4 +50,7 @@
 #define SVR_HAVE_EDID_INFO_STRING
 extern const char svrEdidInfoString[];
 
+// HDK2 signature bytes
+#define SVR_FIRMWARE_COMPATIBILITY_SIGNATURE 0x0004
+
 #endif /* VARIANTOPTIONS_H_ */

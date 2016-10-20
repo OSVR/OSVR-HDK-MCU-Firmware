@@ -37,4 +37,8 @@
 
 #define SVR_VARIANT_STRING "HDK_OLED"
 
+// HDK OLED signature bytes
+// skipped 0x0002 for HDK 1.2 OLED
+#define SVR_FIRMWARE_COMPATIBILITY_SIGNATURE 0x0003
+
 #endif /* VARIANTOPTIONS_H_ */

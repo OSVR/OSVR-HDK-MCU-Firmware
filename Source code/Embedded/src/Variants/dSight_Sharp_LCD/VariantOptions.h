@@ -38,4 +38,7 @@
 
 #define SVR_VARIANT_STRING "dSight_Sharp_LCD"
 
+// dSight LCD signature bytes
+#define SVR_FIRMWARE_COMPATIBILITY_SIGNATURE 0x0001
+
 #endif /* VARIANTOPTIONS_H_ */

@@ -16,4 +16,7 @@
 
 #define SVR_IS_HDK_20_SVR
 
+// Using the same hardware compatibility signature, but different variant signature than the default.
+#define SVR_VARIANT_SIGNATURE 0x00040001
+
 #endif /* VARIANTOPTIONS_H_HDK20SVR */

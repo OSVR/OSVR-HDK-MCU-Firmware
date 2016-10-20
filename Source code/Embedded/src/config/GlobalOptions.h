@@ -136,4 +136,12 @@ extern char Msg[];
 #define SVR_HAVE_TMDS422
 #endif
 
+/// User signature data
+#if defined(SVR_FIRMWARE_COMPATIBILITY_SIGNATURE) && !defined(SVR_VARIANT_SIGNATURE)
+#define SVR_VARIANT_SIGNATURE (((uint32_t)(SVR_FIRMWARE_COMPATIBILITY_SIGNATURE)) << (CHAR_BIT * sizeof(uint16_t)))
+#endif
+#ifdef SVR_FIRMWARE_COMPATIBILITY_SIGNATURE
+#define SVR_USER_SIGNATURE_VER 0x0001
+#endif
+
 #endif /* GLOBALOPTIONS_H_ */

@@ -86,6 +86,8 @@
 #include <libhdk20.h>
 #endif
 
+#include <avr/io.h>
+
 #include <limits.h>  // for CHAR_BIT
 
 #define USBNotConnected 0
@@ -213,6 +215,7 @@ void ProcessI2CCommand(void);
 void ProcessFPGACommand(void);
 void ProcessHDMICommand(void);
 void ProcessTMDSCommand(void);
+void PrintHardwareInfoCommand(void);
 
 #ifdef SVR_IS_HDK_20
 /// Used only by HDK 2.0 code right now.
@@ -697,6 +700,10 @@ void ProcessInfoCommands(void)
 		}
 		break;
 	}
+	case 'h':  // hardware
+	case 'H':
+		PrintHardwareInfoCommand();
+		break;
 	}
 }
 
@@ -1500,3 +1507,167 @@ void ProcessTMDSCommand(void)
 	}
 }
 #endif
+
+static inline const char *bodLevelToString(uint8_t fuse5)
+{
+	uint8_t bodlvl = fuse5 & NVM_FUSES_BODLVL_gm;
+	const char *level = "n/a";
+	switch (bodlvl)
+	{
+	case BODLVL_1V6_gc:
+		level = "1.6 V";
+		break;
+
+	case BODLVL_1V8_gc:
+		level = "1.8 V";
+		break;
+
+	case BODLVL_2V0_gc:
+		level = "2.0 V";
+		break;
+
+	case BODLVL_2V2_gc:
+		level = "2.2 V";
+		break;
+
+	case BODLVL_2V4_gc:
+		level = "2.4 V";
+		break;
+
+	case BODLVL_2V6_gc:
+		level = "2.6 V";
+		break;
+
+	case BODLVL_2V8_gc:
+		level = "2.8 V";
+		break;
+
+	case BODLVL_3V0_gc:
+		level = "3.0 V";
+		break;
+	}
+	return level;
+}
+static inline uint8_t bodLevelToDecivolts(uint8_t fuse5)
+{
+	uint8_t bodlvl = fuse5 & NVM_FUSES_BODLVL_gm;
+
+	switch (bodlvl)
+	{
+	case BODLVL_1V6_gc:
+		return 16;
+		break;
+
+	case BODLVL_1V8_gc:
+		return 18;
+		break;
+
+	case BODLVL_2V0_gc:
+		return 20;
+		break;
+
+	case BODLVL_2V2_gc:
+		return 22;
+		break;
+
+	case BODLVL_2V4_gc:
+		return 24;
+		break;
+
+	case BODLVL_2V6_gc:
+		return 26;
+		break;
+
+	case BODLVL_2V8_gc:
+		return 28;
+		break;
+
+	case BODLVL_3V0_gc:
+		return 30;
+		break;
+	}
+	return 0;
+}
+typedef enum BOD_Status_enum { BOD_Status_Sampled, BOD_Status_Continuous, BOD_Status_Disabled } BOD_Status_t;
+
+static inline BOD_Status_t getBODStatusInPD(uint8_t fuse2)
+{
+	uint8_t bodpd = fuse2 & NVM_FUSES_BODPD_gm;
+	switch (bodpd)
+	{
+	case BOD_SAMPLED_gc:
+		return BOD_Status_Sampled;
+	case BOD_CONTINUOUS_gc:
+		return BOD_Status_Continuous;
+	case BOD_DISABLED_gc:
+	default:
+		// default is technically reserved, will interpret as disabled.
+		return BOD_Status_Disabled;
+	}
+}
+static inline const char *bodStatusToString(BOD_Status_t status)
+{
+	switch (status)
+	{
+	case BOD_Status_Continuous:
+		return "Continuous";
+	case BOD_Status_Sampled:
+		return "Sampled";
+	}
+	return "Disabled";
+}
+static inline BOD_Status_t getBODStatusInActive(uint8_t fuse5)
+{
+	uint8_t bodpd = fuse5 & NVM_FUSES_BODACT_gm;
+	switch (bodpd)
+	{
+	case BODACT_SAMPLED_gc:
+		return BOD_Status_Sampled;
+	case BODACT_CONTINUOUS_gc:
+		return BOD_Status_Continuous;
+	case BODACT_DISABLED_gc:
+	default:
+		// default is technically reserved, will interpret as disabled.
+		return BOD_Status_Disabled;
+	}
+}
+
+typedef struct BODInfo
+{
+	BOD_Status_t statusActive;
+	BOD_Status_t statusPowerDown;
+	uint8_t levelDecivolts;
+} BODInfo_t;
+
+static inline BODInfo_t retrieveBODInfo(void)
+{
+	BODInfo_t ret;
+	// Read brown-out detection fuse
+	uint8_t fuse5 = nvm_fuses_read(FUSEBYTE5);
+	ret.statusActive = getBODStatusInActive(fuse5);
+	ret.levelDecivolts = bodLevelToDecivolts(fuse5);
+	// Read reset fuse which also contains the power-down BOD info
+	uint8_t fuse2 = nvm_fuses_read(FUSEBYTE2);
+	ret.statusPowerDown = getBODStatusInPD(fuse2);
+	return ret;
+}
+
+void PrintHardwareInfoCommand()
+{
+	BODInfo_t bod = retrieveBODInfo();
+	if (bod.statusActive != BOD_Status_Disabled || bod.statusPowerDown != BOD_Status_Disabled)
+	{
+		Write("Brown-out detection during MCU active: ");
+		WriteLn(bodStatusToString(bod.statusActive));
+		Write("Brown-out detection during MCU power-down: ");
+		WriteLn(bodStatusToString(bod.statusPowerDown));
+		Write("Detection level: ");
+		char myMsg[20];
+		sprintf(myMsg, "%0d.%0d V", bod.levelDecivolts / 10, bod.levelDecivolts % 10);
+		WriteLn(myMsg);
+	}
+	else
+	{
+		WriteLn("Brownout detection fuses not set.");
+	}
+}

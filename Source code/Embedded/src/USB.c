@@ -33,6 +33,10 @@ static volatile bool main_b_cdc_enable = false;
 static volatile bool main_b_cdc_opened = false;
 #undef USB_USE_UART
 
+#ifdef USB_USE_UART
+static const uint8_t s_port = 0;
+#endif
+
 void main_suspend_action(void) { ui_powerdown(); }
 void main_resume_action(void) { ui_wakeup(); }
 void main_sof_action(void)
@@ -42,29 +46,29 @@ void main_sof_action(void)
 	ui_process(udd_get_frame_number());
 }
 
-bool main_cdc_enable(uint8_t port)
+bool main_cdc_enable()
 {
 	main_b_cdc_enable = true;
 // Open communication
 #ifdef USB_USE_UART
-	uart_open(port);
+	uart_open(s_port);
 #endif
 	return true;
 }
 
-void main_cdc_disable(uint8_t port)
+void main_cdc_disable()
 {
 	main_b_cdc_enable = false;
 	main_b_cdc_opened = false;
 // Close communication
 #ifdef USB_USE_UART
-	uart_close(port);
+	uart_close(s_port);
 #endif
 }
 
-void main_cdc_config(uint8_t port, usb_cdc_line_coding_t *cfg) { main_b_cdc_opened = true; }
+void main_cdc_config(usb_cdc_line_coding_t *cfg) { /*main_b_cdc_opened = true;*/}
 bool usb_cdc_is_active(void) { return main_b_cdc_enable && main_b_cdc_opened; }
-void main_cdc_rx_notify(uint8_t port)
+void main_cdc_rx_notify()
 {
 	while (udi_cdc_is_rx_ready())
 	{
@@ -75,14 +79,14 @@ void main_cdc_rx_notify(uint8_t port)
 	}
 }
 
-void main_cdc_set_dtr(uint8_t port, bool b_enable)
+void main_cdc_set_dtr(bool b_enable)
 {
 	if (b_enable)
 	{
 		Debug_LED_Turn_On();
 #ifdef USB_USE_UART
 		// Host terminal has open COM
-		ui_com_open(port);
+		ui_com_open(s_port);
 #endif
 	}
 	else
@@ -90,7 +94,7 @@ void main_cdc_set_dtr(uint8_t port, bool b_enable)
 		Debug_LED_Turn_Off();
 #ifdef USB_USE_UART
 		// Host terminal has close COM
-		ui_com_close(port);
+		ui_com_close(s_port);
 #endif
 	}
 }

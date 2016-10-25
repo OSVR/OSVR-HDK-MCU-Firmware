@@ -18,17 +18,17 @@
  *
  * \retval true if cdc startup is successfully done
  */
-bool main_cdc_enable(uint8_t port);
+bool main_cdc_enable(void);
 
 /*! \brief Closes the communication port
  * This is called by CDC interface when USB Host disable it.
  */
-void main_cdc_disable(uint8_t port);
+void main_cdc_disable(void);
 
-/// Called when somebody opens the CDC port
-void main_cdc_config(uint8_t port, usb_cdc_line_coding_t* cfg);
+/// Called when the CDC port is initially setup.
+void main_cdc_config(usb_cdc_line_coding_t* cfg);
 
-void main_cdc_rx_notify(uint8_t port);
+void main_cdc_rx_notify(void);
 
 /// @brief Check to see if USB CDC is active.
 bool usb_cdc_is_active(void);
@@ -51,6 +51,6 @@ void main_resume_action(void);
 /*! \brief Save new DTR state to change led behavior.
  * The DTR notify that the terminal have open or close the communication port.
  */
-void main_cdc_set_dtr(uint8_t port, bool b_enable);
+void main_cdc_set_dtr(bool b_enable);
 
 #endif /* USB_H_ */

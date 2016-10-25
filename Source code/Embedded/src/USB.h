@@ -33,7 +33,7 @@ void main_cdc_rx_notify(void);
 bool usb_cdc_is_active(void);
 
 /// @brief checks usb_cdc_is_active and that our transmit buffer isn't full.
-bool usb_cdc_should_tx(void);
+bool usb_cdc_should_tx(iram_size_t size);
 
 /*! \brief Called when a start of frame is received on USB line each 1ms.
  */

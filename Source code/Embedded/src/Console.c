@@ -40,12 +40,13 @@ void Write(const char *const Data)
 	{
 		/// Though udi_cdc_[multi_]write_buf already waits on the tx-ready status, this timeout prevents us from hanging
 		/// if we end up with a full buffer that's not being consumed.
+		iram_size_t dataLen = strlen(Data);
 		for (uint8_t i = 0; i < s_timeoutCountLimit; ++i)
 		{
-			if (usb_cdc_should_tx())
+			if (usb_cdc_should_tx(dataLen))
 			{
 				// OK, we can transmit now - write the buffer and get out of here.
-				udi_cdc_write_buf(Data, strlen(Data));
+				udi_cdc_write_buf(Data, dataLen);
 				return;
 			}
 		}

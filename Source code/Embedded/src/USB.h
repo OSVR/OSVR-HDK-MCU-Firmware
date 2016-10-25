@@ -27,9 +27,6 @@ bool main_cdc_enable(void);
  */
 void main_cdc_disable(void);
 
-/// Called when the CDC port is initially setup.
-void main_cdc_config(usb_cdc_line_coding_t* cfg);
-
 void main_cdc_rx_notify(void);
 
 /// @brief Check to see if USB CDC is active. Requires that clients set DTR!

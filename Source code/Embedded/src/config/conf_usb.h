@@ -184,16 +184,13 @@
 //! Interface callback definition
 #define  UDI_CDC_ENABLE_EXT(port)         main_cdc_enable()
 #define  UDI_CDC_DISABLE_EXT(port)        main_cdc_disable()
-// #define  UDI_CDC_RX_NOTIFY(port)          uart_rx_notify(port)
 #define  UDI_CDC_RX_NOTIFY(port)          main_cdc_rx_notify()
 #define  UDI_CDC_TX_EMPTY_NOTIFY(port)
-//#define  UDI_CDC_SET_CODING_EXT(port,cfg) uart_config(port,cfg)
+// gets called before ENABLE in normal USB startup.
 #define  UDI_CDC_SET_CODING_EXT(port,cfg)
-//#define  UDI_CDC_SET_CODING_EXT(port,cfg) main_cdc_config(cfg)
 
 // To learn when the CDC port is opened/closed
 #define  UDI_CDC_SET_DTR_EXT(port,set)    main_cdc_set_dtr(set)
-
 #define  UDI_CDC_SET_RTS_EXT(port,set)
 
 /*

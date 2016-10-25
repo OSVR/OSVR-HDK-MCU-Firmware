@@ -21,7 +21,9 @@
 bool main_cdc_enable(void);
 
 /*! \brief Closes the communication port
- * This is called by CDC interface when USB Host disable it.
+ * This is called by CDC interface when USB Host disable it:
+ * not necessarily corresponding to when the serial client
+ * is closed.
  */
 void main_cdc_disable(void);
 
@@ -30,11 +32,13 @@ void main_cdc_config(usb_cdc_line_coding_t* cfg);
 
 void main_cdc_rx_notify(void);
 
-/// @brief Check to see if USB CDC is active.
+/// @brief Check to see if USB CDC is active. Requires that clients set DTR!
 bool usb_cdc_is_active(void);
 
-/*! \brief Manages the leds behaviors
- * Called when a start of frame is received on USB line each 1ms.
+/// @brief checks usb_cdc_is_active and that our transmit buffer isn't full.
+bool usb_cdc_should_tx(void);
+
+/*! \brief Called when a start of frame is received on USB line each 1ms.
  */
 void main_sof_action(void);
 

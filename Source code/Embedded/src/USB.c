@@ -68,6 +68,7 @@ void main_cdc_disable()
 
 void main_cdc_config(usb_cdc_line_coding_t *cfg) { /*main_b_cdc_opened = true;*/}
 bool usb_cdc_is_active(void) { return main_b_cdc_enable && main_b_cdc_opened; }
+bool usb_cdc_should_tx(void) { return main_b_cdc_enable && main_b_cdc_opened && udi_cdc_is_tx_ready(); }
 void main_cdc_rx_notify()
 {
 	while (udi_cdc_is_rx_ready())
@@ -83,7 +84,7 @@ void main_cdc_set_dtr(bool b_enable)
 {
 	if (b_enable)
 	{
-		Debug_LED_Turn_On();
+		main_b_cdc_opened = true;
 #ifdef USB_USE_UART
 		// Host terminal has open COM
 		ui_com_open(s_port);
@@ -91,7 +92,7 @@ void main_cdc_set_dtr(bool b_enable)
 	}
 	else
 	{
-		Debug_LED_Turn_Off();
+		main_b_cdc_opened = false;
 #ifdef USB_USE_UART
 		// Host terminal has close COM
 		ui_com_close(s_port);

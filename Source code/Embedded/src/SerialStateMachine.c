@@ -480,6 +480,11 @@ static void Display_firmware_details(void)
 	Write(" SVR_DISABLE_VIDEO_INPUT");
 #endif
 
+#ifdef WirelessOnly
+#undef SVR_NO_SPECIAL_CONFIG
+	Write(" WirelessOnly");
+#endif
+
 #ifdef SVR_NO_SPECIAL_CONFIG
 	Write(" [none]");
 #endif

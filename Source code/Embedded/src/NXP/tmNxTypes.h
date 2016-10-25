@@ -111,7 +111,9 @@ typedef char          *Address;        // Ready for address-arithmetic
 typedef char const    *ConstAddress;
 typedef unsigned char  Byte;           // Raw byte
 typedef float          Float32;        // Single-precision float
+#ifndef __AVR__ // no 64-bit floats on AVR
 typedef double         Float64;        // Double-precision float
+#endif // ndef __AVR__
 typedef void          *Pointer;        // Pointer to anonymous object
 typedef void const    *ConstPointer;
 typedef char const    *ConstString;

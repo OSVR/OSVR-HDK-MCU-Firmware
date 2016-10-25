@@ -1646,12 +1646,12 @@ void NXP_Program_MTP0(void)
     // clear the interrupt flags
     NewData=0x80;
     tmErrorCode_t result = bslTDA1997XWriteI2C(0, INT_FLG_CLR_DDC, 1, &NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
 
     NewData=0x02;
     result = bslTDA1997XWriteI2C(0,EMTP_CTRL,1,&NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
     _delay_ms(10000);
 
@@ -1683,7 +1683,7 @@ void NXP_Program_MTP0(void)
 
 
     result = bslTDA1997XWriteI2C(0,CMTP_CTRL,1,&NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
     _delay_ms(10000);
 
@@ -1723,12 +1723,12 @@ void NXP_Program_MTP1(void)
     // clear the interrupt flags
     NewData=0x80;
     tmErrorCode_t result = bslTDA1997XWriteI2C(1, INT_FLG_CLR_DDC, 1, &NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
 
     NewData=0x02;
     result = bslTDA1997XWriteI2C(1,EMTP_CTRL,1,&NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
     _delay_ms(10000);
 
@@ -1760,7 +1760,7 @@ void NXP_Program_MTP1(void)
     //if (errCode) return TM_ERR_BAD_PARAMETER;
 
     result = bslTDA1997XWriteI2C(1,CMTP_CTRL,1,&NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
     _delay_ms(10000);
 

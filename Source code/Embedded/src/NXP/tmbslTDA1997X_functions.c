@@ -965,7 +965,7 @@ tmbslTDA1997XReadI2C
         if (errCode != TM_OK)
         {
             I2CGuard = False;
-            sprintf(Msg,"CEErr: %x",errCode);
+            sprintf(Msg,"CEErr: %" TM_ERROR_CODE_FORMAT, errCode);
             WriteLn(Msg);
             return (TMBSL_ERR_BSLHDMIRX_I2C_READ);
         }

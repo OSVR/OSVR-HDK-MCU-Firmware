@@ -4,7 +4,7 @@
  * \brief USB Device driver
  * Compliance with common driver UDD
  *
- * Copyright (c) 2011 - 2013 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2011-2016 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -41,16 +41,20 @@
  * \asf_license_stop
  *
  */
+/*
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
 
 #include "conf_usb.h"
+/// @todo Sensics modification
 #include "usb.h"
 
 // Read Modify Write opcode is implemented after IAR AVR 5.51
 #ifdef __ICCAVR__
-    #if (__VER__ <= 551 || (__VER__ <= 611 && XMEGA_A1U) )
-        #undef   USB_WORKAROUND_DO_NOT_USE_RMW
-        #define  USB_WORKAROUND_DO_NOT_USE_RMW
-    #endif
+#  if (__VER__ <= 551 || (__VER__ <= 611 && XMEGA_A1U) )
+#    undef   USB_WORKAROUND_DO_NOT_USE_RMW
+#    define  USB_WORKAROUND_DO_NOT_USE_RMW
+#  endif
 #endif
 
 #include "sysclk.h"
@@ -64,7 +68,7 @@
 
 #ifndef UDD_USB_INT_LEVEL
     // By default USB interrupt have low priority
-    #define UDD_USB_INT_LEVEL USB_INTLVL_LO_gc
+#  define UDD_USB_INT_LEVEL USB_INTLVL_LO_gc
 #endif
 
 
@@ -148,9 +152,9 @@
 //! Definition of sleep levels
 #if ((defined USB_DEVICE_HS_SUPPORT) && (USBCLK_STARTUP_TIMEOUT>3000)) \
     || ((!defined USB_DEVICE_HS_SUPPORT) && (USBCLK_STARTUP_TIMEOUT>10000))
-    #define USBC_SLEEP_MODE_USB_SUSPEND  SLEEPMGR_IDLE
+#  define USBC_SLEEP_MODE_USB_SUSPEND  SLEEPMGR_IDLE
 #else
-    #define USBC_SLEEP_MODE_USB_SUSPEND  SLEEPMGR_PDOWN
+#  define USBC_SLEEP_MODE_USB_SUSPEND  SLEEPMGR_PDOWN
 #endif
 #define USBC_SLEEP_MODE_USB_IDLE  SLEEPMGR_IDLE
 
@@ -639,7 +643,6 @@ bool udd_ep_set_halt(udd_ep_id_t ep)
 
     ep_ctrl = udd_ep_get_ctrl(ep);
     udd_endpoint_enable_stall(ep_ctrl);
-    udd_endpoint_clear_dtgl(ep_ctrl);
 
     udd_ep_abort(ep);
     return true;
@@ -652,6 +655,7 @@ bool udd_ep_clear_halt(udd_ep_id_t ep)
     Assert(udd_ep_is_valid(ep));
 
     ep_ctrl = udd_ep_get_ctrl(ep);
+    udd_endpoint_clear_dtgl(ep_ctrl);
     if (!udd_endpoint_is_stall(ep_ctrl)) {
         return true; // No stall on going
     }
@@ -804,7 +808,7 @@ ISR(USB_BUSEVENT_vect)
 #if (0!=USB_DEVICE_MAX_EP)
         // Abort all endpoint jobs on going
         uint8_t i;
-        for (i = 1; i < USB_DEVICE_MAX_EP; i++) {
+        for (i = 1; i <= USB_DEVICE_MAX_EP; i++) {
             udd_ep_abort(i);
             udd_ep_abort(i | USB_EP_DIR_IN);
         }
@@ -913,7 +917,7 @@ ISR(USB_TRNCOMPL_vect)
     if (udd_endpoint_transfer_complete(udd_ep_get_ctrl(0))) {
         udd_endpoint_ack_transfer_complete(udd_ep_get_ctrl(0));
         udd_ctrl_out_received();
-    } else {
+    }else{
         udd_endpoint_ack_transfer_complete(udd_ep_get_ctrl(0 | USB_EP_DIR_IN));
         udd_ctrl_in_sent();
     }
@@ -1014,7 +1018,6 @@ static void udd_ctrl_init(void)
     udd_control_in_set_bytecnt(0);
     udd_control_in_ack_tc();
     udd_control_ack_in_underflow();
-    udd_control_out_ack_tc();
     udd_control_ack_out_overflow();
 
     udd_g_ctrlreq.callback = NULL;
@@ -1069,6 +1072,7 @@ static void udd_ctrl_setup_received(void)
         udd_ep_control_state = UDD_EPCTRL_DATA_OUT;
         // Clear packet to receive first packet
         udd_control_out_clear_NACK0();
+        udd_control_out_ack_tc();
     }
 }
 
@@ -1192,6 +1196,7 @@ static void udd_ctrl_out_received(void)
     }
     // Free buffer of OUT control endpoint to authorize next reception
     udd_control_out_clear_NACK0();
+    udd_control_out_ack_tc();
 }
 
 static void udd_ctrl_underflow(void)

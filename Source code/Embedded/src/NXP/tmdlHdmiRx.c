@@ -596,17 +596,17 @@ tmErrorCode_t tmdlHdmiRxOpenM
     unitTable[unit].pEdidBuffer            	 = Null;
     unitTable[unit].edidBufferSize           = 0;
 #endif
-    
+
 #ifdef TMFL_TDA19972_FAMILY
     /* flag that video port has not been configured */
     instanceStatusInfo[unit].pMuteAndVideoPort->videoPortConfigured = False;
 #endif
-    
+
     /* Recover the configuration of the device library */
     errCode = tmdlHdmiRxCfgGetConfig(unit, &gtmdlHdmiRxDriverConfigTable[unit]);
-    
+
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode != TM_OK, TMDL_ERR_DLHDMIRX_INIT_FAILED)
-    
+
 #ifndef TMFL_NO_RTOS
     /* create message queue associated to this instance/unit */
     errCode = tmdlHdmiRxIWQueueCreate(gtmdlHdmiRxDriverConfigTable[unit].commandTaskQueueSize, &(unitTable[unit].queueHandle));
@@ -625,7 +625,7 @@ tmErrorCode_t tmdlHdmiRxOpenM
 
     *pInstance = (tmInstance_t)unit;
 
-    
+
 
 
 
@@ -647,94 +647,94 @@ tmErrorCode_t tmdlHdmiRxOpenM
                   callbackFuncTable[unit],
                   (ptmbslHdmiRxSysFuncTimer_t) tmdlHdmiRxIWWait);
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode != TM_OK, errCode)
-    
+
 
 
 
     errCode = gtmdlHdmiRxDriverConfigTable[unit].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetChipInfo(unit,
               &deviceVersion);
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode !=TM_OK, errCode)
-    
+
 
     /* Store the capabilities in the global variable */
     switch (deviceVersion)
     {
     case BSLHDMIRX_TDA19978:
-       
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19978;
         break;
 
     case BSLHDMIRX_TDA19974:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19974;
         break;
 
     case BSLHDMIRX_TDA19977:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19977;
         break;
 
     case BSLHDMIRX_TDA19979:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19979;
         break;
 
     case BSLHDMIRX_TDA19971:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19971;
         break;
 
     case BSLHDMIRX_TDA19972:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19972;
         break;
 
     case BSLHDMIRX_TDA19973_SOC_IN:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19973_SOC_IN;
         break;
 
     case BSLHDMIRX_TDA19973_CONNECTOR_IN:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19973_CONNECTOR_IN;
         break;
 
     case BSLHDMIRX_TDA19971N2:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19971N2;
         break;
 
     case BSLHDMIRX_TDA19973N2_SOC_IN:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19973N2_SOC_IN;
         break;
 
     case BSLHDMIRX_TDA19973N2_CONNECTOR_IN:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_TDA19973N2_CONNECTOR_IN;
         break;
 
     case BSLHDMIRX_TDA_UNKNOWN:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_UNKNOWN;
         break;
 
     default:
-        
+
         gtmdlHdmiRxDriverConfigTable[unit].pCapabilitiesList->deviceVersion = TMDL_HDMIRX_DEVICE_UNKNOWN;
         return TMDL_ERR_DLHDMIRX_BAD_PARAMETER;
     }
-    
+
     // Disable HDCP
     /* The MCLK signal must be available  */
     errCode = gtmdlHdmiRxDriverConfigTable[unit].ptmbslHdmiRxFunctionsList->tmbslHdmiRxConfigureHDMIClock(unit,
               BSLHDMIRX_HDMICLOCK_MCLK);
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode != TM_OK, errCode)
-    
+
     instanceStatusInfo[unit].nackHdcp = BSLHDMIRX_NACK_HDCP;
 
 
-    
+
     /* No HDCP acknowledge when HDCP is disabled */
     /* and reset SUS to force format detection */
     errCode = gtmdlHdmiRxDriverConfigTable[unit].ptmbslHdmiRxFunctionsList->tmbslHdmiRxHDMISoftReset(unit,
@@ -748,7 +748,7 @@ tmErrorCode_t tmdlHdmiRxOpenM
               BSLHDMIRX_DONTRESET_DC);
 
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode != TM_OK, errCode)
-    
+
 
 
 
@@ -764,9 +764,9 @@ tmErrorCode_t tmdlHdmiRxOpenM
               BSLHDMIRX_DONTRESET_SUS,
               BSLHDMIRX_DONTRESET_DC);
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode != TM_OK, errCode)
-    
 
-    
+
+
     /* Get key description seed in function of seed table if provide in cfg*/
     errCode = dlHdmiRxFindHdcpSeed(*pInstance);
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode != TM_OK, errCode)
@@ -778,19 +778,19 @@ tmErrorCode_t tmdlHdmiRxOpenM
               TMDLHDMIRX_DDC_ADDR,
               gtmdlHdmiRxDriverConfigTable[unit].keyDescriptionSeed);
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode != TM_OK, errCode)
-    
+
 
     RETIF_SEM(gtmdlHdmiRxItSemaphore[unit], errCode != TM_OK, errCode)
-    
+
     /* Set the state machine */
     dlHdmiRxSetState(unit, STATE_INITIALIZED);
-    
+
 
 
     /* Release the semaphore */
     errCode = tmdlHdmiRxIWSemaphoreV(gtmdlHdmiRxItSemaphore[unit]);
     RETIF(errCode != TM_OK, errCode)
-    
+
     return(TM_OK);
 }
 
@@ -1515,7 +1515,7 @@ tmErrorCode_t tmdlHdmiRxHandleInterrupt
 #endif
             (instanceStatusInfo[instance].pVideoInfo->videoInput != TMDL_HDMIRX_INPUT_TEST_576P) )
     {
-        
+
         errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxHandleInterrupt(instance);
 
         if (errCode != TM_OK)
@@ -1524,7 +1524,7 @@ tmErrorCode_t tmdlHdmiRxHandleInterrupt
     }
     else
     {
-        
+
     }
 #endif
     return TM_OK;
@@ -1743,13 +1743,13 @@ tmErrorCode_t tmdlHdmiRxEnableEvent
 
     /* check if the event exists */
     RETIF(event >= EVENT_NB, TMDL_ERR_DLHDMIRX_BAD_PARAMETER)
-    
+
     /* Take the semaphore */
     errCode = tmdlHdmiRxIWSemaphoreP(gtmdlHdmiRxItSemaphore[instance]);
     RETIF(errCode != TM_OK, errCode)
 
     instanceStatusInfo[instance].pEventState[event].status = TMDL_HDMIRX_EVENT_ENABLED;
-    
+
     //sprintf(Msg,"Ev %x",event);
     //WriteLn(Msg);
     switch (event)
@@ -1818,7 +1818,7 @@ tmErrorCode_t tmdlHdmiRxEnableEvent
     default :
         break;
     }
-    
+
     RETIF_SEM(gtmdlHdmiRxItSemaphore[instance], errCode != TM_OK, errCode)
 
     if(eventInfoframes) /* TBC for TDA19972 */
@@ -1927,7 +1927,7 @@ tmErrorCode_t tmdlHdmiRxEnableEvent
     }
 
     /* Release the semaphore */
-    
+
     errCode = tmdlHdmiRxIWSemaphoreV(gtmdlHdmiRxItSemaphore[instance]);
     RETIF(errCode != TM_OK, errCode)
 
@@ -2862,7 +2862,7 @@ tmErrorCode_t tmdlHdmiRxConfigureInput /* TBC for TDA19972 */
     RETIF_SEM(gtmdlHdmiRxItSemaphore[instance], errCode !=TM_OK, errCode)
 
     /* Set the state machine */
-    
+
     dlHdmiRxSetState(instance, STATE_CONFIGURED);
 
     /* Release the semaphore */
@@ -3958,15 +3958,15 @@ tmErrorCode_t dlHdmiRxConfigureVideoPort
                 return TMDL_ERR_DLHDMIRX_BAD_PARAMETER;
 
             }
-            
+
             // todo:  check i below can support index [2]
             errCode  = tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_3_0, VP_Comp_8[videoPortBSelection][0]);
             errCode |= tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_7_4, VP_Comp_8[videoPortBSelection][1]);
-            
-            errCode |= tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_11_8, VP_Comp_8[videoPortBSelection][2]); // added 
+
+            errCode |= tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_11_8, VP_Comp_8[videoPortBSelection][2]); // added
             errCode |= tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_15_12, VP_Comp_8[videoPortCSelection][0]);
             errCode |= tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_19_16, VP_Comp_8[videoPortCSelection][1]);
-            errCode |= tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_23_20, VP_Comp_8[videoPortCSelection][2]); // added 
+            errCode |= tmbslTDA1997XDefineVideoPort(instance, BSLHDMIRX_VP24_G4_23_20, VP_Comp_8[videoPortCSelection][2]); // added
         }
 #endif
     }
@@ -5519,7 +5519,7 @@ static void dlHdmiRxManageCallbackInstance
         packetAndInfoframeTable[i] = 0;
     }
 
-    
+
 //sprintf(Msg,"IRQ %x inst %d",irqSource,instance);
 //WriteLn(Msg);
     switch(irqSource)
@@ -5951,7 +5951,7 @@ static void dlHdmiRxManageCallbackInstance
 
     case BSLHDMIRX_IRQSOURCE_AVI_IF:
         /* GetInfoframe */
-        
+
         gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInfoframe(instance,
                 BSLHDMIRX_INFOFRAME_AVI,
                 &packetAndInfoframeTable[0],  /* Packet Type */
@@ -6187,7 +6187,7 @@ static void dlHdmiRxManageCallbackInstance
     case BSLHDMIRX_IRQSOURCE_VS_OTHER_BK1_IF:
     case BSLHDMIRX_IRQSOURCE_VS_OTHER_BK2_IF:
         /* GetInfoframe from VS_OTHER_BK1 */
-        
+
         gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInfoframe(instance,
                 BSLHDMIRX_INFOFRAME_VS_OTHER_BK1,
                 &packetAndInfoframeTable[0],  /* Packet type */
@@ -6198,11 +6198,11 @@ static void dlHdmiRxManageCallbackInstance
 
 
         /* check update flag */
-        
+
         if (packetAndInfoframeTable[VS_IF_NB] > HDMI_INFO_EXCEED)
         {
             /* GetInfoframe from VS_OTHER_BK2*/
-            
+
             gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInfoframe(instance,
                     BSLHDMIRX_INFOFRAME_VS_OTHER_BK2,
                     &packetAndInfoframeTable[0],  /* Packet type */
@@ -6220,7 +6220,7 @@ static void dlHdmiRxManageCallbackInstance
         if (!checksumCalc)
         {
             /* Re-organize the data */
-            
+
             VSInfoframe.packetType     = packetAndInfoframeTable[0];   /* HB0 */
             VSInfoframe.version        = packetAndInfoframeTable[1];   /* HB1 */
             VSInfoframe.length         = packetAndInfoframeTable[2];   /* HB2 */
@@ -6235,12 +6235,12 @@ static void dlHdmiRxManageCallbackInstance
             {
                 VSInfoframe.vsData[i] = packetAndInfoframeTable[7+i];
             }
-            
+
             /* Call the callback */
             if (dlHdmiRxGetEventStatus(instance, TMDL_HDMIRX_VS_INFOFRAME_RECEIVED) == TMDL_HDMIRX_EVENT_ENABLED)
             {
                 /* Release the semaphore */
-                
+
                 tmdlHdmiRxIWSemaphoreV(gtmdlHdmiRxItSemaphore[instance]);
 
                 unitTable[instance].pDataCallback(TMDL_HDMIRX_VS_INFOFRAME_RECEIVED,
@@ -6250,7 +6250,7 @@ static void dlHdmiRxManageCallbackInstance
                 tmdlHdmiRxIWSemaphoreP(gtmdlHdmiRxItSemaphore[instance]);
             }
         }
-        
+
         break;
 #endif
 
@@ -6369,7 +6369,7 @@ static void dlHdmiRxManageCallbackInstance
         {
 #ifdef TMFL_TDA19972_FAMILY
             /* Set the state machine */
-            
+
             dlHdmiRxSetState(instance, STATE_UNLOCKED);
             /* Activity has been lost, so switch back to DVI RGB 4:4:4, no pixelrepeat*/
             /* Reset Hdmi Flags status */
@@ -6399,7 +6399,7 @@ static void dlHdmiRxManageCallbackInstance
         {
             /* Release the semaphore */
             tmdlHdmiRxIWSemaphoreV(gtmdlHdmiRxItSemaphore[instance]);
-            
+
             unitTable[instance].pDigitalActivityCallback(TMDL_HDMIRX_ACTIVITY_DETECTED,
                     TMDL_HDMIRX_INPUT_HDMI_A,
                     //TMDL_HDMIRX_SYNC_TYPE_SEPARATED);
@@ -6407,12 +6407,12 @@ static void dlHdmiRxManageCallbackInstance
             /* Take the semaphore */
             tmdlHdmiRxIWSemaphoreP(gtmdlHdmiRxItSemaphore[instance]);
         }
-        
+
         if ((dlHdmiRxGetEventStatus(instance, TMDL_HDMIRX_ACTIVITY_LOST) == TMDL_HDMIRX_EVENT_ENABLED) && (status == 0))
         {
 #ifdef TMFL_TDA19972_FAMILY
             /* Set the state machine */
-            
+
             dlHdmiRxSetState(instance, STATE_UNLOCKED);
             /* Activity has been lost, so switch back to DVI RGB 4:4:4, no pixelrepeat*/
             /* Reset Hdmi Flags status */
@@ -6438,7 +6438,7 @@ static void dlHdmiRxManageCallbackInstance
         break;
 
     case BSLHDMIRX_IRQSOURCE_HDMI_LOCK:
-        
+
         if (((dlHdmiRxGetVideoInput(instance) == TMDL_HDMIRX_INPUT_HDMI_A) ||
                 (dlHdmiRxGetVideoInput(instance) == TMDL_HDMIRX_INPUT_HDMI_B)
             ) && (status == 1))
@@ -6446,7 +6446,7 @@ static void dlHdmiRxManageCallbackInstance
 
 #ifdef TMFL_TDA19972_FAMILY
             /* check sus_state */
-            
+
             gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxReadI2C(
                 (tmUnitSelect_t) instance,
                 ( ((UInt16) 0) << 8 ) | ((UInt16) 0x21),
@@ -6455,25 +6455,25 @@ static void dlHdmiRxManageCallbackInstance
             if ((susState & 0x1f)!= SUS_LAST_STATE)
             {
                 //printf ("------------ BAD SUS STATUS 0x%2x\n", i);
-                
+
                 break;
             }
 #endif
 
             /* Set the state machine */
-            
+
             dlHdmiRxSetState(instance, STATE_LOCKED);
 
             /* There is a new activity, the status for HDCP repeater state C5 must be reset */
             instanceStatusInfo[instance].stateC5Reached = False;
 
-            
+
 
             /* detect the new resolution*/
             dlHdmiRxCheckResolutionSyncTimings(instance, &resolutionID);
             instanceStatusInfo[instance].pVideoInfo->detectedVideoResolution = resolutionID;
 
-            
+
 
             if (dlHdmiRxGetEventStatus(instance, TMDL_HDMIRX_INPUT_LOCKED) == TMDL_HDMIRX_EVENT_ENABLED)
             {
@@ -6500,7 +6500,7 @@ static void dlHdmiRxManageCallbackInstance
             ) && (status == 0))
         {
             /* Set the state machine */
-            
+
             dlHdmiRxSetState(instance, STATE_UNLOCKED);
             /* There is a no longer activity, we will consider that detected resolution is unknown */
             instanceStatusInfo[instance].pVideoInfo->detectedVideoResolution = TMDL_HDMIRX_VIDEORES_UNKNOWN;
@@ -7059,7 +7059,7 @@ void reportLinesPixels()
     //errCode =  tmbslTDA1997XReadI2C(instance, (UInt16)V_PER_MSB, 7, pTabRegValue);
     //RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_READ)
 
-    errCode =  tmbslTDA1997XReadI2C(instance, (UInt16)0x18, 20, pData); 
+    errCode =  tmbslTDA1997XReadI2C(instance, (UInt16)0x18, 20, pData);
     //RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_READ)
 
     for (int i=0; i<20; i=i+4)
@@ -7315,67 +7315,67 @@ static tmErrorCode_t dlHdmiRxGetInterruptStatus
                     (gtmdlHdmiRxDriverConfigTable[instance].pCapabilitiesList->deviceVersion != TMDL_HDMIRX_DEVICE_TDA19979))
             {
                 irqSource = BSLHDMIRX_IRQSOURCE_SOGD2;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
 
                 irqSource = BSLHDMIRX_IRQSOURCE_DCSD2;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
 
                 irqSource = BSLHDMIRX_IRQSOURCE_DSSD2;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
 
                 irqSource = BSLHDMIRX_IRQSOURCE_SOGD1;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
 
                 irqSource = BSLHDMIRX_IRQSOURCE_DCSD1;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
 
                 irqSource = BSLHDMIRX_IRQSOURCE_DSSD1;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
 
                 irqSource = BSLHDMIRX_IRQSOURCE_SOGD3;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
 
                 irqSource = BSLHDMIRX_IRQSOURCE_DCSD3;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
 
                 irqSource = BSLHDMIRX_IRQSOURCE_DSSD3;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
-                
+
                 RETIF(errCode != TM_OK, errCode)
             }
 
@@ -7393,7 +7393,7 @@ static tmErrorCode_t dlHdmiRxGetInterruptStatus
             errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                           instance,
                           irqSource);
-            
+
             RETIF(errCode != TM_OK, errCode)
 
             if ((gtmdlHdmiRxDriverConfigTable[instance].pCapabilitiesList->deviceVersion != TMDL_HDMIRX_DEVICE_TDA19971) &&
@@ -7432,14 +7432,14 @@ static tmErrorCode_t dlHdmiRxGetInterruptStatus
                     (gtmdlHdmiRxDriverConfigTable[instance].pCapabilitiesList->deviceVersion != TMDL_HDMIRX_DEVICE_TDA19979))
             {
                 irqSource = BSLHDMIRX_IRQSOURCE_PLL_LOCKED;
-                
+
                 errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                               instance,
                               irqSource);
                 RETIF(errCode != TM_OK, errCode)
             }
             irqSource = BSLHDMIRX_IRQSOURCE_HDMI_LOCK;
-            
+
             errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                           instance,
                           irqSource);
@@ -7451,7 +7451,7 @@ static tmErrorCode_t dlHdmiRxGetInterruptStatus
             instanceStatusInfo[instance].hdmiFlagsReset |= MASK_HDMISTATUS_HDMI_RESET;
 
             irqSource = BSLHDMIRX_IRQSOURCE_FLAGS;
-            
+
             errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                           instance,
                           irqSource);
@@ -7463,7 +7463,7 @@ static tmErrorCode_t dlHdmiRxGetInterruptStatus
             instanceStatusInfo[instance].hdmiFlagsReset |= MASK_HDMISTATUS_DVI_RESET;
 
             irqSource = BSLHDMIRX_IRQSOURCE_FLAGS;
-            
+
             errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxGetInterruptStatus(
                           instance,
                           irqSource);
@@ -7933,7 +7933,7 @@ tmErrorCode_t tmdlHdmiRxManualHPD
     /* Take the semaphore    */
     /* --------------------- */
     tmdlHdmiRxIWSemaphoreP(gtmdlHdmiRxItSemaphore[instance]);
-    
+
     switch (ManualHPD)
     {
     case TMDL_HDMIRX_HPD_LOW:
@@ -7947,7 +7947,7 @@ tmErrorCode_t tmdlHdmiRxManualHPD
         errCode= tmbslTDA1997XManualHPD(instance, BSLHDMIRX_HPD_PULSE);
         break;
     }
-    
+
     /* --------------------------- */
     /* Release the sempahore */
     /* --------------------------- */

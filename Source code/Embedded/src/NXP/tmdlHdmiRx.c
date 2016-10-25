@@ -3866,6 +3866,8 @@ tmErrorCode_t tmdlHdmiRxSetVideoOutputFormat
     return(TM_OK);
 }
 
+#if 0 // unused function
+
 /******************************************************************************
     \brief Set video output routing configuration. this function allows to map
            the output signal to the physical output ports. You can also select
@@ -3971,6 +3973,7 @@ tmErrorCode_t dlHdmiRxConfigureVideoPort
     return (errCode);
 }
 
+#endif // 0
 
 /******************************************************************************
     \brief Set video output format. This function allows setting the general

@@ -67,11 +67,7 @@ void main_cdc_disable()
 }
 
 bool usb_cdc_is_active(void) { return main_b_cdc_enable && main_b_cdc_opened; }
-bool usb_cdc_should_tx(iram_size_t size)
-{
-	return main_b_cdc_enable && main_b_cdc_opened &&
-	       (udi_cdc_get_free_tx_buffer() >= min(size, UDI_CDC_DATA_EPS_FS_SIZE));
-}
+bool usb_cdc_should_tx(void) { return main_b_cdc_enable && main_b_cdc_opened && udi_cdc_is_tx_ready(); }
 void main_cdc_rx_notify()
 {
 	while (udi_cdc_is_rx_ready())

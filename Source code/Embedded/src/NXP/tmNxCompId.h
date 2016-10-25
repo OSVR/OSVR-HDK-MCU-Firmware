@@ -167,7 +167,7 @@ extern "C"
 /*   returned as status, it should use the component ID formats defined.      */
 /*                                                                            */
 /* -------------------------------------------------------------------------- */
-#define TM_OK                     0U         /* Global success return status   */
+#define TM_OK                    ERR_C(0) /* Global success return status     */
 
 /* -------------------------------------------------------------------------- */
 /*                                                                            */
@@ -178,14 +178,18 @@ extern "C"
 #define CID_ID_BITSHIFT          12
 #define IID_ID_BITSHIFT          12
 
-#define CID_FLAG                 (0x1U << CID_IID_FLAG_BITSHIFT)
-#define IID_FLAG                 (0x0U << CID_IID_FLAG_BITSHIFT)
+/// expands to integer constant expression having the specified value and tmErrorCode_t type.
+#define CID_C(X) TM_ERROR_CODE_C(X)
+#define IID_C(X) TM_ERROR_CODE_C(X)
 
-#define CID_ID(number)           ((number) << CID_ID_BITSHIFT)
-#define CID_ID_BITMASK           (0x7FFFFU  << CID_ID_BITSHIFT)
+#define CID_FLAG                 (CID_C(0x1) << CID_IID_FLAG_BITSHIFT)
+#define IID_FLAG                 (IID_C(0x0) << CID_IID_FLAG_BITSHIFT)
 
-#define IID_ID(number)           ((number) << IID_ID_BITSHIFT)
-#define IID_ID_BITMASK           (0x7FFFFU  << IID_ID_BITSHIFT)
+#define CID_ID(number)           ((tmErrorCode_t)(number)  << CID_ID_BITSHIFT)
+#define CID_ID_BITMASK           (CID_C(0x7FFFF) << CID_ID_BITSHIFT)
+
+#define IID_ID(number)           ((tmErrorCode_t)(number) << IID_ID_BITSHIFT)
+#define IID_ID_BITMASK           (IID_C(0x7FFFF)<< IID_ID_BITSHIFT)
 
 /* -------------------------------------------------------------------------- */
 /*                                                                            */
@@ -1084,13 +1088,13 @@ extern "C"
 
 #define CID_TAG_CUSTOMER    (0xE0U << CID_TAG_BITSHIFT)
 
-#define TAG(number)         ((number) << CID_TAG_BITSHIFT)
+#define TAG(number)         ((tmErrorCode_t)(number) << CID_TAG_BITSHIFT)
 
 /* -------------------------------------------------------------------------- */
 /* General Component Layer definitions (bits 15:12, 4 bits)                   */
 /* -------------------------------------------------------------------------- */
 #define CID_LAYER_BITSHIFT  12
-#define CID_LAYER_BITMASK   (0xF << CID_LAYER_BITSHIFT)
+#define CID_LAYER_BITMASK   (CID_C(0xF) << CID_LAYER_BITSHIFT)
 #define CID_GET_LAYER(compId) ((compId & CID_LAYER_BITMASK) >> CID_LAYER_BITSHIFT)
 
 #define CID_LAYER_NONE      (0x0U << CID_LAYER_BITSHIFT)
@@ -1500,7 +1504,7 @@ extern "C"
 /*       component unique 32 bit status values.  The component status values  */
 /*       should be defined in the header files where the APIs are defined.    */
 /* -------------------------------------------------------------------------- */
-#define CID_ERR_BITMASK                 0xFFFU
+#define CID_ERR_BITMASK                 CID_C(0xFFF)
 #define CID_ERR_BITSHIFT                0
 #define CID_GET_ERROR(compId)   ((compId & CID_ERR_BITMASK) >> CID_ERR_BITSHIFT)
 
@@ -1744,4 +1748,3 @@ extern "C"
 #endif
 
 #endif /* TMNXCOMPID_H ----------------- */
-

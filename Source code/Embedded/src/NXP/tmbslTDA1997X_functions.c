@@ -4036,9 +4036,9 @@ tmbslTDA1997XDefineVideoPort
     UInt16 vp_ctrl_register = 0;
 
     /* check VideoPortPinGroup against Video port size */
-    if ((((videoPortPinGroup && VP_MASK) == VP36BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_36)) ||
-            (((videoPortPinGroup && VP_MASK) == VP30BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_30)) ||
-            (((videoPortPinGroup && VP_MASK) == VP24BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_24)) )
+    if ((((videoPortPinGroup & VP_MASK) == VP36BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_36)) ||
+            (((videoPortPinGroup & VP_MASK) == VP30BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_30)) ||
+            (((videoPortPinGroup & VP_MASK) == VP24BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_24)) )
         errCode =  TMBSL_ERR_BSLHDMIRX_BAD_PARAMETER;
 
     /* select the register to program */

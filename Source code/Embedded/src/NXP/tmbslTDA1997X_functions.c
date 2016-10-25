@@ -525,8 +525,8 @@ bslTDA1997XWriteI2C
                 /* write new SLAVE_ADDR */
                 pSysArgs->firstRegister  = (UInt8)SLAVE_ADDR;
                 pSysArgs->lenData        = 1;
-                pSysArgs->pData          = (UInt8 *)((UInt32)pBuffer + (SLAVE_ADDR - firstRegister));
-                
+                pSysArgs->pData          = (UInt8 *)((uintptr_t)pBuffer + (SLAVE_ADDR - firstRegister));
+
 
 
                 errCode =  (RxHdmiConfig[unit].sysFuncWrite) (pSysArgs);
@@ -713,7 +713,7 @@ tmbslTDA1997XWriteI2C
                 /* write new SLAVE_ADDR */
                 pSysArgs->firstRegister  = (UInt8)SLAVE_ADDR;
                 pSysArgs->lenData        = 1;
-                pSysArgs->pData          = (UInt8 *)((UInt32)pBuffer + (SLAVE_ADDR - firstRegister));
+                pSysArgs->pData          = (UInt8 *)((uintptr_t)pBuffer + (SLAVE_ADDR - firstRegister));
 
 
 

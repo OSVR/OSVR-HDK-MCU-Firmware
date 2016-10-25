@@ -136,4 +136,8 @@ extern char Msg[];
 #define SVR_HAVE_TMDS422
 #endif
 
+#ifdef HDMI_VERBOSE
+#define HDMI_DEBUG
+#endif
+
 #endif /* GLOBALOPTIONS_H_ */

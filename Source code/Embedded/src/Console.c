@@ -17,6 +17,8 @@
 
 uint8_t DebugLevel = 0xff;  // start by opening all debug messages
 
+static const uint8_t s_timeoutCountLimit = 100;
+
 void Write(const char *const Data)
 {
 	if (!usb_cdc_is_active())
@@ -36,22 +38,18 @@ void Write(const char *const Data)
 		return;
 	}
 	{
-/// @todo this seems redundant, the logic in udi_cdc_[multi_]write_buf already waits on the tx buffer being ready.
-#if 0
-		int TimeoutCounter = 0;
-		// ATOMIC_BLOCK(ATOMIC_FORCEON)
-		//{
-		// CDC_Device_SendString(&VirtualSerial_CDC_Interface, Data, strlen(Data));
-		//}
-		do
+		/// Though udi_cdc_[multi_]write_buf already waits on the tx-ready status, this timeout prevents us from hanging
+		/// if we end up with a full buffer that's not being consumed.
+		for (uint8_t i = 0; i < s_timeoutCountLimit; ++i)
 		{
-			TimeoutCounter++;
-		} while (!udi_cdc_multi_is_tx_ready(0) && (TimeoutCounter < 100));
-		if (TimeoutCounter > MaxTimerCounter)
-			MaxTimerCounter = TimeoutCounter;
-#endif
-		CDCWriteInProgress = true;
-		udi_cdc_write_buf(Data, strlen(Data));
+			if (usb_cdc_should_tx())
+			{
+				// OK, we can transmit now - write the buffer and get out of here.
+				udi_cdc_write_buf(Data, strlen(Data));
+				return;
+			}
+		}
+		/// Fallthrough means timed out with a full buffer.
 	}
 }
 

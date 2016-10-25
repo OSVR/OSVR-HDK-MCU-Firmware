@@ -11,7 +11,7 @@
 #include "Console.h"
 #ifdef SVR_HAVE_NXP
 
-#include "tmNxTypes.h"
+#include "tmbslHdmiRx_types.h"
 
 /*============================================================================*/
 /**
@@ -43,7 +43,7 @@ void NXP_Private_PRINTIF(tmErrorCode_t errCode, uint16_t lineNumber)
 
         if  (lineNumber==999)
         {
-            sprintf(OutString,"l %d",errCode);
+            sprintf(OutString,"l %" TM_ERROR_CODE_FORMAT, errCode);
             //return;
         }
 

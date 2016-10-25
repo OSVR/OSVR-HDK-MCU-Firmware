@@ -53,6 +53,8 @@
 //
 #include "tmFlags.h"                    // DVP common build control flags
 #include "stdio.h"
+#include <stdint.h>
+#include <inttypes.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -206,6 +208,12 @@ UInt64, *pUInt64; // 64-bit bitmask
 #define HAL_DEVICE_NAME_LENGTH 16
 
 typedef UInt32 tmErrorCode_t;
+/// printf format macro constant for a tmErrorCode_t value
+#define TM_ERROR_CODE_FORMAT PRIx32
+/// expands to integer constant expression having the specified value and tmErrorCode_t type.
+#define TM_ERROR_CODE_C(X) UINT32_C(X)
+#define ERR_C(X) UINT32_C(X)
+
 typedef UInt32 tmProgressCode_t;
 
 /* timestamp definition */

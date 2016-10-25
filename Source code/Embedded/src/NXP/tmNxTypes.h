@@ -86,16 +86,16 @@ extern "C"
 //
 //      Standard Types
 //
-typedef signed   char   Int8;   //  8 bit   signed integer
-typedef signed   short  Int16;  // 16 bit   signed integer
-typedef signed   long   Int32;  // 32 bit   signed integer
-typedef unsigned char   UInt8;  //  8 bit unsigned integer
+typedef int8_t   Int8;   //  8 bit   signed integer
+typedef int16_t  Int16;  // 16 bit   signed integer
+typedef int32_t   Int32;  // 32 bit   signed integer
+typedef uint8_t   UInt8;  //  8 bit unsigned integer
 //typedef unsigned char 	uint8_t;  //  8 bit unsigned integer
 //typedef unsigned char 	u8;  //  8 bit unsigned integer
-typedef unsigned short  UInt16; // 16 bit unsigned integer
+typedef uint16_t  UInt16; // 16 bit unsigned integer
 //typedef unsigned short  uint16_t; // 16 bit unsigned integer
 //typedef unsigned short  u16; // 16 bit unsigned integer
-typedef unsigned long   UInt32; // 32 bit unsigned integer
+typedef uint32_t   UInt32; // 32 bit unsigned integer
 typedef float           Float;  // 32 bit floating point
 typedef unsigned char Bool;   // Boolean (True/False)
 typedef char            Char;   // character, character array ptr
@@ -139,8 +139,8 @@ typedef struct tmVersion
 **       to type "int" instead of type "long" (which are the same size on 32
 **       bit CPUs) separate 32bit signed/unsigned bitfield types are defined.
 */
-typedef signed   int    IBits32;    /* 32 bit   signed integer bitfields */
-typedef unsigned int    UBits32;    /* 32 bit unsigned integer bitfields */
+typedef int32_t    IBits32;         /* 32 bit   signed integer bitfields */
+typedef uint32_t   UBits32;         /* 32 bit unsigned integer bitfields */
 typedef IBits32 *pIBits32;          /* 32 bit   signed integer bitfield ptr */
 typedef UBits32 *pUBits32;          /* 32 bit unsigned integer bitfield ptr */
 
@@ -166,8 +166,8 @@ typedef String *pString;          // Null terminated 8 bit char str,
 /*This can be enabled only when all explicit references to the hi and lo
     structure members are eliminated from client code.*/
 #define TMFL_NATIVE_INT64 1
-typedef signed   long long int Int64,  *pInt64;  // 64-bit integer
-typedef unsigned long long int UInt64, *pUInt64; // 64-bit bitmask
+typedef int64_t Int64,  *pInt64;  // 64-bit integer
+typedef uint64_t UInt64, *pUInt64; // 64-bit bitmask
 // #elif defined _MSC_VER && _MSC_VER >= 1200
 // /*This can be enabled only when all explicit references to the hi and lo
 //     structure members are eliminated from client code.*/
@@ -411,4 +411,3 @@ STRING_TABLE;
 #endif
 
 #endif //ndef TMNXTYPES_H
-

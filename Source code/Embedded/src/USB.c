@@ -23,14 +23,19 @@
 
 #include "TimingDebug.h"
 
-#ifdef OSVRHDK
-#include "nxp\i2c.h"
-#include "string.h"
+#if defined(OSVRHDK) && defined(HDK_ENABLE_HID_SXS)
+#include "SideBySide.h"
 #endif
 
 #include "USB.h"
 
 static volatile bool main_b_cdc_enable = false;
+static volatile bool main_b_cdc_opened = false;
+#undef USB_USE_UART
+
+#ifdef USB_USE_UART
+static const uint8_t s_port = 0;
+#endif
 
 void main_suspend_action(void) { ui_powerdown(); }
 void main_resume_action(void) { ui_wakeup(); }
@@ -41,33 +46,56 @@ void main_sof_action(void)
 	ui_process(udd_get_frame_number());
 }
 
-bool main_cdc_enable(uint8_t port)
+bool main_cdc_enable()
 {
 	main_b_cdc_enable = true;
-	// Open communication
-	uart_open(port);
+// Open communication
+#ifdef USB_USE_UART
+	uart_open(s_port);
+#endif
 	return true;
 }
 
-void main_cdc_disable(uint8_t port)
+void main_cdc_disable()
 {
 	main_b_cdc_enable = false;
-	// Close communication
-	uart_close(port);
+	main_b_cdc_opened = false;
+// Close communication
+#ifdef USB_USE_UART
+	uart_close(s_port);
+#endif
 }
 
-bool usb_cdc_is_active(void) { return main_b_cdc_enable; }
-void main_cdc_set_dtr(uint8_t port, bool b_enable)
+bool usb_cdc_is_active(void) { return main_b_cdc_enable && main_b_cdc_opened; }
+bool usb_cdc_should_tx(void) { return main_b_cdc_enable && main_b_cdc_opened && udi_cdc_is_tx_ready(); }
+void main_cdc_rx_notify()
+{
+	while (udi_cdc_is_rx_ready())
+	{
+		char ch = udi_cdc_getc();
+		// echo on
+		udi_cdc_putc(ch);
+		ProcessIncomingChar(ch);
+	}
+}
+
+void main_cdc_set_dtr(bool b_enable)
 {
 	if (b_enable)
 	{
+		main_b_cdc_opened = true;
+#ifdef USB_USE_UART
 		// Host terminal has open COM
-		ui_com_open(port);
+		ui_com_open(s_port);
+#endif
 	}
 	else
 	{
+		main_b_cdc_opened = false;
+#ifdef USB_USE_UART
 		// Host terminal has close COM
-		ui_com_close(port);
+		ui_com_close(s_port);
+#endif
 	}
 }
 

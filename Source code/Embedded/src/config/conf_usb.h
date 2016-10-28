@@ -182,13 +182,17 @@
 #define  UDI_CDC_PORT_NB 1
 
 //! Interface callback definition
-#define  UDI_CDC_ENABLE_EXT(port)         main_cdc_enable(port)
-#define  UDI_CDC_DISABLE_EXT(port)        main_cdc_disable(port)
-#define  UDI_CDC_RX_NOTIFY(port)          uart_rx_notify(port)
+#define  UDI_CDC_ENABLE_EXT(port)         main_cdc_enable()
+#define  UDI_CDC_DISABLE_EXT(port)        main_cdc_disable()
+#define  UDI_CDC_RX_NOTIFY(port)          main_cdc_rx_notify()
 #define  UDI_CDC_TX_EMPTY_NOTIFY(port)
-#define  UDI_CDC_SET_CODING_EXT(port,cfg) uart_config(port,cfg)
-#define  UDI_CDC_SET_DTR_EXT(port,set)    main_cdc_set_dtr(port,set)
+// gets called before ENABLE in normal USB startup.
+#define  UDI_CDC_SET_CODING_EXT(port,cfg)
+
+// To learn when the CDC port is opened/closed
+#define  UDI_CDC_SET_DTR_EXT(port,set)    main_cdc_set_dtr(set)
 #define  UDI_CDC_SET_RTS_EXT(port,set)
+
 /*
  * #define UDI_CDC_ENABLE_EXT(port) my_callback_cdc_enable()
  * extern bool my_callback_cdc_enable(void);
@@ -352,7 +356,7 @@
 //#define  UDI_HID_GENERIC_ENABLE_EXT()       true
 //#define  UDI_HID_GENERIC_DISABLE_EXT()
 //#define  UDI_HID_GENERIC_REPORT_OUT(ptr)
-//#define  UDI_HID_GENERIC_SET_FEATURE(f) 
+//#define  UDI_HID_GENERIC_SET_FEATURE(f)
 
 #define UDI_HID_GENERIC_ENABLE_EXT() my_callback_generic_enable()
 extern bool my_callback_generic_enable(void);
@@ -362,7 +366,7 @@ extern void my_callback_generic_disable(void);
 extern void my_callback_generic_report_out(uint8_t *report);
 #define  UDI_HID_GENERIC_SET_FEATURE(f) my_callback_generic_set_feature(f)
 extern void my_callback_generic_set_feature(uint8_t *report_feature);
- 
+
 #define  UDI_HID_REPORT_IN_SIZE             USB_REPORT_SIZE
 #define  UDI_HID_REPORT_OUT_SIZE            64
 #define  UDI_HID_REPORT_FEATURE_SIZE        16

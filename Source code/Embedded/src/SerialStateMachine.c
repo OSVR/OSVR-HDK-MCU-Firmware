@@ -286,6 +286,21 @@ enum
 	HEX_DIGITS_PER_BYTE = CHAR_BIT / BITS_PER_HEX_DIGIT
 };
 
+uint8_t ParseHexDigitNibble(const char *buf)
+{
+	uint8_t ret = 0;
+	if (!buf)
+	{
+		return ret;
+	}
+	char c = *buf;
+	if ('\0' == c)
+	{
+		return ret;
+	}
+	ret = ParseHexDigitDirectly(c);
+	return ret;
+}
 /// Utility function for parsing the first two characters of a given C string as
 /// a pair of hex digits.
 uint8_t ParseHexDigits2_8(const char *buf)

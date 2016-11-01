@@ -271,15 +271,6 @@ static uint8_t HexPairToDecimal(uint8_t startIndex)
 	return HexDigitToDecimal(startIndex) * 16 + HexDigitToDecimal(startIndex + 1);
 }
 
-uint8_t ParseHexDigit(const char *buf)
-{
-	if (!buf)
-	{
-		return 0;
-	}
-	return ParseHexDigitDirectly(*buf);
-}
-
 enum
 {
 	BITS_PER_HEX_DIGIT = 4,

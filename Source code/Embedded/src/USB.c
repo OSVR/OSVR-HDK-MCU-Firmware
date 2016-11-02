@@ -28,9 +28,16 @@
 #endif
 
 #include "USB.h"
+#include <udi_cdc.h>
+
+// Make our internal buffer the size of the endpoint buffer for full-speed.
+static const uint8_t RX_BUF_SZ = UDI_CDC_DATA_EPS_FS_SIZE;
 
 static volatile bool main_b_cdc_enable = false;
 static volatile bool main_b_cdc_opened = false;
+
+#define USB_CDC_ECHO_ON
+
 #undef USB_USE_UART
 
 #ifdef USB_USE_UART
@@ -70,13 +77,21 @@ bool usb_cdc_is_active(void) { return main_b_cdc_enable && main_b_cdc_opened; }
 bool usb_cdc_should_tx(void) { return main_b_cdc_enable && main_b_cdc_opened && udi_cdc_is_tx_ready(); }
 void main_cdc_rx_notify()
 {
-	while (udi_cdc_is_rx_ready())
+	char buf[RX_BUF_SZ];
+
+	do
 	{
-		char ch = udi_cdc_getc();
-		// echo on
-		udi_cdc_putc(ch);
-		ProcessIncomingChar(ch);
-	}
+		uint8_t recvd = (uint8_t)udi_cdc_read_no_polling(buf, sizeof(buf));
+		for (uint8_t i = 0; i < recvd; ++i)
+		{
+			char ch = buf[i];
+#ifdef USB_CDC_ECHO_ON
+			udi_cdc_putc(ch);
+#endif
+			ProcessIncomingChar(ch);
+		}
+		// drain the buffer
+	} while (udi_cdc_is_rx_ready());
 }
 
 void main_cdc_set_dtr(bool b_enable)

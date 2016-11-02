@@ -60,7 +60,9 @@ void dWrite(const char *const Data, uint8_t DebugMask)
 		Write(Data);
 }
 
-static const char CR[] = "\n\r";
+/// @todo This corresponds to LF+CR, which is the reverse of the typically-expected order. If it is safe to do so, it
+/// should be flipped to the normal order.
+static const char CR[] = {0x0A, 0x0D, 0x00};
 
 void WriteLn(const char *const Data)
 

@@ -121,9 +121,6 @@ static EEPROM_type EEPROM;
 static uint8_t I2CAddress = 0;   // selected I2C address
 static bool NXPLeftSide = true;  // selected eye (left or right)
 
-// todo: move USBActive as well as TRUE and FALSE
-static bool USBActive = false;  // true if USB is connected
-
 static uint8_t BufferPos = 0;       /* position of character to be received in new buffer. When command is completed,
                               this also shows the length of the command */
 static uint8_t ReadyBufferPos = 0;  // copy of BufferPos for command being executed
@@ -271,20 +268,27 @@ static uint8_t HexPairToDecimal(uint8_t startIndex)
 	return HexDigitToDecimal(startIndex) * 16 + HexDigitToDecimal(startIndex + 1);
 }
 
-uint8_t ParseHexDigit(const char *buf)
-{
-	if (!buf)
-	{
-		return 0;
-	}
-	return ParseHexDigitDirectly(*buf);
-}
-
 enum
 {
 	BITS_PER_HEX_DIGIT = 4,
 	HEX_DIGITS_PER_BYTE = CHAR_BIT / BITS_PER_HEX_DIGIT
 };
+
+uint8_t ParseHexDigitNibble(const char *buf)
+{
+	uint8_t ret = 0;
+	if (!buf)
+	{
+		return ret;
+	}
+	char c = *buf;
+	if ('\0' == c)
+	{
+		return ret;
+	}
+	ret = ParseHexDigitDirectly(c);
+	return ret;
+}
 
 /// Utility function for parsing the first two characters of a given C string as
 /// a pair of hex digits.

@@ -42,6 +42,7 @@
  */
 
 #include "main.h"
+#include "Boot.h"
 
 #include <asf.h>
 #include <pmic.h>
@@ -83,6 +84,12 @@ void load_configuration(void)
 int main(void)
 {
 	//_StackPaint();
+
+	// In case the bootloader that's on board isn't working right or the board
+	// isn't working right, give the switch a bit of a chance to be read.
+	// Should be unnecessary, but extant hardware is reluctant to respond to
+	// the bootloader switch.
+	CheckForBootloaderSwitchOnStartup();
 
 	irq_initialize_vectors();
 

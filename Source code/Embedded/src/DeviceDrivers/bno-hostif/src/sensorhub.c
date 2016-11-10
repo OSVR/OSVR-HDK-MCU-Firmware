@@ -250,7 +250,7 @@ int sensorhub_setDynamicFeature(const sensorhub_t * sh,
                                 sensorhub_Sensor_t sensor,
                                 const sensorhub_SensorFeature_t * settings)
 {
-    uint8_t payload[14];
+    uint8_t payload[15];
 
     payload[0] = (settings->changeSensitivityRelative ? 0x1 : 0x0) |
                  (settings->changeSensitivityEnabled ? 0x2 : 0x0) |
@@ -258,7 +258,7 @@ int sensorhub_setDynamicFeature(const sensorhub_t * sh,
     write16(&payload[1], settings->changeSensitivity);
     write32(&payload[3], settings->reportInterval);
     write32(&payload[7], settings->batchInterval);
-    write32(&payload[10], settings->sensorSpecificConfiguration);
+    write32(&payload[11], settings->sensorSpecificConfiguration);
     return checkError(sh, shhid_setReport(sh,
                                           HID_REPORT_TYPE_FEATURE,
                                           sensor,

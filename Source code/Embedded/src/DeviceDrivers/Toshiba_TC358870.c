@@ -158,6 +158,11 @@ static const TC358870_Reg_t TC_REG_DCSCMD_Q = 0x0504;
 static const TC358870_Reg_t TC_REG_MISC_INT = 0x850B;
 static const TC358870_Reg_t TC_REG_MISC_INT_MASK = 0x851B;
 static const TC358870_Reg_t TC_REG_SYS_STATUS = 0x8520;
+static const TC358870_Reg_t TC_REG_HV_CLEAR = 0x8593;
+static const TC358870_Reg_t TC_REG_IN_HSize = 0x858e;
+static const TC358870_Reg_t TC_REG_DE_HSize = 0x8582;
+static const TC358870_Reg_t TC_REG_IN_VSize = 0x8590;
+static const TC358870_Reg_t TC_REG_DE_VSize = 0x858C;
 #if 0
 	TC_REG_SYS_STATUS_HAVE_VIDEO_MASK = BITUTILS_BIT(7) | BITUTILS_BIT(3) /* PHY DE detect */ | BITUTILS_BIT(2) /* PHY PLL lock */ | BITUTILS_BIT(1) /* TMDS input amplitude */ | BITUTILS_BIT(0) /* DDC_Power input */
 #endif
@@ -166,6 +171,15 @@ static const TC358870_Reg_t TC_REG_SYS_STATUS = 0x8520;
 #define TC_REG_INT_STATUS_NONRESERVED_BITS (BITUTILS_GET_SET_LOW_BITS_MAX16(12) & (~BITUTILS_BIT(6)))
 #define TC_REG_MISC_INT_SYNC_CHG_BITMASK BITUTILS_BIT(1)
 static const uint8_t TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK = BITUTILS_BIT(7);
+
+#define TC_IF_ERR_RETURN_VAL(STATUS, RETVAL) \
+	do                                       \
+	{                                        \
+		if (STATUS != TOSHIBA_TC358770_OK)   \
+		{                                    \
+			return RETVAL;                   \
+		}                                    \
+	} while (0)
 
 TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8_BothDSITX(TC358870_Reg_t reg, uint8_t val)
 {
@@ -314,6 +328,30 @@ bool Toshiba_TC358870_Have_Video_Sync(void)
 	/// Bit 7 is input video sync - bits 6, 5, and 4 are unimportant to the task at hand, so equality to 0x9f is not
 	/// quite right.
 	return bitUtils_checkBit(tc_data, TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK);
+}
+
+TC358870_InputMeasurements_t Toshiba_TC358770_Get_Input_Measurements()
+{
+	TC358870_InputMeasurements_t ret = {
+	    .opStatus = TOSHIBA_TC358770_OK, .horizTotal = 0, .horizActive = 0, .vertTotal = 0, .vertActive = 0};
+	/// Clear the measurements
+	ret.opStatus = Toshiba_TC358870_I2C_Write8(TC_REG_HV_CLEAR, 0x33);
+	TC_IF_ERR_RETURN_VAL(ret.opStatus, ret);
+	if (ret.opStatus != TOSHIBA_TC358770_OK)
+	{
+		return ret;
+	}
+	/// Wait 2 vertical period
+	svr_yield_ms(2 * TC358870_VSYNC_PERIOD_MS);
+	/// Retrieve
+	ret.opStatus = Toshiba_TC358870_I2C_Read16(TC_REG_IN_HSize, &ret.horizTotal);
+	TC_IF_ERR_RETURN_VAL(ret.opStatus, ret);
+	ret.opStatus = Toshiba_TC358870_I2C_Read16(TC_REG_DE_HSize, &ret.horizActive);
+	TC_IF_ERR_RETURN_VAL(ret.opStatus, ret);
+	ret.opStatus = Toshiba_TC358870_I2C_Read16(TC_REG_IN_VSize, &ret.vertTotal);
+	TC_IF_ERR_RETURN_VAL(ret.opStatus, ret);
+	ret.opStatus = Toshiba_TC358870_I2C_Read16(TC_REG_DE_VSize, &ret.vertActive);
+	return ret;
 }
 
 /// Perform a software reset of the HDMI receiver portion of the chip.

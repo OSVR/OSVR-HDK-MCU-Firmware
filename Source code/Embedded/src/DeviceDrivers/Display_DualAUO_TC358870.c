@@ -196,7 +196,22 @@ void Display_On(uint8_t deviceID)
 	TC358870_i2c_Write(0x0504, 0x0000, 2); // DCSCMD_Q
 	TC358870_i2c_Write(0x0504, 0x2903, 2); // DCSCMD_Q
 #endif
-
+	{
+		char msg[50];
+		TC358870_InputMeasurements_t meas = Toshiba_TC358770_Get_Input_Measurements();
+		if (meas.opStatus == TOSHIBA_TC358770_OK)
+		{
+			sprintf(msg, "Horiz: " PRId16 "  active " PRId16, meas.horizTotal, meas.horizActive);
+			WriteLn(msg);
+			sprintf(msg, "Vert: " PRId16 "  active " PRId16, meas.vertTotal, meas.vertActive);
+			WriteLn(msg);
+		}
+		else
+		{
+			sprintf(msg, "Failed to get measurements: " PRId8, meas.opStatus);
+			WriteLn(msg);
+		}
+	}
 	AUO_DSI_Sleep_Out();
 	AUO_DSI_Display_On();
 

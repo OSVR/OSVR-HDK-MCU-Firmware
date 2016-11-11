@@ -67,6 +67,11 @@ typedef struct TC358870_PanelFunctions
 /// Must define this in your panel-specific code.
 extern const TC358870_PanelFunctions_t g_tc358870PanelFuncs;
 
+#ifndef TC358870_VSYNC_PERIOD_MS
+/// Default to 90Hz (ceil(1./90.))
+#define TC358870_VSYNC_PERIOD_MS 12
+#endif
+
 /// Sets up the i2c bus, does an initial read, then resets the chip and the panel.
 /// Formerly called the the "black-box" PowerOnSeq libhdk20 function that, among other
 /// things, eventually calls the other libhdk20 function TC358870_Init_Receive_HDMI_Signal
@@ -88,6 +93,22 @@ void Toshiba_TC358870_Trigger_Reset(void);
 
 /// Checks the status register to see if the toshiba chip has stable video sync.
 bool Toshiba_TC358870_Have_Video_Sync(void);
+
+typedef struct TC358870_InputMeasurements
+{
+	TC358870_Op_Status_t opStatus;
+	/// Total dots per horizontal line (including blanking - sync and porches)
+	uint16_t horizTotal;
+	/// Active dots per horizontal line (horizontal resolution)
+	uint16_t horizActive;
+	/// Height in lines (total - including blanking - sync and porches)
+	uint16_t vertTotal;
+	/// Active height in lines (vertical resolution)
+	uint16_t vertActive;
+} TC358870_InputMeasurements_t;
+
+/// Note: Output will only be valid if we have video sync.
+TC358870_InputMeasurements_t Toshiba_TC358770_Get_Input_Measurements(void);
 
 /// Writes an 8-bit byte to the given register over I2C.
 /// Does wait for the bus to become available, but returns other errors from I2C code as-is.

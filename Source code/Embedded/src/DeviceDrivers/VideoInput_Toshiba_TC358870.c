@@ -24,7 +24,13 @@
 
 #define SVR_DEBUG_LIBHDK2_BEHAVIOR
 
-static void VideoInput_Init_Impl(void) { Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts(); }
+static void VideoInput_Init_Impl(void)
+{
+	/// Check for video input right away
+	VideoInput_Protected_Report_Status(Toshiba_TC358870_Have_Video_Sync());
+	/// Turn on interrupts.
+	Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
+}
 void VideoInput_Init(void)
 {
 	static bool haveInit = false;

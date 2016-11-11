@@ -66,6 +66,8 @@ void TC358870_Init_Receive_HDMI_Signal() {
 void Toshiba_TC358870_SW_Reset()
 {
 	// Software Reset
+
+	// disable everything except auto-increment
 	TC358870_i2c_Write(0x0004, 0x0004, 2);  // ConfCtl0
 	TC358870_i2c_Write(0x0002, 0x3F01, 2);  // SysCtl
 	TC358870_i2c_Write(0x0002, 0x0000, 2);  // SysCtl
@@ -264,9 +266,9 @@ void Toshiba_TC358870_Prepare_TX()
 	TC358870_i2c_Write(0x031C, 0x00000001, 4);  // DSITX_START
 #endif
 	// Command Transmission Before Video Start
-	TC358870_i2c_Write(0x0500, 0x0004, 2);      // CMD_SEL - send dcs cmds to both tx
 	TC358870_i2c_Write(0x0110, 0x00000016, 4);  // MODE_CONFIG - high speed mode DSI commands, hsync+, vsync+
 	TC358870_i2c_Write(0x0310, 0x00000016, 4);  // MODE_CONFIG
+	TC358870_i2c_Write(0x0500, 0x0004, 2);      // CMD_SEL - send dcs cmds to both tx
 }
 
 void Toshiba_TC358870_Configure_Splitter()
@@ -274,6 +276,8 @@ void Toshiba_TC358870_Configure_Splitter()
 #if 1  // Dennis Yeh 2016/04/18
 	// Split Control
 	TC358870_i2c_Write(0x5000, 0x0000, 2);  // STX0_CTL
+	/// @todo 0x8??? indicates "auto split line in half" and 0x?4?00 indicates tx0 gets first half
+	/// why is 0x??E0 (first pixel for tx0) not zero? it's not used...
 	TC358870_i2c_Write(0x500C, 0x84E0, 2);  // STX0_FPX
 	TC358870_i2c_Write(0x5080, 0x0000, 2);  // STX1_CTL
 #else                                       // shift 28 pixels.
@@ -294,6 +298,7 @@ void Toshiba_TC358870_Configure_Splitter()
 #endif
 }
 
+/// Sets up HDMI, including sending EDID data to receiver
 void Toshiba_TC358870_HDMI_Setup(void)
 {
 	// HDMI PHY

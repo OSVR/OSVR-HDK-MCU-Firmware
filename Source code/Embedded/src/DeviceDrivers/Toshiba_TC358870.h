@@ -55,6 +55,18 @@ typedef enum {
 
 typedef uint16_t TC358870_Reg_t;
 
+typedef void (*TC358870_PanelFunction)(void);
+
+typedef struct TC358870_PanelFunctions
+{
+	TC358870_PanelFunction startReset;
+	TC358870_PanelFunction endReset;
+	TC358870_PanelFunction sendInitCommands;
+} TC358870_PanelFunctions_t;
+
+/// Must define this in your panel-specific code.
+extern const TC358870_PanelFunctions_t g_tc358870PanelFuncs;
+
 /// Sets up the i2c bus, does an initial read, then resets the chip and the panel.
 /// Formerly called the the "black-box" PowerOnSeq libhdk20 function that, among other
 /// things, eventually calls the other libhdk20 function TC358870_Init_Receive_HDMI_Signal

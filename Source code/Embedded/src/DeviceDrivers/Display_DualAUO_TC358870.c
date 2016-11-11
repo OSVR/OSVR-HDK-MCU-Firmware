@@ -41,7 +41,7 @@ static const CommandSequenceElt_t AUO_H381DLN01_Init_Commands[] = {
     {0xBB, 0x84}, {0xBC, 0x1C}, {0xFE, 0x08}, {0x07, 0x1A}, {0xFE, 0x0A}, {0x2A, 0x1B}, {0xFE, 0x0D}, {0x02, 0x65},
     {0x4D, 0x41}, {0x4B, 0x0F}, {0x53, 0xFE}, {0xFE, 0x00}, {0xC2, 0x03}, {0x51, 0xFF}};
 
-inline static void AUO_H381DLN01_Send_Panel_Init_Commands()
+static void AUO_H381DLN01_Send_Panel_Init_Commands(void)
 {
 	/// Need at least 10ms from reset going back high before initial setting.
 	svr_yield_ms(10);
@@ -55,16 +55,28 @@ inline static void AUO_H381DLN01_Send_Panel_Init_Commands()
 	}
 }
 
-inline static void AUO_H381DLN01_Panel_Reset()
+static void AUO_H381DLN01_Panel_StartReset(void)
 {
 	ioport_set_pin_low(PANEL_RESET);
 	// >3ms recommended to move from deep standby to sleep state.
 	svr_yield_ms(10);
+}
+static void AUO_H381DLN01_Panel_EndReset(void)
+{
 	ioport_set_pin_high(PANEL_RESET);
 	// Reset after this signal takes at most 5ms during sleep mode, 120ms during non-sleep mode (and can't "sleep out"
 	// for 120ms)
 	svr_yield_ms(120);
 }
+
+static void AUO_H381DLN01_Panel_Reset(void)
+{
+	AUO_H381DLN01_Panel_StartReset();
+	AUO_H381DLN01_Panel_EndReset();
+}
+const TC358870_PanelFunctions_t g_tc358870PanelFuncs = {.startReset = &AUO_H381DLN01_Panel_StartReset,
+                                                        .endReset = &AUO_H381DLN01_Panel_EndReset,
+                                                        .sendInitCommands = &AUO_H381DLN01_Send_Panel_Init_Commands};
 
 inline static void AUO_Null_Param_DSI_Cmd(uint8_t cmd)
 {
@@ -92,6 +104,8 @@ inline static void AUO_DSI_Display_Off(void)
 inline static void AUO_DSI_Sleep_In(void) { AUO_Null_Param_DSI_Cmd(0x10); }
 void Display_System_Init()
 {
+	Toshiba_TC358870_Init_Once();
+#if 0
 	// start the chip, if it hasn't been started.
 	if (!Toshiba_TC358870_Init_Once())
 	{
@@ -102,12 +116,13 @@ void Display_System_Init()
 		Toshiba_TC358870_Prepare_TX();
 		Toshiba_TC358870_Configure_Splitter();
 	}
+#endif
 }
 void Display_Init(uint8_t deviceID)
 {
 	// make sure we aren't held in reset mode.
-	ioport_set_pin_high(PANEL_RESET);
-	svr_yield_ms(120);
+	AUO_H381DLN01_Panel_EndReset();
+#if 0
 	static bool repeat = false;
 	bool firstTime = false;
 	if (!repeat)
@@ -143,15 +158,17 @@ void Display_Init(uint8_t deviceID)
 
 		Toshiba_TC358870_Enable_Video_TX();
 	}
+#endif
 }
 void Display_On(uint8_t deviceID)
 {
 #ifdef HDMI_VERBOSE
-	WriteLn("Turning display on");
-#endif
-	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
-	// Debug_LED_Turn_On();
 
+#endif
+	WriteLn("Turning display on");
+// Debug_LED_Turn_On();
+
+#if 0
 	/// @todo ugly workaround for resetting things.
 	// TC358870_Init_Receive_HDMI_Signal();
 	// Toshiba_TC358870_Init();
@@ -162,6 +179,7 @@ void Display_On(uint8_t deviceID)
 	svr_yield_ms(16);
 	AUO_H381DLN01_Send_Panel_Init_Commands();
 	svr_yield_ms(120);
+#endif
 
 #if 0
 	/// This one is at least a little bit less extreme
@@ -188,10 +206,9 @@ void Display_On(uint8_t deviceID)
 void Display_Off(uint8_t deviceID)
 {
 #ifdef HDMI_VERBOSE
-	WriteLn("Turning display off");
 #endif
+	WriteLn("Turning display off");
 	// Debug_LED_Turn_Off();
-	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 
 	AUO_DSI_Display_Off();
 	AUO_DSI_Sleep_In();

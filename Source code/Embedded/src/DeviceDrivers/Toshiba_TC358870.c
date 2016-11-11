@@ -218,7 +218,7 @@ void Toshiba_TC358870_Base_Init(void)
 	}
 
 	ioport_set_pin_low(TC358870_Reset_Pin);
-	ioport_set_pin_low(PANEL_RESET);
+	g_tc358870PanelFuncs.startReset();
 
 	WriteLn("Toshiba_TC358870_Base_Init: Waiting for 5V power rail");
 	while (!ioport_get_value(ANA_PWR_IN))
@@ -233,19 +233,19 @@ void Toshiba_TC358870_Base_Init(void)
 	}
 	svr_yield_ms(50);
 	ioport_set_pin_high(TC358870_Reset_Pin);
-	ioport_set_pin_high(PANEL_RESET);
+	g_tc358870PanelFuncs.endReset();
 	svr_yield_ms(5);
 
-#if 0
+#if 1
 	// Dennis Yeh 2016/03/14 : for TC358870
 	uint8_t tc_data;
 	/// dummy read?
 	Toshiba_TC358870_I2C_Read8(0x0000, &tc_data);
 #endif
 
-	// Turn on auto-increment.
-	// Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_0, BITUTILS_BIT(2));
 	Toshiba_TC358870_SW_Reset();
+	Toshiba_TC358870_Prepare_TX();
+	g_tc358870PanelFuncs.sendInitCommands();
 	Toshiba_TC358870_Configure_Splitter();
 	Toshiba_TC358870_HDMI_Setup();
 
@@ -263,7 +263,7 @@ void Toshiba_TC358870_Base_Init(void)
 		// not our first go-round, we'll just resume ints here.
 		Toshiba_TC358870_MCU_Ints_Resume();
 	}
-
+	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: End");
 #endif

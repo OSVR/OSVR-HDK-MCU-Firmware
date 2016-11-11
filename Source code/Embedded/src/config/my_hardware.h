@@ -169,7 +169,7 @@ void set_pwm_values(uint8_t Display1, uint8_t Display2);  // sets pwm values for
 // indicates version of HDK, e.g. 1.1, 1.2, 1.3
 extern uint8_t HDK_Version_Major;
 extern uint8_t HDK_Version_Minor;
-extern char ProductName[];
+extern unsigned char ProductName[];
 // Must be manually kept in sync with the string in my_hardware.c (and conf_usb.h), but a static assert ensures it is
 // so.
 #if SVR_HDK_DEFAULT_MAJOR_VER == 1 && SVR_HDK_DEFAULT_MINOR_VER == 2

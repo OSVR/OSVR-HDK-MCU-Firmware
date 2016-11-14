@@ -136,7 +136,7 @@ void VideoInput_Poll_Status(void) { VideoInput_Protected_Report_Status(Toshiba_T
 static inline void vi_tc_dump_reg_status(uint16_t reg, uint8_t bytes)
 {
 	char myMessage[50];
-	sprintf(myMessage, "TC358870 reg %#06" PRIX16 ": ", reg);
+	sprintf(myMessage, "TC358870 reg %#06" PRIx16 ": ", reg);
 	Write(myMessage);
 
 	uint32_t data = 0;
@@ -163,6 +163,7 @@ static inline void vi_tc_dump_reg_status(uint16_t reg, uint8_t bytes)
 
 		sprintf(myMessage, " (as 16-bit hex %#06" PRIx16 ") ", justMyData);
 		Write(myMessage);
+		break;
 	}
 
 	case 4:
@@ -215,6 +216,11 @@ void VideoInput_Report_Status(void)
 	Write("System Status ");
 	vi_tc_dump_reg_status(0x8520, 1);
 
+	Write("ConfCtl0 ");
+	vi_tc_dump_reg_status(0x0004, 2);
+	Write("ConfCtl1 ");
+	vi_tc_dump_reg_status(0x0006, 2);
+
 	Write("LANE_STATUS_HS (DSI-TX0) - want 8f - ");
 	vi_tc_dump_reg_status(0x0290, 4);
 
@@ -226,5 +232,16 @@ void VideoInput_Report_Status(void)
 
 	Write("FUNC_MODE (DSI-TX0) ");
 	vi_tc_dump_reg_status(0x0150, 4);
+	Write("LANE_STATUS_HS (DSI-TX1) - want 8f - ");
+	vi_tc_dump_reg_status(0x0490, 4);
+
+	Write("LANE_STATUS_LS (DSI-TX1) - want 0 - ");
+	vi_tc_dump_reg_status(0x0494, 4);
+
+	Write("MIPI_PLL_CNF (DSI-TX1) ");
+	vi_tc_dump_reg_status(0x04AC, 4);
+
+	Write("FUNC_MODE (DSI-TX1) ");
+	vi_tc_dump_reg_status(0x0350, 4);
 }
 #endif

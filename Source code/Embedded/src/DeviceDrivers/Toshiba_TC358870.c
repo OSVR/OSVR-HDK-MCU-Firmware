@@ -153,6 +153,7 @@ static const TC358870_Reg_t TC_REG_CONFIG_CONTROL_0 = 0x0004;
 static const TC358870_Reg_t TC_REG_CONFIG_CONTROL_1 = 0x0006;
 static const TC358870_Reg_t TC_REG_INT_STATUS = 0x0014;
 static const TC358870_Reg_t TC_REG_INT_MASK = 0x0016;
+static const TC358870_Reg_t TC_REG_MODE_CONFIG = 0x0110;
 static const TC358870_Reg_t TC_REG_DSITX_START = 0x011C;
 static const TC358870_Reg_t TC_REG_DCSCMD_Q = 0x0504;
 static const TC358870_Reg_t TC_REG_MISC_INT = 0x850B;
@@ -248,13 +249,13 @@ void Toshiba_TC358870_Base_Init(void)
 	svr_yield_ms(50);
 	ioport_set_pin_high(TC358870_Reset_Pin);
 	g_tc358870PanelFuncs.endReset();
-	svr_yield_ms(5);
+	svr_yield_ms(50);
 
 #if 1
 	// Dennis Yeh 2016/03/14 : for TC358870
-	uint8_t tc_data;
+	uint16_t tc_data;
 	/// dummy read?
-	Toshiba_TC358870_I2C_Read8(0x0000, &tc_data);
+	Toshiba_TC358870_I2C_Read16(0x0000, &tc_data);
 #endif
 
 	Toshiba_TC358870_SW_Reset();
@@ -280,6 +281,12 @@ void Toshiba_TC358870_Base_Init(void)
 		Toshiba_TC358870_MCU_Ints_Resume();
 	}
 	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
+	// Switch clock source to HDMI pixel clock
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_1, 0x0))
+	{
+		WriteLn("TC358770: Could not write config control reg 1");
+		return;
+	}
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: End");
 #endif
@@ -411,20 +418,15 @@ void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_
 
 void Toshiba_TC358870_Clear_HDMI_Sync_Change_Int()
 {
-	Toshiba_TC358870_I2C_Write8(TC_REG_MISC_INT, TC_REG_MISC_INT_SYNC_CHG_BITMASK);
-	Toshiba_TC358870_I2C_Write16(TC_REG_INT_STATUS, TC_REG_INT_STATUS_HDMI_INT_BITMASK);
+	Toshiba_TC358870_I2C_Write8(TC_REG_MISC_INT, 0xff /*TC_REG_MISC_INT_SYNC_CHG_BITMASK*/);
+	Toshiba_TC358870_I2C_Write16(TC_REG_INT_STATUS, UINT16_C(0x0fbf) /*TC_REG_INT_STATUS_HDMI_INT_BITMASK*/);
 }
 
 void Toshiba_TC358870_Enable_Video_TX()
 {
 	tc_Turn_On_LD17();
-	// Switch clock source to HDMI pixel clock
-	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_1, 0x0))
-	{
-		WriteLn("TC358770: Could not write config control reg 1");
-		return;
-	}
-#if 1
+
+#if 0
 	uint16_t data;
 	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Read16(TC_REG_CONFIG_CONTROL_0, &data))
 	{
@@ -441,21 +443,24 @@ void Toshiba_TC358870_Enable_Video_TX()
 		WriteLn("TC358770: Could not write config control reg 0");
 		return;
 	}
+	// Switch clock source to HDMI pixel clock
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_1, 0x0))
+	{
+		WriteLn("TC358770: Could not write config control reg 1");
+		return;
+	}
+	Toshiba_TC358870_I2C_Write32_BothDSITX(TC_REG_MODE_CONFIG, UINT32_C(0x00000006));
 }
 void Toshiba_TC358870_Disable_Video_TX()
 {
 	tc_Turn_Off_LD17();
 
+#if 0
 	Toshiba_TC358870_I2C_Write32_BothDSITX(TC_REG_DSITX_START, 0);  // DSITX_START goes to 0 now.
-
-	// Switch clock source back to reference clock
-	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write16(TC_REG_CONFIG_CONTROL_1, BITUTILS_BIT(3)))
-	{
-		WriteLn("TC358770: Could not write config control reg 1");
-		return;
-	}
+#endif
 
 	uint16_t data;
+#if 0
 	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Read16(TC_REG_CONFIG_CONTROL_0, &data))
 	{
 		WriteLn("TC358770: Could not read config control reg 0");
@@ -463,9 +468,19 @@ void Toshiba_TC358870_Disable_Video_TX()
 	}
 	// Disable Video TX0 and TX1
 	data &= ~((uint16_t)(BITUTILS_BIT(0) | BITUTILS_BIT(1)));
+#else
+	data = BITUTILS_BIT(2) /*0x0004*/;
+#endif
 	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write16(TC_REG_CONFIG_CONTROL_0, data))
 	{
 		WriteLn("TC358770: Could not write config control reg 0");
+		return;
+	}
+
+	// Switch clock source back to reference clock
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write16(TC_REG_CONFIG_CONTROL_1, BITUTILS_BIT(3)))
+	{
+		WriteLn("TC358770: Could not write config control reg 1");
 		return;
 	}
 }

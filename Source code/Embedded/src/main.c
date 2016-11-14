@@ -140,6 +140,33 @@ int main(void)
 #endif  // OSVRHDK
 
 #ifdef SVR_ENABLE_VIDEO_INPUT
+#ifdef BNO070
+	BNO070Active = init_BNO070();
+#ifdef SVR_NEED_TO_COMPUTE_PRODUCT_FROM_BNO
+	if (BNO070Active)
+	{
+		/// If tracker version is 1.8.4 or greater...
+		if (1 < BNO070id.swVersionMajor || (1 == BNO070id.swVersionMajor && 8 < BNO070id.swVersionMinor) ||
+		    (1 == BNO070id.swVersionMajor && 8 == BNO070id.swVersionMinor && 4 <= BNO070id.swVersionPatch))
+		{
+			HDK_Version_Major = 1;
+			HDK_Version_Minor = 3;
+			static const char HDK13_VER_STRING[] = "OSVR HDK 1.3+";
+			_Static_assert(
+			    sizeof(HDK13_VER_STRING) <= sizeof(USB_DEVICE_PRODUCT_NAME),
+			    "HDK 1.3 product name string exceeds the length of USB_DEVICE_PRODUCT_NAME (in conf_usb.h)!");
+			_Static_assert(sizeof(HDK13_VER_STRING) <= SVR_HDK_PRODUCT_NAME_STRING_LENGTH,
+			               "HDK 1.3 product name string exceeds the length of ProductName (in my_hardware.c)!");
+			strcpy(ProductName,
+			       HDK13_VER_STRING);  /// important! make sure did length of this product name is not longer
+			                           /// than original name defined in udc.h and in my_hardware.c
+		}
+	}
+#endif  // SVR_NEED_TO_COMPUTE_PRODUCT_FROM_BNO
+#endif  // BNO070
+
+	// Start USB stack to authorize VBus monitoring
+	udc_start();
 
 	// Sets up video input part of data path: switch (if present), HDMI receiver.
 	VideoInput_Init();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
@@ -201,34 +228,6 @@ int main(void)
 
 // ProgramMTP0();
 #endif  // SVR_ENABLE_VIDEO_INPUT
-
-#ifdef BNO070
-	BNO070Active = init_BNO070();
-#ifdef SVR_NEED_TO_COMPUTE_PRODUCT_FROM_BNO
-	if (BNO070Active)
-	{
-		/// If tracker version is 1.8.4 or greater...
-		if (1 < BNO070id.swVersionMajor || (1 == BNO070id.swVersionMajor && 8 < BNO070id.swVersionMinor) ||
-		    (1 == BNO070id.swVersionMajor && 8 == BNO070id.swVersionMinor && 4 <= BNO070id.swVersionPatch))
-		{
-			HDK_Version_Major = 1;
-			HDK_Version_Minor = 3;
-			static const char HDK13_VER_STRING[] = "OSVR HDK 1.3+";
-			_Static_assert(
-			    sizeof(HDK13_VER_STRING) <= sizeof(USB_DEVICE_PRODUCT_NAME),
-			    "HDK 1.3 product name string exceeds the length of USB_DEVICE_PRODUCT_NAME (in conf_usb.h)!");
-			_Static_assert(sizeof(HDK13_VER_STRING) <= SVR_HDK_PRODUCT_NAME_STRING_LENGTH,
-			               "HDK 1.3 product name string exceeds the length of ProductName (in my_hardware.c)!");
-			strcpy(ProductName,
-			       HDK13_VER_STRING);  /// important! make sure did length of this product name is not longer
-			                           /// than original name defined in udc.h and in my_hardware.c
-		}
-	}
-#endif  // SVR_NEED_TO_COMPUTE_PRODUCT_FROM_BNO
-#endif  // BNO070
-
-	// Start USB stack to authorize VBus monitoring
-	udc_start();
 
 #ifdef SVR_VIDEO_INPUT_POLL_INTERVAL
 	uint16_t videoPollCounter = 0;

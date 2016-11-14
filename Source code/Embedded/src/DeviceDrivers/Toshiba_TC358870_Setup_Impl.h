@@ -79,6 +79,7 @@ void Toshiba_TC358870_Prepare_TX()
 #if 1
 
 	// version from init receive hdmi - identical registers and order, just different values.
+	// Doesn't match TFN sniff as closely.
 
 	// DSI-TX0 Transition Timing
 	TC358870_i2c_Write(0x0108, 0x00000001, 4);  // DSI_TX_CLKEN
@@ -338,7 +339,9 @@ void Toshiba_TC358870_HDMI_Setup(void)
 	TC358870_i2c_Write(0x8A02, 0x42, 1);  // VOUT_SYNC0
 
 	// HDMI SYSTEM
+	// DDC active only while hotplug is being output, no delay in DDC5V rising detection.
 	TC358870_i2c_Write(0x8543, 0x02, 1);  // DDC_CTL
+	// DDC5v detection interlock - HPDO will be asserted when INIT_END asserted
 	TC358870_i2c_Write(0x8544, 0x10, 1);  // HPD_CTL
 
 	// HDMI Audio Setting

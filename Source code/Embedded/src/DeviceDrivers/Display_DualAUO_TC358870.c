@@ -217,7 +217,7 @@ void Display_On(uint8_t deviceID)
 	}
 	AUO_DSI_Sleep_Out();
 	AUO_DSI_Display_On();
-
+	svr_yield_ms(10);
 	Toshiba_TC358870_Enable_Video_TX();
 }
 

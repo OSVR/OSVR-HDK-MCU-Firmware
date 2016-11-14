@@ -385,7 +385,7 @@ void Toshiba_TC358870_DSI_Write_Cmd_Short_Param(uint8_t cmd, uint8_t param)
 	Toshiba_TC358870_I2C_Write16(TC_REG_DCSCMD_Q, 0x0015);
 	// uint8_t yyCmd, uint8_t zzArg
 	// want to send 0xzzyy
-	Toshiba_TC358870_I2C_Write16(TC_REG_DCSCMD_Q, (((uint16_t)param) << sizeof(cmd)) | ((uint16_t)cmd));
+	Toshiba_TC358870_I2C_Write16(TC_REG_DCSCMD_Q, (((uint16_t)param) << (sizeof(cmd) * CHAR_BIT)) | ((uint16_t)cmd));
 }
 
 void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_PLL_Conf_t conf)

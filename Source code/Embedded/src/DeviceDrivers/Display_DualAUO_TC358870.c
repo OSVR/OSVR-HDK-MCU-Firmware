@@ -22,6 +22,9 @@
 #include "DeviceDrivers/Toshiba_TC358870.h"
 #include "DeviceDrivers/HDK2.h"
 
+#include <stdio.h>
+#include <inttypes.h>
+
 // whether to send the sleep in/out and display on/off commands with a parameter of 0x00, or with no parameter. Appears
 // to work both ways, docs are contradictory: AUO app note says use a parameter, standard says don't
 #undef SLEEP_HAS_NULL_PARAMETER
@@ -201,14 +204,14 @@ void Display_On(uint8_t deviceID)
 		TC358870_InputMeasurements_t meas = Toshiba_TC358770_Get_Input_Measurements();
 		if (meas.opStatus == TOSHIBA_TC358770_OK)
 		{
-			sprintf(msg, "Horiz: " PRId16 "  active " PRId16, meas.horizTotal, meas.horizActive);
+			sprintf(msg, "Horiz: %" PRId16 "  active %" PRId16, meas.horizTotal, meas.horizActive);
 			WriteLn(msg);
-			sprintf(msg, "Vert: " PRId16 "  active " PRId16, meas.vertTotal, meas.vertActive);
+			sprintf(msg, "Vert: %" PRId16 "  active %" PRId16, meas.vertTotal, meas.vertActive);
 			WriteLn(msg);
 		}
 		else
 		{
-			sprintf(msg, "Failed to get measurements: " PRId8, meas.opStatus);
+			sprintf(msg, "Failed to get measurements: %" PRId8, meas.opStatus);
 			WriteLn(msg);
 		}
 	}

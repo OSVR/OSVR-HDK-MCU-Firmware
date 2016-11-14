@@ -228,11 +228,13 @@ void Display_Off(uint8_t deviceID)
 	WriteLn("Turning display off");
 	Debug_LED_Turn_Off();
 
-	AUO_DSI_Display_Off();
 	AUO_DSI_Sleep_In();
+	AUO_DSI_Display_Off();
 
 	Toshiba_TC358870_Disable_Video_TX();
-
+	Toshiba_TC358870_DSITX_SW_Reset();
+	Toshiba_TC358870_Prepare_TX();
+	AUO_H381DLN01_Send_Panel_Init_Commands();
 /// @todo could power down the display completely here
 
 /// @todo ugly workaround for resetting things.

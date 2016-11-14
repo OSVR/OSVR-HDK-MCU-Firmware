@@ -173,7 +173,8 @@ int main(void)
 	                    // already been initialized
 	// Poll once on startup to see if we have video at start.
 	VideoInput_Poll_Status();
-
+	HandleHDMI();
+#if 0
 	/// @todo can this be folded into HandleHDMI?
 	if (VideoInput_Events.videoDetected)
 	{
@@ -214,6 +215,8 @@ int main(void)
 		Display_Off(Display2);
 #endif  // SVR_HAVE_DISPLAY2
 	}
+#endif  // 0
+
 
 #ifdef DSIGHT
 	/// @todo isn't this redundant with the videoDetected check above? or is the waiting for 1 second important for

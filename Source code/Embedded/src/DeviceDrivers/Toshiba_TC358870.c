@@ -269,8 +269,10 @@ void Toshiba_TC358870_Base_Init(void)
 	if (firstTime)
 	{
 		Toshiba_TC358870_MCU_Ints_Init();
+		#if 0
 		ioport_set_pin_low(MCU_LED_R);
 		ioport_set_pin_dir(MCU_LED_R, IOPORT_DIR_OUTPUT);
+		#endif
 	}
 	else
 	{
@@ -283,8 +285,8 @@ void Toshiba_TC358870_Base_Init(void)
 #endif
 }
 
-static inline void tc_Turn_On_LD17(void) { ioport_set_pin_high(MCU_LED_R); }
-static inline void tc_Turn_Off_LD17(void) { ioport_set_pin_low(MCU_LED_R); }
+static inline void tc_Turn_On_LD17(void) { /*ioport_set_pin_high(MCU_LED_R);*/ }
+static inline void tc_Turn_Off_LD17(void) { /*ioport_set_pin_low(MCU_LED_R);*/ }
 bool Toshiba_TC358870_Init_Once(void)
 {
 	if (0 == s_tc358870_init_count)

@@ -48,6 +48,8 @@
 // standard header
 #include <limits.h>
 
+#define HDMI_VERBOSE
+
 #include "Toshiba_TC358870_Setup_Impl.h"
 
 // -- Basic support functionality -- //

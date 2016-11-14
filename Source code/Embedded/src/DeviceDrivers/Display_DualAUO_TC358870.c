@@ -169,7 +169,7 @@ void Display_On(uint8_t deviceID)
 
 #endif
 	WriteLn("Turning display on");
-// Debug_LED_Turn_On();
+	Debug_LED_Turn_On();
 
 #if 0
 	/// @todo ugly workaround for resetting things.
@@ -226,7 +226,7 @@ void Display_Off(uint8_t deviceID)
 #ifdef HDMI_VERBOSE
 #endif
 	WriteLn("Turning display off");
-	// Debug_LED_Turn_Off();
+	Debug_LED_Turn_Off();
 
 	AUO_DSI_Display_Off();
 	AUO_DSI_Sleep_In();

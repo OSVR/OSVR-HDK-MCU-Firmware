@@ -74,9 +74,16 @@ void Toshiba_TC358870_SW_Reset()
 	TC358870_i2c_Write(0x0006, 0x0008, 2);  // ConfCtl1
 }
 
+/// As used the first time the 1.01 firmware initialized the chip
+//#define TC_FUNC_MODE_VALUE 0x00000161
+/// As used the second time the 1.01 firmware initialized the chip
+#define TC_FUNC_MODE_VALUE 0x00000160
+/// as used in TFN board
+//#define TC_FUNC_MODE_VALUE 0x00000141
+
 void Toshiba_TC358870_Prepare_TX()
 {
-#if 1
+#if 0
 
 	// version from init receive hdmi - identical registers and order, just different values.
 	// Doesn't match TFN sniff as closely.
@@ -101,7 +108,8 @@ void Toshiba_TC358870_Prepare_TX()
 	TC358870_i2c_Write(0x0144, 0x00010000, 4);  // DSI_PRESP_HSW_COUNT
 	TC358870_i2c_Write(0x0148, 0x00001000, 4);  // DSI_PR_TO_COUNT
 	TC358870_i2c_Write(0x014C, 0x00010000, 4);  // DSI_LRX-H_TO_COUNT
-	TC358870_i2c_Write(0x0150, 0x00000161, 4);  // FUNC_MODE
+	//TC358870_i2c_Write(0x0150, 0x00000161, 4);  // FUNC_MODE
+	TC358870_i2c_Write(0x0150, TC_FUNC_MODE_VALUE, 4);  // FUNC_MODE
 	TC358870_i2c_Write(0x0154, 0x00000001, 4);  // DSI_RX_VC_ENABLE
 	TC358870_i2c_Write(0x0158, 0x000000C8, 4);  // IND_TO_COUNT
 	TC358870_i2c_Write(0x0168, 0x0000002A, 4);  // DSI_HSYNC_STOP_COUNT
@@ -194,7 +202,8 @@ void Toshiba_TC358870_Prepare_TX()
 	TC358870_i2c_Write(0x0144, 0x00010000, 4);  // DSI_PRESP_HSW_COUNT
 	TC358870_i2c_Write(0x0148, 0x00001000, 4);  // DSI_PR_TO_COUNT
 	TC358870_i2c_Write(0x014C, 0x00010000, 4);  // DSI_LRX-H_TO_COUNT
-	TC358870_i2c_Write(0x0150, 0x00000160, 4);  // FUNC_MODE
+	//TC358870_i2c_Write(0x0150, 0x00000160, 4);  // FUNC_MODE
+	TC358870_i2c_Write(0x0150, TC_FUNC_MODE_VALUE, 4);  // FUNC_MODE
 	TC358870_i2c_Write(0x0154, 0x00000001, 4);  // DSI_RX_VC_ENABLE
 	TC358870_i2c_Write(0x0158, 0x000000C8, 4);  // IND_TO_COUNT
 	TC358870_i2c_Write(0x0168, 0x0000002A, 4);  // DSI_HSYNC_STOP_COUNT
@@ -240,7 +249,8 @@ void Toshiba_TC358870_Prepare_TX()
 	TC358870_i2c_Write(0x0344, 0x00010000, 4);  // DSI_PRESP_HSW_COUNT
 	TC358870_i2c_Write(0x0348, 0x00001000, 4);  // DSI_PR_TO_COUNT
 	TC358870_i2c_Write(0x034C, 0x00010000, 4);  // DSI_LRX-H_TO_COUNT
-	TC358870_i2c_Write(0x0350, 0x00000160, 4);  // FUNC_MODE
+	//TC358870_i2c_Write(0x0350, 0x00000160, 4);  // FUNC_MODE
+	TC358870_i2c_Write(0x0350, TC_FUNC_MODE_VALUE, 4);  // FUNC_MODE
 	TC358870_i2c_Write(0x0354, 0x00000001, 4);  // DSI_RX_VC_ENABLE
 	TC358870_i2c_Write(0x0358, 0x000000C8, 4);  // IND_TO_COUNT
 	TC358870_i2c_Write(0x0368, 0x0000002A, 4);  // DSI_HSYNC_STOP_COUNT
@@ -267,9 +277,9 @@ void Toshiba_TC358870_Prepare_TX()
 	TC358870_i2c_Write(0x031C, 0x00000001, 4);  // DSITX_START
 #endif
 	// Command Transmission Before Video Start
+	TC358870_i2c_Write(0x0500, 0x0004, 2);      // CMD_SEL - send dcs cmds to both tx
 	TC358870_i2c_Write(0x0110, 0x00000016, 4);  // MODE_CONFIG - high speed mode DSI commands, hsync+, vsync+
 	TC358870_i2c_Write(0x0310, 0x00000016, 4);  // MODE_CONFIG
-	TC358870_i2c_Write(0x0500, 0x0004, 2);      // CMD_SEL - send dcs cmds to both tx
 }
 
 void Toshiba_TC358870_Configure_Splitter()

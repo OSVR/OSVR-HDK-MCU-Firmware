@@ -473,7 +473,7 @@ void Toshiba_TC358870_Enable_Video_TX()
 		return;
 	}
 	// Switch clock source to HDMI pixel clock
-	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_1, 0x0))
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write16(TC_REG_CONFIG_CONTROL_1, 0x0))
 	{
 		WriteLn("TC358770: Could not write config control reg 1");
 		return;

@@ -77,6 +77,7 @@ static volatile bool s_gotVideoInterrupt = false;
 TC358870_ISR()
 {
 	s_gotVideoInterrupt = true;
+	/// Clears the interrupt on the MCU, but not on the receiver.
 	Toshiba_TC358870_MCU_Ints_Clear_Flag();
 }
 /// Get the state of the "got interrupt" flag atomically.
@@ -92,6 +93,15 @@ static bool gotVideoInterrupt(void)
 	}
 	return gotInterrupt;
 }
+static inline bool tc_getStatus(void)
+{
+	char myMessage[50];
+	uint8_t data = 0;
+	bool ret = Toshiba_TC358870_Have_Video_Sync_Detailed(&data);
+	sprintf(myMessage, "System status reg 0x8520: %#04x", data);
+	WriteLn(myMessage);
+	return ret;
+}
 
 void VideoInput_Task(void)
 {
@@ -99,15 +109,26 @@ void VideoInput_Task(void)
 	bool gotInterrupt = gotVideoInterrupt();
 	if (gotInterrupt)
 	{
+		bool origStatus = VideoInput_Get_Status();
 		WriteLn("Got a video sync change interrupt!");
-		char myMessage[50];
-		uint8_t data = 0;
-		Toshiba_TC358870_I2C_Read8(0x8520, &data);
-		sprintf(myMessage, "System status reg 0x8520: %#04x", data);
-		WriteLn(myMessage);
+		bool status = false;
+		if (origStatus)
+		{
+			// when losing video, no need to loop
 
+			status = tc_getStatus();
+		}
+		else
+		{
+			// when acquiring video, loop until we have it.
+			while (!status)
+			{
+				status = tc_getStatus();
+				svr_yield();
+			}
+		}
 		// Retrieve the new video sync status.
-		VideoInput_Protected_Report_Status(Toshiba_TC358870_Have_Video_Sync());
+		VideoInput_Protected_Report_Status(status);
 		// Clear the interrupt flag on the toshiba chip.
 		Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 	}

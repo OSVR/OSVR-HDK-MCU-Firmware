@@ -94,9 +94,16 @@ void Toshiba_TC358870_Trigger_Reset(void);
 /// Checks the status register to see if the toshiba chip has stable video sync.
 bool Toshiba_TC358870_Have_Video_Sync(void);
 
+/// Checks the status register to see if the toshiba chip has stable video sync.
+bool Toshiba_TC358870_Have_Video_Sync_Detailed(uint8_t* val);
+
 typedef struct TC358870_InputMeasurements
 {
 	TC358870_Op_Status_t opStatus;
+	/// Unknown status register
+	uint8_t reg8405;
+	/// Unknown status register
+	uint8_t reg8406;
 	/// Total dots per horizontal line (including blanking - sync and porches)
 	uint16_t horizTotal;
 	/// Active dots per horizontal line (horizontal resolution)

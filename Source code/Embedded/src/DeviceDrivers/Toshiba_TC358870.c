@@ -272,16 +272,17 @@ void Toshiba_TC358870_Base_Init(void)
 	if (firstTime)
 	{
 		Toshiba_TC358870_MCU_Ints_Init();
-		#if 0
+#if 0
 		ioport_set_pin_low(MCU_LED_R);
 		ioport_set_pin_dir(MCU_LED_R, IOPORT_DIR_OUTPUT);
-		#endif
+#endif
 	}
 	else
 	{
 		// not our first go-round, we'll just resume ints here.
 		Toshiba_TC358870_MCU_Ints_Resume();
 	}
+#if 0
 	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 	// Switch clock source to HDMI pixel clock
 	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_1, 0x0))
@@ -289,6 +290,7 @@ void Toshiba_TC358870_Base_Init(void)
 		WriteLn("TC358770: Could not write config control reg 1");
 		return;
 	}
+#endif
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: End");
 #endif
@@ -341,10 +343,28 @@ bool Toshiba_TC358870_Have_Video_Sync(void)
 	return bitUtils_checkBit(tc_data, TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK);
 }
 
+bool Toshiba_TC358870_Have_Video_Sync_Detailed(uint8_t* val)
+{
+	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Read8(TC_REG_SYS_STATUS, val))
+	{
+		return false;
+	}
+	/// @todo - should we check the lower nybble too (PHY DE detect, PHY PLL, TMDS input amplitude, and DDC power
+	/// input)?
+	/// Bit 7 is input video sync - bits 6, 5, and 4 are unimportant to the task at hand, so equality to 0x9f is not
+	/// quite right.
+	return bitUtils_checkBit(*val, TC_REG_SYS_STATUS_HAVE_VIDEO_BIT_MASK);
+}
+
 TC358870_InputMeasurements_t Toshiba_TC358770_Get_Input_Measurements()
 {
-	TC358870_InputMeasurements_t ret = {
-	    .opStatus = TOSHIBA_TC358770_OK, .horizTotal = 0, .horizActive = 0, .vertTotal = 0, .vertActive = 0};
+	TC358870_InputMeasurements_t ret = {.opStatus = TOSHIBA_TC358770_OK,
+	                                    .reg8405 = 0,
+	                                    .reg8406 = 0,
+	                                    .horizTotal = 0,
+	                                    .horizActive = 0,
+	                                    .vertTotal = 0,
+	                                    .vertActive = 0};
 	/// Clear the measurements
 	ret.opStatus = Toshiba_TC358870_I2C_Write8(TC_REG_HV_CLEAR, 0x33);
 	TC_IF_ERR_RETURN_VAL(ret.opStatus, ret);
@@ -352,9 +372,16 @@ TC358870_InputMeasurements_t Toshiba_TC358770_Get_Input_Measurements()
 	{
 		return ret;
 	}
-	/// Wait 2 vertical period
-	svr_yield_ms(2 * TC358870_VSYNC_PERIOD_MS);
-	/// Retrieve
+	/// Wait 2 vertical period at a minimum - 11 is safer
+	svr_yield_ms(11 * TC358870_VSYNC_PERIOD_MS);
+
+	/// Retrieve undocumented data.
+	ret.opStatus = Toshiba_TC358870_I2C_Read8(0x8405, &ret.reg8405);
+	TC_IF_ERR_RETURN_VAL(ret.opStatus, ret);
+	ret.opStatus = Toshiba_TC358870_I2C_Read8(0x8406, &ret.reg8406);
+	TC_IF_ERR_RETURN_VAL(ret.opStatus, ret);
+
+	/// Retrieve documented parameters
 	ret.opStatus = Toshiba_TC358870_I2C_Read16(TC_REG_IN_HSize, &ret.horizTotal);
 	TC_IF_ERR_RETURN_VAL(ret.opStatus, ret);
 	ret.opStatus = Toshiba_TC358870_I2C_Read16(TC_REG_DE_HSize, &ret.horizActive);

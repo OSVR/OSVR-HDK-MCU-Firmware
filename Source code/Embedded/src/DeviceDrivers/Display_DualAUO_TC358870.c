@@ -215,10 +215,14 @@ void Display_On(uint8_t deviceID)
 			WriteLn(msg);
 		}
 	}
-	AUO_DSI_Sleep_Out();
-	AUO_DSI_Display_On();
-	svr_yield_ms(10);
 	Toshiba_TC358870_Enable_Video_TX();
+	/// Wait 20 frames before doing anything with the panel.
+	svr_yield_ms(20 * TC358870_VSYNC_PERIOD_MS);
+	AUO_DSI_Sleep_Out();
+	/// Wait 25 frames between sleep out and display on
+	svr_yield_ms(25 * TC358870_VSYNC_PERIOD_MS);
+	AUO_DSI_Display_On();
+	// Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 }
 
 void Display_Off(uint8_t deviceID)
@@ -228,13 +232,18 @@ void Display_Off(uint8_t deviceID)
 	WriteLn("Turning display off");
 	Debug_LED_Turn_Off();
 
-	AUO_DSI_Sleep_In();
 	AUO_DSI_Display_Off();
+	svr_yield_ms(3 * TC358870_VSYNC_PERIOD_MS);
+	AUO_DSI_Sleep_In();
 
+	svr_yield_ms(31 * TC358870_VSYNC_PERIOD_MS);
+	Toshiba_TC358870_Base_Init();
+#if 0
 	Toshiba_TC358870_Disable_Video_TX();
 	Toshiba_TC358870_DSITX_SW_Reset();
 	Toshiba_TC358870_Prepare_TX();
 	AUO_H381DLN01_Send_Panel_Init_Commands();
+#endif
 /// @todo could power down the display completely here
 
 /// @todo ugly workaround for resetting things.

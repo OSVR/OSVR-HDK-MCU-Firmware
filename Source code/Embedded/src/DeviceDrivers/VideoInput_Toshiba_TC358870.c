@@ -11,7 +11,6 @@
 
 #include "VideoInput_Protected.h"
 #include "DeviceDrivers/Display.h"
-#include "DeviceDrivers/HDK2.h"
 #include "DeviceDrivers/Toshiba_TC358870.h"
 #include "DeviceDrivers/Toshiba_TC358870_ISR.h"
 #include "my_hardware.h"
@@ -22,9 +21,6 @@
 #include <stdio.h>     // for sprintf
 #include <inttypes.h>  // for stdint.h-matching format specifier macros
 
-#define SVR_DEBUG_LIBHDK2_BEHAVIOR
-
-static void VideoInput_Init_Impl(void) {}
 void VideoInput_Init(void)
 {
 	static bool haveInit = false;
@@ -34,14 +30,11 @@ void VideoInput_Init(void)
 		haveInit = true;
 		// start the chip, if it hasn't been started.
 		Toshiba_TC358870_Init_Once();
-
-		VideoInput_Init_Impl();
 	}
 	else
 	{
 		// This is a repeat init - presumably from serial console - so we'll actually call over to the TC358870 driver
 		// (used in Display_System_Init()) since that's where the meat of initializing the chip happens.
-		// Toshiba_TC358870_Base_Init();
 		bool haveVideo = VideoInput_Get_Status();
 
 		Toshiba_TC358870_Disable_Video_TX();
@@ -50,7 +43,6 @@ void VideoInput_Init(void)
 
 		Toshiba_TC358870_HDMI_Setup();
 
-		VideoInput_Init_Impl();
 		/// Turn on interrupts.
 		Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
 		if (haveVideo)
@@ -76,19 +68,7 @@ TC358870_ISR()
 	/// Clears the interrupt on the MCU, but not on the receiver.
 	Toshiba_TC358870_MCU_Ints_Clear_Flag();
 }
-/// Get the state of the "got interrupt" flag atomically.
-static bool gotVideoInterrupt(void)
-{
-	bool gotInterrupt;
-	{
-		Toshiba_TC358870_MCU_Ints_Suspend();
-		gotInterrupt = s_gotVideoInterrupt;
-		s_gotVideoInterrupt = false;
-		barrier();
-		Toshiba_TC358870_MCU_Ints_Resume();
-	}
-	return gotInterrupt;
-}
+
 static inline bool tc_getStatus(void)
 {
 	char myMessage[50];

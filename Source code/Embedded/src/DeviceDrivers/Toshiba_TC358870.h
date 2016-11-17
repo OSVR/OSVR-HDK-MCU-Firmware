@@ -176,8 +176,6 @@ typedef struct TC358870_DSITX_Config
 
 /// Must define this in your variant!
 extern const TC358870_DSITX_Config_t* g_TC358870_DSITX_Config_Default;
-// extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_60hz_2160_1200;
-// extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_90hz_2160_1200;
 
 /// returns true if the config was different and thus the chip was re-initialized.
 bool Toshiba_TC358770_Update_DSITX_Config_And_Reinit(const TC358870_DSITX_Config_t* newConfig);
@@ -255,34 +253,6 @@ typedef struct Toshiba_TC358870_MIPI_PLL_Conf
 
 void Toshiba_TC358870_Set_MIPI_PLL_Config(uint8_t output, Toshiba_TC358870_MIPI_PLL_Conf_t conf);
 
-/*
-/// approximation of TC358870_Init_Receive_HDMI_Signal in factored-out functions
-void TC358870_Init_Receive_HDMI_Signal() {
-  Toshiba_TC358870_SW_Reset();
-  Toshiba_TC358870_Prepare_TX();
-  AUO_H381DLN01_Init(0);
-  Toshiba_TC358870_Configure_Splitter();
-  Toshiba_TC358870_HDMI_Setup();
-
-  // strange waiting for video sync here, then...
-  Toshiba_TC358870_Enable_Video_TX();
-
-  if (this wasn't the first time in here) {
-    // this is TC358870_Reset_MIPI
-    AUO_H381DLN01_Reset();
-
-    // approximately:
-    Toshiba_TC358870_Disable_Video_TX();
-    set then clear bit 9 (CTxRst) of 0x0002 - software reset of DSI-TX
-    delay_ms(150);
-    Toshiba_TC358870_Prepare_TX();
-    AUO_H381DLN01_Init(1);
-    Toshiba_TC358870_Enable_Video_TX();
-  }
-}
-*/
-
-void Toshiba_TC358870_Clear_HDMI_Sync_Change_Int(void);
 void Toshiba_TC358870_Enable_Video_TX(void);
 void Toshiba_TC358870_Disable_Video_TX(void);
 
@@ -302,6 +272,7 @@ void Toshiba_TC358870_Configure_Splitter(void);
 void Toshiba_TC358870_HDMI_Setup(void);
 
 void Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts(void);
+void Toshiba_TC358870_Clear_HDMI_Sync_Change_Int(void);
 void Toshiba_TC358870_Disable_All_Interrupts(void);
 
 void Toshiba_TC358770_Setup_TX_Parameterized(const TC358870_DSITX_Config_t* params);

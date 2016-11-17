@@ -313,15 +313,6 @@ static void Toshiba_TC358870_Base_Init_Impl(bool firstTime, bool hardResetToshib
 			Toshiba_TC358870_MCU_Ints_Resume();
 		}
 	}
-#if 0
-	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
-	// Switch clock source to HDMI pixel clock
-	if (TOSHIBA_TC358770_OK != Toshiba_TC358870_I2C_Write8(TC_REG_CONFIG_CONTROL_1, 0x0))
-	{
-		WriteLn("TC358770: Could not write config control reg 1");
-		return;
-	}
-#endif
 	WriteLn("Toshiba_TC358870_Init: End");
 }
 

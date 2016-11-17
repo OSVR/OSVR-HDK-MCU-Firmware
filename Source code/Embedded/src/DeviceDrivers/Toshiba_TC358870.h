@@ -174,8 +174,10 @@ typedef struct TC358870_DSITX_Config
 	// uint32_t MODE_CONFIG; //< DSI-TX0 register at 0x0110
 } TC358870_DSITX_Config_t;
 
-extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_60hz_2160_1200;
-extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_90hz_2160_1200;
+/// Must define this in your variant!
+extern const TC358870_DSITX_Config_t* g_TC358870_DSITX_Config_Default;
+// extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_60hz_2160_1200;
+// extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_90hz_2160_1200;
 
 /// returns true if the config was different and thus the chip was re-initialized.
 bool Toshiba_TC358770_Update_DSITX_Config_And_Reinit(const TC358870_DSITX_Config_t* newConfig);

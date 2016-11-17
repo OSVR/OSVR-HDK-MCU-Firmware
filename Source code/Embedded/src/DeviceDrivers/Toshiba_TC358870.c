@@ -148,36 +148,7 @@ TC358870_Op_Status_t Toshiba_TC358870_I2C_Read32(TC358870_Reg_t reg, uint32_t* v
 	return status;
 }
 
-// Pre-defined timings
-
-const TC358870_DSITX_Config_t TC358870_DSITX_Config_60hz_2160_1200 = {
-    .MIPI_PLL_CONF = UINT32_C(0x00009095),
-    .FUNC_MODE = UINT32_C(0x00000141),
-    .APF_VDELAYCNT = UINT32_C(0x000004bf),
-    .DSI_HBPR = UINT32_C(0x00000122),
-    .PPI_DPHY_TCLK_HEADERCNT = UINT32_C(0x00260205),
-    .PPI_DPHY_TCLK_TRAILCNT = UINT32_C(0x000d0009),
-    .PPI_DPHY_THS_HEADERCNT = UINT32_C(0x00140007),
-    .PPI_DPHY_TWAKEUPCNT = UINT32_C(0x00004268),
-    .PPI_DPHY_TCLK_POSTCNT = UINT32_C(0x0000000f),
-    .PPI_DPHY_THSTRAILCNT = UINT32_C(0x000d0009),
-    .PPI_DSI_BTA_COUNT = UINT32_C(0x00060007),
-};
-const TC358870_DSITX_Config_t TC358870_DSITX_Config_90hz_2160_1200 = {
-    .MIPI_PLL_CONF = UINT32_C(0x000090bd),
-    .FUNC_MODE = UINT32_C(0x00000160),
-    .APF_VDELAYCNT = UINT32_C(0x000003c4),
-    .DSI_HBPR = UINT32_C(0x00000190),
-    .PPI_DPHY_TCLK_HEADERCNT = UINT32_C(0x00240204),
-    .PPI_DPHY_TCLK_TRAILCNT = UINT32_C(0x000d0008),
-    .PPI_DPHY_THS_HEADERCNT = UINT32_C(0x00140006),
-    .PPI_DPHY_TWAKEUPCNT = UINT32_C(0x00004268),
-    .PPI_DPHY_TCLK_POSTCNT = UINT32_C(0x0000000f),
-    .PPI_DPHY_THSTRAILCNT = UINT32_C(0x000d0008),
-    .PPI_DSI_BTA_COUNT = UINT32_C(0x00060005),
-};
-
-static const TC358870_DSITX_Config_t* g_tc358870_active_config = &TC358870_DSITX_Config_60hz_2160_1200;
+static const TC358870_DSITX_Config_t* g_tc358870_active_config = NULL;
 
 // Select register addresses
 
@@ -363,6 +334,8 @@ void Toshiba_TC358870_Base_Init(void)
 		// this is the first time we've been in here!
 		firstTime = true;
 		repeat = true;
+		// grab the default config.
+		g_tc358870_active_config = g_TC358870_DSITX_Config_Default;
 	}
 	// hard reset, full SW reset, should start interrupts
 	Toshiba_TC358870_Base_Init_Impl(firstTime, true, true, true);

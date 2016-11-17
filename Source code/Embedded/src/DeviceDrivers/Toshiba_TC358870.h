@@ -177,7 +177,8 @@ typedef struct TC358870_DSITX_Config
 extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_60hz_2160_1200;
 extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_90hz_2160_1200;
 
-void Toshiba_TC358770_Update_DSITX_Config_And_Reinit(const TC358870_DSITX_Config_t* newConfig);
+/// returns true if the config was different and thus the chip was re-initialized.
+bool Toshiba_TC358770_Update_DSITX_Config_And_Reinit(const TC358870_DSITX_Config_t* newConfig);
 const TC358870_DSITX_Config_t* Toshiba_TC358770_Get_DSITX_Config(void);
 
 /// Writes an 8-bit byte to the given register over I2C.

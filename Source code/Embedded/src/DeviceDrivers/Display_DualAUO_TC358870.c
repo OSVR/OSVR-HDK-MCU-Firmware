@@ -201,31 +201,23 @@ void Display_On(uint8_t deviceID)
 	TC358870_i2c_Write(0x0504, 0x2903, 2); // DCSCMD_Q
 #endif
 	TC358870_InputMeasurements_t measurements = Toshiba_TC358770_Print_Input_Measurements();
-	bool alreadyIn90Hz = (Toshiba_TC358770_Get_DSITX_Config() == &TC358870_DSITX_Config_90hz_2160_1200);
-	const TC358870_DSITX_Config_t* neededConfig = NULL;
+	bool wasReset = false;
 	if (measurements.reg8405 == 0x71 || measurements.reg8405 == 0x70)
 	{
 		WriteLn("Display_On: Apparent 90Hz input");
-		if (!alreadyIn90Hz)
-		{
-			neededConfig = &TC358870_DSITX_Config_90hz_2160_1200;
-		}
+		wasReset = Toshiba_TC358770_Update_DSITX_Config_And_Reinit(&TC358870_DSITX_Config_90hz_2160_1200);
 	}
 	else
 	{
 		WriteLn("Display_On: Apparent non-90Hz input");
-		if (alreadyIn90Hz)
-		{
-			neededConfig = &TC358870_DSITX_Config_60hz_2160_1200;
-		}
+		wasReset = Toshiba_TC358770_Update_DSITX_Config_And_Reinit(&TC358870_DSITX_Config_60hz_2160_1200);
 	}
-	if (neededConfig)
+	if (wasReset)
 	{
-		WriteLn("Display_On: Need to re-initialize TC358770 for desired display timing.");
-		Toshiba_TC358770_Update_DSITX_Config_And_Reinit(neededConfig);
+		Toshiba_TC358770_Print_Input_Measurements();
+		/// Wait 20 frames before doing anything with the panel.
+		// svr_yield_ms(20 * TC358870_VSYNC_PERIOD_MS);
 	}
-	/// Wait 20 frames before doing anything with the panel.
-	svr_yield_ms(20 * TC358870_VSYNC_PERIOD_MS);
 	Toshiba_TC358870_Enable_Video_TX();
 	/// Wait 20 frames before doing anything with the panel.
 	svr_yield_ms(22 * TC358870_VSYNC_PERIOD_MS);
@@ -234,7 +226,7 @@ void Display_On(uint8_t deviceID)
 	svr_yield_ms(27 * TC358870_VSYNC_PERIOD_MS);
 	AUO_DSI_Display_On();
 
-	if (neededConfig)
+	if (wasReset)
 	{
 		Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 		Toshiba_TC358870_MCU_Ints_Resume();

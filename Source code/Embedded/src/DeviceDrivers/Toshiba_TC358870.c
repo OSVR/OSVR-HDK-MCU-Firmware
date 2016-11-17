@@ -485,16 +485,22 @@ TC358870_InputMeasurements_t Toshiba_TC358770_Print_Input_Measurements()
 	return meas;
 }
 
-void Toshiba_TC358770_Update_DSITX_Config_And_Reinit(const TC358870_DSITX_Config_t* newConfig)
+bool Toshiba_TC358770_Update_DSITX_Config_And_Reinit(const TC358870_DSITX_Config_t* newConfig)
 {
 	if (newConfig == g_tc358870_active_config)
 	{
-		WriteLn("Toshiba_TC358770_Update_DSITX_Config_And_Reinit: Given the already-active config!");
-		return;
+#ifdef HDMI_VERBOSE
+		WriteLn("Toshiba_TC358770_Update_DSITX_Config_And_Reinit: Given the already-active config, nothing to do");
+#endif
+		return false;
 	}
+	WriteLn(
+	    "Toshiba_TC358770_Update_DSITX_Config_And_Reinit: Given a different config, setting as active and "
+	    "re-initializing DSITX");
 	g_tc358870_active_config = newConfig;
 	// Not first time, don't hard-reset toshiba chip, don't do a full software reset, don't start interrupts.
 	Toshiba_TC358870_Base_Init_Impl(false, false, false, false);
+	return true;
 }
 const TC358870_DSITX_Config_t* Toshiba_TC358770_Get_DSITX_Config() { return g_tc358870_active_config; }
 /// Perform a software reset of the HDMI receiver portion of the chip.

@@ -47,6 +47,7 @@
 
 // standard header
 #include <limits.h>
+#include <stdio.h>
 
 #define HDMI_VERBOSE
 

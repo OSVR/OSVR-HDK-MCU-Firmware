@@ -117,6 +117,8 @@ typedef struct TC358870_InputMeasurements
 /// Note: Output will only be valid if we have video sync.
 TC358870_InputMeasurements_t Toshiba_TC358770_Get_Input_Measurements(void);
 
+void Toshiba_TC358770_Print_Input_Measurements(void);
+
 /// Writes an 8-bit byte to the given register over I2C.
 /// Does wait for the bus to become available, but returns other errors from I2C code as-is.
 TC358870_Op_Status_t Toshiba_TC358870_I2C_Write8(TC358870_Reg_t reg, uint8_t val);

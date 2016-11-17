@@ -394,6 +394,26 @@ TC358870_InputMeasurements_t Toshiba_TC358770_Get_Input_Measurements()
 	return ret;
 }
 
+void Toshiba_TC358770_Print_Input_Measurements()
+{
+	char msg[50];
+	TC358870_InputMeasurements_t meas = Toshiba_TC358770_Get_Input_Measurements();
+	if (meas.opStatus == TOSHIBA_TC358770_OK)
+	{
+		sprintf(msg, "[8405]: %04" PRIx8 "  [8406] %04" PRIx8, meas.reg8405, meas.reg8406);
+		WriteLn(msg);
+		sprintf(msg, "Horiz: %" PRId16 "  active %" PRId16, meas.horizTotal, meas.horizActive);
+		WriteLn(msg);
+		sprintf(msg, "Vert: %" PRId16 "  active %" PRId16, meas.vertTotal, meas.vertActive);
+		WriteLn(msg);
+	}
+	else
+	{
+		sprintf(msg, "Failed to get measurements: %" PRId8, meas.opStatus);
+		WriteLn(msg);
+	}
+}
+
 /// Perform a software reset of the HDMI receiver portion of the chip.
 void Toshiba_TC358870_HDMI_SW_Reset()
 {

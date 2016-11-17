@@ -224,12 +224,14 @@ void Display_On(uint8_t deviceID)
 		WriteLn("Display_On: Need to re-initialize TC358770 for desired display timing.");
 		Toshiba_TC358770_Update_DSITX_Config_And_Reinit(neededConfig);
 	}
-	Toshiba_TC358870_Enable_Video_TX();
 	/// Wait 20 frames before doing anything with the panel.
 	svr_yield_ms(20 * TC358870_VSYNC_PERIOD_MS);
+	Toshiba_TC358870_Enable_Video_TX();
+	/// Wait 20 frames before doing anything with the panel.
+	svr_yield_ms(22 * TC358870_VSYNC_PERIOD_MS);
 	AUO_DSI_Sleep_Out();
 	/// Wait 25 frames between sleep out and display on
-	svr_yield_ms(25 * TC358870_VSYNC_PERIOD_MS);
+	svr_yield_ms(27 * TC358870_VSYNC_PERIOD_MS);
 	AUO_DSI_Display_On();
 
 	if (neededConfig)
@@ -237,7 +239,6 @@ void Display_On(uint8_t deviceID)
 		Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 		Toshiba_TC358870_MCU_Ints_Resume();
 	}
-	// Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 }
 
 void Display_Off(uint8_t deviceID)

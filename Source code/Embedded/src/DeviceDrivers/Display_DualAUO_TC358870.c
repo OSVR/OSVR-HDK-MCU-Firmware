@@ -20,6 +20,7 @@
 #include <ioport.h>
 
 #include "DeviceDrivers/Toshiba_TC358870.h"
+#include "DeviceDrivers/Toshiba_TC358870_ISR.h"
 #include "DeviceDrivers/HDK2.h"
 
 #include <stdio.h>
@@ -225,6 +226,8 @@ void Display_Off(uint8_t deviceID)
 	AUO_DSI_Sleep_In();
 
 	svr_yield_ms(31 * TC358870_VSYNC_PERIOD_MS);
+	Toshiba_TC358870_Disable_Video_TX();
+	AUO_H381DLN01_Panel_StartReset();
 	Toshiba_TC358870_Base_Init();
 #if 0
 	Toshiba_TC358870_Disable_Video_TX();

@@ -24,13 +24,7 @@
 
 #define SVR_DEBUG_LIBHDK2_BEHAVIOR
 
-static void VideoInput_Init_Impl(void)
-{
-	/// Check for video input right away
-	VideoInput_Protected_Report_Status(Toshiba_TC358870_Have_Video_Sync());
-	/// Turn on interrupts.
-	Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
-}
+static void VideoInput_Init_Impl(void) {}
 void VideoInput_Init(void)
 {
 	static bool haveInit = false;
@@ -57,6 +51,8 @@ void VideoInput_Init(void)
 		Toshiba_TC358870_HDMI_Setup();
 
 		VideoInput_Init_Impl();
+		/// Turn on interrupts.
+		Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
 		if (haveVideo)
 		{
 			Toshiba_TC358870_Enable_Video_TX();
@@ -105,10 +101,17 @@ static inline bool tc_getStatus(void)
 
 void VideoInput_Task(void)
 {
+	bool gotInterrupt;
+	Toshiba_TC358870_MCU_Ints_Suspend();
+	barrier();
 	/// Get the state of the "got interrupt" flag atomically.
-	bool gotInterrupt = gotVideoInterrupt();
+	{
+		gotInterrupt = s_gotVideoInterrupt;
+		s_gotVideoInterrupt = false;
+	}
 	if (gotInterrupt)
 	{
+		Toshiba_TC358870_Disable_All_Interrupts();
 		bool origStatus = VideoInput_Get_Status();
 		WriteLn("Got a video sync change interrupt!");
 		bool status = false;
@@ -124,14 +127,16 @@ void VideoInput_Task(void)
 			while (!status)
 			{
 				status = tc_getStatus();
-				svr_yield();
+				svr_yield_ms(50);
 			}
 		}
-		// Retrieve the new video sync status.
+		// Apply the new video sync status.
 		VideoInput_Protected_Report_Status(status);
-		// Clear the interrupt flag on the toshiba chip.
-		Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
+		// OK to re-enable the sync change interrupt now - also clears the interrupt flag on the toshiba chip.
+		Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
 	}
+	barrier();
+	Toshiba_TC358870_MCU_Ints_Resume();
 }
 
 void VideoInput_Reset(uint8_t inputId)

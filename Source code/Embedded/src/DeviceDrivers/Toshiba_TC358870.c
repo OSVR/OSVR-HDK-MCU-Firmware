@@ -279,6 +279,8 @@ void Toshiba_TC358870_Base_Init(void)
 	}
 	else
 	{
+		Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
+		Toshiba_TC358870_MCU_Ints_Clear_Flag();
 		// not our first go-round, we'll just resume ints here.
 		Toshiba_TC358870_MCU_Ints_Resume();
 	}

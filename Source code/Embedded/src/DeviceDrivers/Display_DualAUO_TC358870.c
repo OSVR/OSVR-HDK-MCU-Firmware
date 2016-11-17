@@ -229,7 +229,10 @@ void Display_Off(uint8_t deviceID)
 {
 #ifdef HDMI_VERBOSE
 #endif
+
 	WriteLn("Turning display off");
+	/// Make the MCU start ignoring interrupts
+	Toshiba_TC358870_MCU_Ints_Suspend();
 	Debug_LED_Turn_Off();
 
 	AUO_DSI_Display_Off();

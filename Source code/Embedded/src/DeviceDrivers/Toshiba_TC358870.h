@@ -117,7 +117,68 @@ typedef struct TC358870_InputMeasurements
 /// Note: Output will only be valid if we have video sync.
 TC358870_InputMeasurements_t Toshiba_TC358770_Get_Input_Measurements(void);
 
-void Toshiba_TC358770_Print_Input_Measurements(void);
+TC358870_InputMeasurements_t Toshiba_TC358770_Print_Input_Measurements(void);
+
+/// Members of this struct are used to populate the registers of the same name on the two DSI-TX register sets.
+typedef struct TC358870_DSITX_Config
+{
+	uint32_t MIPI_PLL_CONF;  //< DSI-TX0 register at 0x02ac
+
+	// uint32_t LANE_ENABLE; //< DSI-TX0 register at 0x0118
+	// uint32_t LINE_INIT_COUNT; //< DSI-TX0 register at 0x0120
+	// uint32_t HSTX_TO_COUNT; //< DSI-TX0 register at 0x0124
+	// uint32_t FUNC_ENABLE; //< DSI-TX0 register at 0x0128
+	// uint32_t ***UNKNOWN***; //< DSI-TX0 register at 0x0130
+	// uint32_t ***UNKNOWN***; //< DSI-TX0 register at 0x0134
+	// uint32_t ***UNKNOWN***; //< DSI-TX0 register at 0x0138
+	// uint32_t DSI_PRESP_LPW_COUNT; //< DSI-TX0 register at 0x013c
+	// uint32_t DSI_PRESP_HSR_COUNT; //< DSI-TX0 register at 0x0140
+	// uint32_t DSI_PRESP_HSW_COUNT; //< DSI-TX0 register at 0x0144
+	// uint32_t ***UNKNOWN***; //< DSI-TX0 register at 0x0148
+	// uint32_t ***UNKNOWN***; //< DSI-TX0 register at 0x014c
+
+	uint32_t FUNC_MODE;  //< DSI-TX0 register at 0x0150
+
+	// uint32_t DSIRX_VC_ENABLE; //< DSI-TX0 register at 0x0154
+	// uint32_t IND_TO_COUNT; //< DSI-TX0 register at 0x0158
+	// uint32_t ***UNKNOWN***; //< DSI-TX0 register at 0x0168
+
+	uint32_t APF_VDELAYCNT;  //< DSI-TX0 register at 0x0170
+
+	// uint32_t DSITX_MODE; //< DSI-TX0 register at 0x017c
+	// uint32_t DSI_HSYNC_WIDTH; //< DSI-TX0 register at 0x018c
+	uint32_t DSI_HBPR;  //< DSI-TX0 register at 0x0190
+
+	// uint32_t DSI_RX_STATE_INT_MASK; //< DSI-TX0 register at 0x01a4
+	// uint32_t DSI_LPRX_THRESH_COUNT; //< DSI-TX0 register at 0x01c0
+	// uint32_t APP_SIDE_ERR_INT_MASK; //< DSI-TX0 register at 0x0214
+	// uint32_t DSI_RX_ERR_INT_MASK; //< DSI-TX0 register at 0x021c
+	// uint32_t DSI_LPTX_INT_MASK; //< DSI-TX0 register at 0x0224
+	// uint32_t PPI_DPHY_LPTXTIMECNT; //< DSI-TX0 register at 0x0254
+
+	uint32_t PPI_DPHY_TCLK_HEADERCNT;  //< DSI-TX0 register at 0x0258
+	uint32_t PPI_DPHY_TCLK_TRAILCNT;   //< DSI-TX0 register at 0x025c
+	uint32_t PPI_DPHY_THS_HEADERCNT;   //< DSI-TX0 register at 0x0260
+	uint32_t PPI_DPHY_TWAKEUPCNT;      //< DSI-TX0 register at 0x0264
+	uint32_t PPI_DPHY_TCLK_POSTCNT;    //< DSI-TX0 register at 0x0268
+	uint32_t PPI_DPHY_THSTRAILCNT;     //< DSI-TX0 register at 0x026c
+
+	// uint32_t PPI_DPHY_HSTXVREGCNT; //< DSI-TX0 register at 0x0270
+	// uint32_t PPI_DPHY_HSTXVREGEN; //< DSI-TX0 register at 0x0274
+
+	uint32_t PPI_DSI_BTA_COUNT;  //< DSI-TX0 register at 0x0278
+
+	// uint32_t PPI_DPHYTX_ADJUST; //< DSI-TX0 register at 0x027c
+
+	/// After both DSI-TX are setup...
+	// uint32_t MODE_CONFIG; //< DSI-TX0 register at 0x0110
+} TC358870_DSITX_Config_t;
+
+extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_60hz_2160_1200;
+extern const TC358870_DSITX_Config_t TC358870_DSITX_Config_90hz_2160_1200;
+
+void Toshiba_TC358770_Update_DSITX_Config_And_Reinit(const TC358870_DSITX_Config_t* newConfig);
+const TC358870_DSITX_Config_t* Toshiba_TC358770_Get_DSITX_Config(void);
 
 /// Writes an 8-bit byte to the given register over I2C.
 /// Does wait for the bus to become available, but returns other errors from I2C code as-is.
@@ -239,5 +300,7 @@ void Toshiba_TC358870_HDMI_Setup(void);
 
 void Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts(void);
 void Toshiba_TC358870_Disable_All_Interrupts(void);
+
+void Toshiba_TC358770_Setup_TX_Parameterized(const TC358870_DSITX_Config_t* params);
 
 #endif /* TOSHIBA_TC358870_H_ */

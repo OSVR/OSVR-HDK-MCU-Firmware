@@ -148,6 +148,37 @@ TC358870_Op_Status_t Toshiba_TC358870_I2C_Read32(TC358870_Reg_t reg, uint32_t* v
 	return status;
 }
 
+// Pre-defined timings
+
+const TC358870_DSITX_Config_t TC358870_DSITX_Config_60hz_2160_1200 = {
+    .MIPI_PLL_CONF = UINT32_C(0x00009095),
+    .FUNC_MODE = UINT32_C(0x00000141),
+    .APF_VDELAYCNT = UINT32_C(0x000004bf),
+    .DSI_HBPR = UINT32_C(0x00000122),
+    .PPI_DPHY_TCLK_HEADERCNT = UINT32_C(0x00260205),
+    .PPI_DPHY_TCLK_TRAILCNT = UINT32_C(0x000d0009),
+    .PPI_DPHY_THS_HEADERCNT = UINT32_C(0x00140007),
+    .PPI_DPHY_TWAKEUPCNT = UINT32_C(0x00004268),
+    .PPI_DPHY_TCLK_POSTCNT = UINT32_C(0x0000000f),
+    .PPI_DPHY_THSTRAILCNT = UINT32_C(0x000d0009),
+    .PPI_DSI_BTA_COUNT = UINT32_C(0x00060007),
+};
+const TC358870_DSITX_Config_t TC358870_DSITX_Config_90hz_2160_1200 = {
+    .MIPI_PLL_CONF = UINT32_C(0x000090bd),
+    .FUNC_MODE = UINT32_C(0x00000160),
+    .APF_VDELAYCNT = UINT32_C(0x000003c4),
+    .DSI_HBPR = UINT32_C(0x00000190),
+    .PPI_DPHY_TCLK_HEADERCNT = UINT32_C(0x00240204),
+    .PPI_DPHY_TCLK_TRAILCNT = UINT32_C(0x000d0008),
+    .PPI_DPHY_THS_HEADERCNT = UINT32_C(0x00140006),
+    .PPI_DPHY_TWAKEUPCNT = UINT32_C(0x00004268),
+    .PPI_DPHY_TCLK_POSTCNT = UINT32_C(0x0000000f),
+    .PPI_DPHY_THSTRAILCNT = UINT32_C(0x000d0008),
+    .PPI_DSI_BTA_COUNT = UINT32_C(0x00060005),
+};
+
+static const TC358870_DSITX_Config_t* g_tc358870_active_config = &TC358870_DSITX_Config_60hz_2160_1200;
+
 // Select register addresses
 
 static const TC358870_Reg_t TC_REG_DSITX1_OFFSET = 0x0200;  //< add to any DSITX0 register address
@@ -210,21 +241,12 @@ static inline void Toshiba_TC358770_Start_Reset(void) { ioport_set_pin_low(TC358
 static inline void Toshiba_TC358770_End_Reset(void) { ioport_set_pin_high(TC358870_Reset_Pin); }
 static uint8_t s_tc358870_init_count = 0;
 
-void Toshiba_TC358870_Base_Init(void)
+static void Toshiba_TC358870_Base_Init_Impl(bool firstTime, bool hardResetToshiba, bool fullSoftwareReset,
+                                            bool shouldStartInterrupts)
 {
-	static bool repeat = false;
-	bool firstTime = false;
-	if (!repeat)
-	{
-		// this is the first time we've been in here!
-		firstTime = true;
-		repeat = true;
-	}
-
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: Start");
 #endif
-
 	// disable interrupts
 	Toshiba_TC358870_MCU_Ints_Suspend();
 	if (firstTime)
@@ -237,61 +259,88 @@ void Toshiba_TC358870_Base_Init(void)
 		twi_master_setup(TC358870_TWI_PORT, &opt);
 	}
 
-	WriteLn("Toshiba_TC358870_Base_Init: Waiting for 5V power rail");
+	WriteLn("Toshiba_TC358870_Init: Waiting for 5V power rail");
 	while (!ioport_get_value(ANA_PWR_IN))
 	{
 		delay_us(50);
 	}
 	svr_yield_ms(10);
-	WriteLn("Toshiba_TC358870_Base_Init: Waiting for low-voltage power rail");
+	WriteLn("Toshiba_TC358870_Init: Waiting for low-voltage power rail");
 	while (!ioport_get_value(TC358870_PWR_GOOD))
 	{
 		delay_us(50);
 	}
 
 	svr_yield_ms(100);
-
-	Toshiba_TC358770_Start_Reset();
+	if (hardResetToshiba)
+	{
+#ifdef HDMI_VERBOSE
+		WriteLn("Toshiba_TC358870_Init: Resetting TC358770");
+#endif
+		Toshiba_TC358770_Start_Reset();
+	}
+#ifdef HDMI_VERBOSE
+	WriteLn("Toshiba_TC358870_Init: Resetting panel");
+#endif
 	g_tc358870PanelFuncs.startReset();
 
 	svr_yield_ms(50);
 
-	Toshiba_TC358770_End_Reset();
+	if (hardResetToshiba)
+	{
+		Toshiba_TC358770_End_Reset();
+	}
 
 	svr_yield_ms(50);
 
-#if 1
 	// Dennis Yeh 2016/03/14 : for TC358870
 	uint16_t tc_data;
 	/// dummy read?
 	Toshiba_TC358870_I2C_Read16(0x0000, &tc_data);
-#endif
 
-	Toshiba_TC358870_SW_Reset();
+	if (fullSoftwareReset)
+	{
+		WriteLn("Toshiba_TC358870_Init: Full software reset");
+		Toshiba_TC358870_SW_Reset();
+	}
+	else
+	{
+		WriteLn("Toshiba_TC358870_Init: DSI-TX software reset");
+		Toshiba_TC358870_DSITX_SW_Reset();
+	}
+	svr_yield_ms(10);
 	g_tc358870PanelFuncs.endReset();
-	Toshiba_TC358870_Prepare_TX();
+	svr_yield_ms(10);
+	Toshiba_TC358770_Setup_TX_Parameterized(g_tc358870_active_config);
 	svr_yield_ms(50);
 	g_tc358870PanelFuncs.sendInitCommands();
 	Toshiba_TC358870_Configure_Splitter();
 	Toshiba_TC358870_HDMI_Setup();
 
-	// Toshiba_TC358870_Init_Receiver();
 	s_tc358870_init_count++;
 
 	if (firstTime)
 	{
-		Toshiba_TC358870_MCU_Ints_Init();
-#if 0
-		ioport_set_pin_low(MCU_LED_R);
-		ioport_set_pin_dir(MCU_LED_R, IOPORT_DIR_OUTPUT);
+		if (shouldStartInterrupts)
+		{
+#ifdef HDMI_VERBOSE
+			WriteLn("Toshiba_TC358870_Init: Initializing MCU interrupt handler");
 #endif
+			Toshiba_TC358870_MCU_Ints_Init();
+		}
 	}
 	else
 	{
 		Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
 		Toshiba_TC358870_MCU_Ints_Clear_Flag();
-		// not our first go-round, we'll just resume ints here.
-		Toshiba_TC358870_MCU_Ints_Resume();
+		if (shouldStartInterrupts)
+		{
+// not our first go-round, we'll just resume ints here.
+#ifdef HDMI_VERBOSE
+			WriteLn("Toshiba_TC358870_Init: Re-enabling MCU interrupt handler");
+#endif
+			Toshiba_TC358870_MCU_Ints_Resume();
+		}
 	}
 #if 0
 	Toshiba_TC358870_Clear_HDMI_Sync_Change_Int();
@@ -302,9 +351,21 @@ void Toshiba_TC358870_Base_Init(void)
 		return;
 	}
 #endif
-#ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: End");
-#endif
+}
+
+void Toshiba_TC358870_Base_Init(void)
+{
+	static bool repeat = false;
+	bool firstTime = false;
+	if (!repeat)
+	{
+		// this is the first time we've been in here!
+		firstTime = true;
+		repeat = true;
+	}
+	// hard reset, full SW reset, should start interrupts
+	Toshiba_TC358870_Base_Init_Impl(firstTime, true, true, true);
 }
 
 static inline void tc_Turn_On_LD17(void) { /*ioport_set_pin_high(MCU_LED_R);*/}
@@ -403,7 +464,7 @@ TC358870_InputMeasurements_t Toshiba_TC358770_Get_Input_Measurements()
 	return ret;
 }
 
-void Toshiba_TC358770_Print_Input_Measurements()
+TC358870_InputMeasurements_t Toshiba_TC358770_Print_Input_Measurements()
 {
 	char msg[50];
 	TC358870_InputMeasurements_t meas = Toshiba_TC358770_Get_Input_Measurements();
@@ -421,8 +482,21 @@ void Toshiba_TC358770_Print_Input_Measurements()
 		sprintf(msg, "Failed to get measurements: %" PRId8, meas.opStatus);
 		WriteLn(msg);
 	}
+	return meas;
 }
 
+void Toshiba_TC358770_Update_DSITX_Config_And_Reinit(const TC358870_DSITX_Config_t* newConfig)
+{
+	if (newConfig == g_tc358870_active_config)
+	{
+		WriteLn("Toshiba_TC358770_Update_DSITX_Config_And_Reinit: Given the already-active config!");
+		return;
+	}
+	g_tc358870_active_config = newConfig;
+	// Not first time, don't hard-reset toshiba chip, don't do a full software reset, don't start interrupts.
+	Toshiba_TC358870_Base_Init_Impl(false, false, false, false);
+}
+const TC358870_DSITX_Config_t* Toshiba_TC358770_Get_DSITX_Config() { return g_tc358870_active_config; }
 /// Perform a software reset of the HDMI receiver portion of the chip.
 void Toshiba_TC358870_HDMI_SW_Reset()
 {
@@ -573,6 +647,66 @@ void Toshiba_TC358870_Disable_All_Interrupts(void)
 	// top level
 	// Write 1 to clear all the non-reserved bits (0-11, excluding 6)
 	Toshiba_TC358870_I2C_Write16(TC_REG_INT_STATUS, TC_REG_INT_STATUS_NONRESERVED_BITS);
+}
+
+static inline void tc358870_Setup_Single_DSITX(TC358870_Reg_t base, const TC358870_DSITX_Config_t* params)
+{
+	Toshiba_TC358870_I2C_Write32(base + 0x0108, 0x00000001);             // DSI_TX_CLKEN
+	Toshiba_TC358870_I2C_Write32(base + 0x010C, 0x00000001);             // DSI_TX_CLKSEL
+	Toshiba_TC358870_I2C_Write32(base + 0x02A0, 0x00000001);             // MIPI_PLL_CONTROL
+	Toshiba_TC358870_I2C_Write32(base + 0x02AC, params->MIPI_PLL_CONF);  // MIPI_PLL_CNF
+	delay_ms(2);
+
+	Toshiba_TC358870_I2C_Write32(base + 0x02A0, 0x00000003);  // MIPI_PLL_CONTROL
+	Toshiba_TC358870_I2C_Write32(base + 0x0118, 0x00000014);  // LANE_ENABLE
+	delay_ms(1);
+	Toshiba_TC358870_I2C_Write32(base + 0x0120, 0x00001770);         // LINE_INIT_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0124, 0x00000000);         // HSTX_TO_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0128, 0x00000101);         // FUNC_ENABLE
+	Toshiba_TC358870_I2C_Write32(base + 0x0130, 0x00010000);         // DSI_TATO_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0134, 0x00005000);         // DSI_PRESP_BTA_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0138, 0x00010000);         // DSI_PRESP_LPR_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x013C, 0x00010000);         // DSI_PRESP_LPW_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0140, 0x00010000);         // DSI_PRESP_HSR_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0144, 0x00010000);         // DSI_PRESP_HSW_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0148, 0x00001000);         // DSI_PR_TO_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x014C, 0x00010000);         // DSI_LRX-H_TO_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0150, params->FUNC_MODE);  // FUNC_MODE
+
+	Toshiba_TC358870_I2C_Write32(base + 0x0154, 0x00000001);                       // DSI_RX_VC_ENABLE
+	Toshiba_TC358870_I2C_Write32(base + 0x0158, 0x000000C8);                       // IND_TO_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0168, 0x0000002A);                       // DSI_HSYNC_STOP_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0170, params->APF_VDELAYCNT);            // APF_VDELAYCNT
+	Toshiba_TC358870_I2C_Write32(base + 0x017C, 0x00000081);                       // DSI_TX_MODE
+	Toshiba_TC358870_I2C_Write32(base + 0x018C, 0x00000001);                       // DSI_HSYNC_WIDTH
+	Toshiba_TC358870_I2C_Write32(base + 0x0190, params->DSI_HBPR);                 // DSI_HBPR
+	Toshiba_TC358870_I2C_Write32(base + 0x01A4, 0x00000000);                       // DSI_RX_STATE_INT_MASK
+	Toshiba_TC358870_I2C_Write32(base + 0x01C0, 0x00000015);                       // DSI_LPRX_THRESH_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0214, 0x00000000);                       // APP_SIDE_ERR_INT_MASK
+	Toshiba_TC358870_I2C_Write32(base + 0x021C, 0x00000080);                       // DSI_RX_ERR_INT_MASK
+	Toshiba_TC358870_I2C_Write32(base + 0x0224, 0x00000000);                       // DSI_LPTX_INT_MASK
+	Toshiba_TC358870_I2C_Write32(base + 0x0254, 0x00000006);                       // LPTXTIMECNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0258, params->PPI_DPHY_TCLK_HEADERCNT);  // TCLK_HEADERCNT
+	Toshiba_TC358870_I2C_Write32(base + 0x025C, params->PPI_DPHY_TCLK_TRAILCNT);   // TCLK_TRAILCNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0260, params->PPI_DPHY_THS_HEADERCNT);   // THS_HEADERCNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0264, params->PPI_DPHY_TWAKEUPCNT);      // TWAKEUPCNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0268, params->PPI_DPHY_TCLK_POSTCNT);    // TCLK_POSTCNT
+	Toshiba_TC358870_I2C_Write32(base + 0x026C, params->PPI_DPHY_THSTRAILCNT);     // THS_TRAILCNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0270, 0x00000020);                       // HSTXVREGCNT
+	Toshiba_TC358870_I2C_Write32(base + 0x0274, 0x0000001F);                       // HSTXVREGEN
+	Toshiba_TC358870_I2C_Write32(base + 0x0278, params->PPI_DSI_BTA_COUNT);        // BTA_COUNT
+	Toshiba_TC358870_I2C_Write32(base + 0x027C, 0x00000002);                       // DPHY_TX ADJUST
+	Toshiba_TC358870_I2C_Write32(base + 0x011C, 0x00000001);                       // DSITX_START
+}
+
+void Toshiba_TC358770_Setup_TX_Parameterized(const TC358870_DSITX_Config_t* params)
+{
+	tc358870_Setup_Single_DSITX(0x0000, params);
+	tc358870_Setup_Single_DSITX(TC_REG_DSITX1_OFFSET, params);
+	// Command Transmission Before Video Start
+	Toshiba_TC358870_I2C_Write32_BothDSITX(0x0110,
+	                                       0x00000016);  // MODE_CONFIG - high speed mode DSI commands, hsync-, vsync-
+	Toshiba_TC358870_I2C_Write16(0x0500, 0x0004);        // CMD_SEL - send dcs cmds to both tx
 }
 
 #endif  // SVR_HAVE_TOSHIBA_TC358870

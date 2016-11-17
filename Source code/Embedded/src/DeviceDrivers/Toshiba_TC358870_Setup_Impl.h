@@ -376,9 +376,9 @@ void Toshiba_TC358870_Prepare_TX()
 #endif
 	Toshiba_TC358770_Setup_TX_TFN();
 	// Command Transmission Before Video Start
-	TC358870_i2c_Write(0x0500, 0x0004, 2);      // CMD_SEL - send dcs cmds to both tx
 	TC358870_i2c_Write(0x0110, 0x00000016, 4);  // MODE_CONFIG - high speed mode DSI commands, hsync+, vsync+
 	TC358870_i2c_Write(0x0310, 0x00000016, 4);  // MODE_CONFIG
+	TC358870_i2c_Write(0x0500, 0x0004, 2);      // CMD_SEL - send dcs cmds to both tx
 }
 
 void Toshiba_TC358870_Configure_Splitter()

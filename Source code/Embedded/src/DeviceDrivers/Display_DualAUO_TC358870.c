@@ -70,7 +70,7 @@ static void AUO_H381DLN01_Panel_EndReset(void)
 	ioport_set_pin_high(PANEL_RESET);
 	// Reset after this signal takes at most 5ms during sleep mode, 120ms during non-sleep mode (and can't "sleep out"
 	// for 120ms)
-	svr_yield_ms(120);
+	svr_yield_ms(150);
 }
 
 static void AUO_H381DLN01_Panel_Reset(void)

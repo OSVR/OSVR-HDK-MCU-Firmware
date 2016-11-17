@@ -205,6 +205,8 @@ TC358870_Op_Status_t Toshiba_TC358870_I2C_Write32_BothDSITX(TC358870_Reg_t reg, 
 	return min(status1, status2);
 }
 
+static inline void Toshiba_TC358770_Start_Reset(void) { ioport_set_pin_low(TC358870_Reset_Pin); }
+static inline void Toshiba_TC358770_End_Reset(void) { ioport_set_pin_high(TC358870_Reset_Pin); }
 static uint8_t s_tc358870_init_count = 0;
 
 void Toshiba_TC358870_Base_Init(void)
@@ -234,9 +236,6 @@ void Toshiba_TC358870_Base_Init(void)
 		twi_master_setup(TC358870_TWI_PORT, &opt);
 	}
 
-	ioport_set_pin_low(TC358870_Reset_Pin);
-	g_tc358870PanelFuncs.startReset();
-
 	WriteLn("Toshiba_TC358870_Base_Init: Waiting for 5V power rail");
 	while (!ioport_get_value(ANA_PWR_IN))
 	{
@@ -248,9 +247,16 @@ void Toshiba_TC358870_Base_Init(void)
 	{
 		delay_us(50);
 	}
+
+	svr_yield_ms(100);
+
+	Toshiba_TC358770_Start_Reset();
+	g_tc358870PanelFuncs.startReset();
+
 	svr_yield_ms(50);
-	ioport_set_pin_high(TC358870_Reset_Pin);
-	g_tc358870PanelFuncs.endReset();
+
+	Toshiba_TC358770_End_Reset();
+
 	svr_yield_ms(50);
 
 #if 1
@@ -261,7 +267,9 @@ void Toshiba_TC358870_Base_Init(void)
 #endif
 
 	Toshiba_TC358870_SW_Reset();
+	g_tc358870PanelFuncs.endReset();
 	Toshiba_TC358870_Prepare_TX();
+	svr_yield_ms(50);
 	g_tc358870PanelFuncs.sendInitCommands();
 	Toshiba_TC358870_Configure_Splitter();
 	Toshiba_TC358870_HDMI_Setup();
@@ -298,8 +306,8 @@ void Toshiba_TC358870_Base_Init(void)
 #endif
 }
 
-static inline void tc_Turn_On_LD17(void) { /*ioport_set_pin_high(MCU_LED_R);*/ }
-static inline void tc_Turn_Off_LD17(void) { /*ioport_set_pin_low(MCU_LED_R);*/ }
+static inline void tc_Turn_On_LD17(void) { /*ioport_set_pin_high(MCU_LED_R);*/}
+static inline void tc_Turn_Off_LD17(void) { /*ioport_set_pin_low(MCU_LED_R);*/}
 bool Toshiba_TC358870_Init_Once(void)
 {
 	if (0 == s_tc358870_init_count)

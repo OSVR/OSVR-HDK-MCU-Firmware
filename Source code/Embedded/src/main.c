@@ -217,7 +217,6 @@ int main(void)
 	}
 #endif  // 0
 
-
 #ifdef DSIGHT
 	/// @todo isn't this redundant with the videoDetected check above? or is the waiting for 1 second important for
 	/// dSight specifically?

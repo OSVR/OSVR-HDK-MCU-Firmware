@@ -91,4 +91,3 @@ void dWriteEndl(uint8_t DebugMask)
 }
 
 void SetDebugLevel(uint8_t NewLevel) { DebugLevel = NewLevel; }
-

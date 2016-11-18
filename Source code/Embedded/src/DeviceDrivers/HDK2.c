@@ -317,8 +317,6 @@ void OSVR_HDK_EDID(void)
         ==============================================================
 */
 
-
-// If CRC 16 is fine for the performnace, replace it...
 static unsigned char check_sum_gen(unsigned char *buf, int length)
 {
 	int i = 0;

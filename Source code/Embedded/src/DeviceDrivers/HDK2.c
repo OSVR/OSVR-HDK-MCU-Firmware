@@ -28,9 +28,11 @@
 #include "my_hardware.h"
 
 #include "DeviceDrivers/BNO070.h"
+#include "DeviceDrivers/Toshiba_TC358870.h"
 //#include "ui.h"
 //#include "uart.h"
 #include "Console.h"
+#include "BitUtilsC.h"
 
 // asf headers
 #include <delay.h>
@@ -52,11 +54,30 @@
 #define EDID_ADDR_CS_0 0x7F
 #define EDID_ADDR_CS_1 0xFF
 
+#define EDID_ADDR_SNSTRING_0 0x4d
+#define EDID_ADDR_SNSTRING_1 0x4e
+#define EDID_ADDR_SNSTRING_2 0x4f
+#define EDID_ADDR_SNSTRING_3 0x50
+#define EDID_ADDR_SNSTRING_4 0x51
+#define EDID_ADDR_SNSTRING_5 0x52
+#define EDID_ADDR_SNSTRING_6 0x53
+#define EDID_ADDR_SNSTRING_7 0x54
+#define EDID_ADDR_SNSTRING_8 0x55
+#define EDID_ADDR_SNSTRING_9 0x56
+#define EDID_ADDR_SNSTRING_10 0x57
+#define EDID_ADDR_SNSTRING_11 0x58
+#define EDID_ADDR_SNSTRING_12 0x59
+
+#ifndef SVR_DEFAULT_MODEL_YEAR
+#define SVR_DEFAULT_MODEL_YEAR 16
+#endif
+#define EDID_20XX_YEAR_TRANSFORM(X) (X + 10)
+#define EDID_WEEK_MODEL_YEAR_FLAG 0xFF
+
 #define CORE_KEY "Ctlh618#"
 #define CORE_KEY_LENGTH 8
 #define CORE_KEY_RETRY_TIME 3
 
-static inline uint8_t ascii_to_dec_8(uint8_t *buf) { return (buf[0] - '0') * 10 + (buf[1] - '0'); }
 static unsigned char s_sn[SN_LENGTH];
 static bool s_triedSerial = false;
 static bool s_serialValid = false;
@@ -65,9 +86,15 @@ static bool s_serialValid = false;
 static void eep_write_sn(void);
 /// returns true if the serial number is valid
 static bool eep_read_sn(void);
-static inline void UpdateResolutionDetection(void)
+
+/// Converts a single ascii decimal digit to a uint8_t.
+/// @note Assumes valid input!
+static inline uint8_t ascii_dec_byte(uint8_t c) { return c - '0'; }
+/// Converts two ascii decimal digits to a uint8_t
+/// @note Assumes valid input!
+static inline uint8_t ascii_to_dec_8(uint8_t *buf)
 {
-	// dummy function to satisfy old code.
+	return ascii_dec_byte(buf[0]) * UINT8_C(10) + ascii_dec_byte(buf[1]);
 }
 /// Converts four ascii decimal digits to a uint16_t
 /// @note Assumes valid input!
@@ -154,97 +181,127 @@ static inline void debugPrintf(const char *format, ...)
 	va_end(ap);
 }
 
+#define TC_EDID_BASE UINT16_C(0x8c00)
 void OSVR_HDK_EDID(void)
 {
-	uint8_t cs = 0;
-	int i, j;
-	unsigned short idx = 0;
-	int sn_status;
-	uint8_t edid_week;
-	uint8_t edid_year;
-	uint8_t edid_sn_hex[4] = {0};
-	uint32_t edid_sn_dec = 0;
-	char buf[20];
+	uint8_t edid_week = EDID_WEEK_MODEL_YEAR_FLAG;                         // model year
+	uint8_t edid_year = EDID_20XX_YEAR_TRANSFORM(SVR_DEFAULT_MODEL_YEAR);  // 26 => 2016.
+	uint32_t edid_sn_numeric = 0;
+	uint8_t edid_sn_numeric_bytes[4] = {0, 0, 0, 0};
 
-	if ((sn_status = eep_read_sn(sn)) != 0)
+	bool sn_ok = eep_read_sn();
+	if (sn_ok)
 	{
-		// WriteLn ("Read S/N NG.");
-
-		edid_year = 26;  // 26 => 2016.
-		edid_week = 1;
-	}
-	else
-	{                                               // parsing s/n info
-		edid_year = (ascii_to_dec_8(sn + 2) + 10);  // counting from 1990. year - 1990
-		edid_week = ascii_to_dec_8(sn + 4);
+		// parsing s/n info
+		// Format: CTyywwV001ssss
+		// where yy signifies year of mfr 20yy
+		// ww is week of mfr
+		// and ssss is a serially-assigned number
+		edid_year =
+		    EDID_20XX_YEAR_TRANSFORM(ascii_to_dec_8(s_sn + 2));  // SN counts from 2000, EDID counts from 1990, so +10
+		edid_week = ascii_to_dec_8(s_sn + 4);
 		if (edid_week < 1 || edid_week > 53)
 		{
-			edid_week = 1;
-			// WriteLn("Week Out Of Range.\n");
+			WriteLn("Week Out Of Range.");
+			/// Reset date of manufacture to model year instead.
+			edid_year = EDID_20XX_YEAR_TRANSFORM(SVR_DEFAULT_MODEL_YEAR);
+			edid_week = EDID_WEEK_MODEL_YEAR_FLAG;
 		}
-		edid_sn_dec =
-		    (uint32_t)(((uint32_t)(sn[10] - '0') * 10000) + ((uint32_t)(sn[11] - '0') * 1000) +
-		               ((uint32_t)(sn[12] - '0') * 100) + ((uint32_t)(sn[13] - '0') * 10) + (uint32_t)(sn[14] - '0'));
-		edid_sn_hex[0] = (uint8_t)(edid_sn_dec & 0x000000FF);
-		edid_sn_hex[1] = (uint8_t)((edid_sn_dec & 0x0000FF00) >> 8);
-		edid_sn_hex[2] = (uint8_t)((edid_sn_dec & 0x00FF0000) >> 16);
-		edid_sn_hex[3] = (uint8_t)((edid_sn_dec & 0xFF000000) >> 24);
+
+		edid_sn_numeric = ascii_to_dec_16(s_sn + 11);
+		edid_sn_numeric_bytes[0] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(0, edid_sn_numeric);
+		edid_sn_numeric_bytes[1] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(1, edid_sn_numeric);
+		edid_sn_numeric_bytes[2] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(2, edid_sn_numeric);
+		edid_sn_numeric_bytes[3] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(3, edid_sn_numeric);
 	}
 
-	if (GetDebugLevel() == 0xAA)
+#ifdef HDMI_VERBOSE
+	if ((GetDebugLevel() & debugHDK2Mask) != 0)
 	{  // debug message.
-		WriteLn("S/N Info...\n");
-		sprintf(buf, "Year: %d", edid_year);
-		WriteLn(buf);
-		sprintf(buf, "Week: %d", edid_week);
-		WriteLn(buf);
+		char buf[50];
+		dWriteLn("S/N Info...\n", debugHDK2Mask);
+		sprintf(buf, "Year: %" PRId8, edid_year);
+		dWriteLn(buf, debugHDK2Mask);
+		sprintf(buf, "Week: %" PRId8, edid_week);
+		dWriteLn(buf, debugHDK2Mask);
 
-		sprintf(buf, "int32=%d", sizeof(uint32_t));
-		WriteLn(buf);
-
-		sprintf(buf, "S/N: %" PRId32, (uint32_t)edid_sn_dec);
-		WriteLn(buf);
-		sprintf(buf, "%02X-%02X-%02X-%02X", edid_sn_hex[3], edid_sn_hex[2], edid_sn_hex[1], edid_sn_hex[0]);
-		WriteLn(buf);
+		sprintf(buf, "Numeric S/N: %" PRId32, edid_sn_numeric);
+		dWriteLn(buf, debugHDK2Mask);
+		sprintf(buf, "%02" PRIX8 "-%02" PRIX8 "-%02" PRIX8 "-%02" PRIX8, edid_sn_numeric_bytes[3],
+		        edid_sn_numeric_bytes[2], edid_sn_numeric_bytes[1], edid_sn_numeric_bytes[0]);
+		dWriteLn(buf, debugHDK2Mask);
 	}
+#endif
 
 	// feeding EDID data to TC358870
-	for (i = 0; i < 2; i++)
+	/// absolute index in EDID data
+	uint16_t idx = 0;
+	for (uint8_t i = 0; i < 2; i++)
 	{
-		for (j = 0, cs = 0; j < 0x80; j++, idx++)
+		// two blocks with separate checksums
+		for (uint8_t j = 0, cs = 0; j < 0x80; j++, idx++)
 		{
+			uint8_t currentByte;
 			switch (idx)
 			{
 			case EDID_ADDR_WEEK:
-				cs += edid_week;
-				TC358870_i2c_Write(0x8C00 + idx, edid_week, 1);
+				currentByte = edid_week;
 				break;
 
 			case EDID_ADDR_YEAR:
-				cs += edid_year;
-				TC358870_i2c_Write(0x8C00 + idx, edid_year, 1);
+				currentByte = edid_year;
 				break;
 
 			case EDID_ADDR_SN_0:
 			case EDID_ADDR_SN_1:
 			case EDID_ADDR_SN_2:
 			case EDID_ADDR_SN_3:
-				cs += edid_sn_hex[idx - EDID_ADDR_SN_0];
-				TC358870_i2c_Write(0x8C00 + idx, edid_sn_hex[idx - EDID_ADDR_SN_0], 1);
+				currentByte = edid_sn_numeric_bytes[idx - EDID_ADDR_SN_0];
+				break;
+
+			case EDID_ADDR_SNSTRING_0:
+			case EDID_ADDR_SNSTRING_1:
+			case EDID_ADDR_SNSTRING_2:
+			case EDID_ADDR_SNSTRING_3:
+			case EDID_ADDR_SNSTRING_4:
+			case EDID_ADDR_SNSTRING_5:
+			case EDID_ADDR_SNSTRING_6:
+			case EDID_ADDR_SNSTRING_7:
+			case EDID_ADDR_SNSTRING_8:
+			case EDID_ADDR_SNSTRING_9:
+			case EDID_ADDR_SNSTRING_10:
+			case EDID_ADDR_SNSTRING_11:
+			case EDID_ADDR_SNSTRING_12:
+				if (sn_ok)
+				{
+					_Static_assert(SN_LENGTH == 16,
+					               "If serial number length changes, need to change EDID filling to pad.");
+					const uint8_t stringPos = idx - EDID_ADDR_SNSTRING_0;
+					// the + 2 is to drop the serial number's constant "CT" prefix to get a 13-byte string.
+					currentByte = s_sn[stringPos + 2];
+				}
+				else
+				{
+					/// if bad SN read, just use the default.
+					currentByte = EDID_LUT[idx];
+				}
 				break;
 
 			case EDID_ADDR_CS_0:
 			case EDID_ADDR_CS_1:
-				cs = (unsigned char)(0x100 - cs);  // Making EDID page check sum. The 1-byte sum of all 128 bytes in
-				                                   // this EDID block shall equal zero.
-				TC358870_i2c_Write(0x8C00 + idx, (unsigned char)cs, 1);
+				// Making EDID page check sum. The 1-byte sum of all 128 bytes in
+				// this EDID block shall equal zero.
+				// 0xFF - cs + 0x01 keeps everything in 8 bit variables, while being functionally equivalent to 0x100 -
+				// cs.
+				currentByte = UINT8_C(0xFF) - (cs) + UINT8_C(0x01);
 				break;
 
 			default:
-				cs += EDID_LUT[idx];
-				TC358870_i2c_Write(0x8C00 + idx, EDID_LUT[idx], 1);
+				currentByte = EDID_LUT[idx];
 				break;
 			}
+			cs += currentByte;
+			Toshiba_TC358870_I2C_Write8(TC_EDID_BASE + idx, currentByte);
 		}
 	}
 }
@@ -254,13 +311,12 @@ void OSVR_HDK_EDID(void)
         1. Access S/N from MCU EEPROM.
         2. Create command to access S/N
         3. Write a function to parse date code and S/N from S/N, offers for EDID
-        4. Write a function to calculate EDID check sum sinc date code and S/N are replace.
+        4. Write a function to calculate EDID check sum since date code and S/N are replaced.
         5. Insert date code and S/N when feed EDID to TC358870.
 
         ==============================================================
 */
 
-unsigned char sn[SN_LENGTH];
 
 // If CRC 16 is fine for the performnace, replace it...
 static unsigned char check_sum_gen(unsigned char *buf, int length)
@@ -278,32 +334,54 @@ static unsigned char check_sum_gen(unsigned char *buf, int length)
 
 void eep_write_sn(void)
 {
-	sn[SN_LENGTH - 1] = check_sum_gen(sn, SN_LENGTH - 1);  // fill check sum.
-	nvm_eeprom_erase_and_write_buffer(EEP_ADDR_SN, sn, SN_LENGTH);
+	s_sn[SN_LENGTH - 1] = check_sum_gen(s_sn, SN_LENGTH - 1);  // fill check sum.
+	nvm_eeprom_erase_and_write_buffer(EEP_ADDR_SN, s_sn, SN_LENGTH);
+	// Reset these flags so we can validate.
+	s_triedSerial = false;
+	s_serialValid = false;
 }
 
-int eep_read_sn(unsigned char *buf)
+bool eep_read_sn()
 {
+	if (s_triedSerial)
+	{
+		/// early out - only need to read this once per startup.
+		return s_serialValid;
+	}
 	int i = 0;
 
 	for (i = 0; i < SN_LENGTH; i++)
 	{
-		buf[i] = nvm_eeprom_read_byte(EEP_ADDR_SN + i);
+		s_sn[i] = nvm_eeprom_read_byte(EEP_ADDR_SN + i);
 	}
 
 	// check sum verify.
-	if (check_sum_gen(buf, SN_LENGTH - 1) != buf[SN_LENGTH - 1])
-		return -1;  // check sum verify fail.
+	if (check_sum_gen(s_sn, SN_LENGTH - 1) == s_sn[SN_LENGTH - 1])
+	{
+		s_serialValid = true;
+	}
+	return s_serialValid;
+}
 
-	return 0;
+bool eep_get_sn(uint8_t buf[SN_LENGTH])
+{
+	bool haveSn = eep_read_sn();
+	if (!haveSn)
+	{
+		// null-terminate and get out.
+		buf[0] = '\0';
+		return false;
+	}
+	memcpy(buf, s_sn, SN_LENGTH - 1);
+	// null-terminate
+	buf[SN_LENGTH - 1] = '\0';
+	return true;
 }
 
 extern char CommandToExecute[MaxCommandLength + 1];
 
 void ProcessFactoryCommand(void)
 {
-	int i;
-	char OutString[SN_LENGTH];
 	static int core_key_retry_time = 0;
 
 	switch (CommandToExecute[1])
@@ -314,36 +392,52 @@ void ProcessFactoryCommand(void)
 		{
 		case 'w':  // Write S/N to eeprom.
 		case 'W':
+		{
 			if (core_key_pass == 0)
 				break;
 			// write...
-			memcpy(sn, CommandToExecute + 3, SN_LENGTH - 1);
-			eep_write_sn();
-
-			// verify...
-			i = eep_read_sn((unsigned char *)OutString);
-			OutString[SN_LENGTH - 1] = '\0';
-			sn[SN_LENGTH - 1] = '\0';
-
-			if (i)
-				WriteLn("NG");  // check sum error.
-			else if (strcmp(OutString, (char *)sn) != 0)
-				WriteLn("NG");  // s/n does not match.
-			else
-				WriteLn("OK");  // s/n match.
-
-			break;
-
-		case 'r':  // Read S/N from eeprom.
-		case 'R':
-			if (eep_read_sn((unsigned char *)OutString))
-				WriteLn("NG");  // send NG to host.
-			else
+			char *inputString = CommandToExecute + 3;
+			if (strnlen(inputString, SN_LENGTH) != SN_LENGTH - 1)
 			{
-				OutString[SN_LENGTH - 1] = '\0';
-				WriteLn(OutString);
+				WriteLn("NG");
+				WriteLn("Serial number wrong length.");
+			}
+			memcpy(s_sn, inputString, SN_LENGTH - 1);
+			eep_write_sn();
+			{
+				// verify...
+				bool sn_success = eep_read_sn();
+				if (!sn_success)
+				{
+					WriteLn("NG");  // check sum error.
+				}
+				else if (strncmp(inputString, (char *)s_sn, SN_LENGTH - 1) != 0)
+				{
+					// compare the input to the serial number read (raw) but don't look at the last byte (checksum) or
+					// wait for terminator.
+					WriteLn("NG");  // s/n does not match.
+				}
+				else
+				{
+					WriteLn("OK");  // s/n match.
+				}
 			}
 			break;
+		}
+		case 'r':  // Read S/N from eeprom.
+		case 'R':
+		{
+			uint8_t OutString[SN_LENGTH];
+			if (!eep_get_sn(OutString))
+			{
+				WriteLn("NG");  // send NG to host.
+			}
+			else
+			{
+				WriteLn((char *)OutString);
+			}
+			break;
+		}
 		}
 		break;
 
@@ -370,9 +464,7 @@ void ProcessFactoryCommand(void)
 				break;
 			}
 
-			memcpy(OutString, CommandToExecute + 3, CORE_KEY_LENGTH);
-
-			if (memcmp(OutString, CORE_KEY, CORE_KEY_LENGTH) == 0)
+			if (memcmp(CommandToExecute + 3, CORE_KEY, CORE_KEY_LENGTH) == 0)
 			{
 				core_key_pass = CORE_KEY_PASS_SUCCESS_VALUE;
 			}

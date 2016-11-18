@@ -39,9 +39,10 @@
 int TC358870_i2c_Read(uint16_t RegNum, uint8_t *data);
 int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength);
 
+/// Given a buffer of at least SN_LENGTH size, puts a null-terminated string in it. If the SN could be read and checksum
+/// verified, then true is returned and a non-empty null-terminated string is in the buffer.
+bool eep_get_sn(uint8_t buf[SN_LENGTH]);
 
-void eep_write_sn(void);
-int eep_read_sn(unsigned char *buf);
 void OSVR_HDK_EDID(void);
 void ProcessFactoryCommand(void);
 void nvm_eeprom_write_byte_(eeprom_addr_t address, uint8_t value);

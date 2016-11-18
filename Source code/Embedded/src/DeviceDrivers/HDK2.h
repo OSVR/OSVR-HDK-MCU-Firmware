@@ -33,32 +33,12 @@
 #define TC358870_TWI_SPEED 100000  // or 400kHz or 2MHz
 #define TC358870_ADDR 0x1F         // or 0x1F
 
-#define VIDEO_POLLING_PERIOD 60000
-#define VIDEO_POLLING_TIMER TCC2
-
 #define EEP_ADDR_SN 0x008  // 20160605, fctu, change from 0xFF0 to 0x008 due to RAZER asked.
 #define SN_LENGTH 16       // include 1 byte check sum.
-
-extern unsigned char sn[SN_LENGTH];
-
-int TC358870_i2c_Init(void);
 
 int TC358870_i2c_Read(uint16_t RegNum, uint8_t *data);
 int TC358870_i2c_Write(uint16_t RegNum, uint32_t nValue, int nLength);
 
-void AUO_H381DLN01_Init(int bDisplayON);
-void TC358870_Init_Receive_HDMI_Signal(void);
-
-bool IsVideoExistingPolling(void);
-bool PowerOnSeq(void);
-void AUO_H381DLN01_Reset(void);
-void Toshiba_TC358870_Reset(void);
-
-bool TC358870_VideoSyncSignalStatus(void);
-
-int TC358870_Reset_MIPI(void);
-int TC358870_CheckLANEStatus(void);
-int TC358870_Check0x0294tatus(void);
 
 void eep_write_sn(void);
 int eep_read_sn(unsigned char *buf);

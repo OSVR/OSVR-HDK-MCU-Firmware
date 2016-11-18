@@ -63,6 +63,6 @@ const char * svr_hmdmcu_revision =
 #endif // SVR_HMDMCU_MAKEFILE
 
 #ifdef SVR_REVISION_UNKNOWN
-    "Dev build with Git revision information available"
+    "Dev build with no Git revision information available"
 #endif
 ;

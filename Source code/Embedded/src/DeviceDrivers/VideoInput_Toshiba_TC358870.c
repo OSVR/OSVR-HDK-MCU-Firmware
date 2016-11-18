@@ -94,24 +94,15 @@ void VideoInput_Task(void)
 		Toshiba_TC358870_Disable_All_Interrupts();
 		bool origStatus = VideoInput_Get_Status();
 		WriteLn("Got a video sync change interrupt!");
-		bool status = false;
-		if (origStatus)
+		bool status = tc_getStatus();
+		if (origStatus != status)
 		{
-			// when losing video, no need to loop
-
-			status = tc_getStatus();
+			// OK, this is an actual change we want to respond to.
+			// Apply the new video sync status.
+			WriteLn("Reporting an actual change!");
+			VideoInput_Protected_Report_Status(status);
 		}
-		else
-		{
-			// when acquiring video, loop until we have it.
-			while (!status)
-			{
-				status = tc_getStatus();
-				svr_yield_ms(50);
-			}
-		}
-		// Apply the new video sync status.
-		VideoInput_Protected_Report_Status(status);
+		barrier();
 		// OK to re-enable the sync change interrupt now - also clears the interrupt flag on the toshiba chip.
 		Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
 	}

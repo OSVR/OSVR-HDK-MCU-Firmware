@@ -145,6 +145,7 @@ void Display_On(uint8_t deviceID)
 	Debug_LED_Turn_On();
 
 	TC358870_InputMeasurements_t measurements = Toshiba_TC358770_Print_Input_Measurements();
+#ifdef SVR_MULTIRATE_HDK2
 	bool wasReset = false;
 	if (measurements.reg8405 == 0x71 || measurements.reg8405 == 0x70)
 	{
@@ -156,6 +157,9 @@ void Display_On(uint8_t deviceID)
 		WriteLn("Display_On: Apparent non-90Hz input");
 		wasReset = Toshiba_TC358770_Update_DSITX_Config_And_Reinit(&TC358870_DSITX_Config_60hz_2160_1200);
 	}
+#else
+	bool wasReset = Toshiba_TC358770_Update_DSITX_Config_And_Reinit(&TC358870_DSITX_Config_90hz_2160_1200);
+#endif
 	if (wasReset)
 	{
 		Toshiba_TC358770_Print_Input_Measurements();

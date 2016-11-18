@@ -72,11 +72,6 @@ static void AUO_H381DLN01_Panel_EndReset(void)
 	svr_yield_ms(150);
 }
 
-static void AUO_H381DLN01_Panel_Reset(void)
-{
-	AUO_H381DLN01_Panel_StartReset();
-	AUO_H381DLN01_Panel_EndReset();
-}
 const TC358870_PanelFunctions_t g_tc358870PanelFuncs = {.startReset = &AUO_H381DLN01_Panel_StartReset,
                                                         .endReset = &AUO_H381DLN01_Panel_EndReset,
                                                         .sendInitCommands = &AUO_H381DLN01_Send_Panel_Init_Commands};

@@ -377,6 +377,8 @@ uint8_t statusBufConsumeHexDigits2_8(BufWithStatus_t *b)
 
 	// shift the previous digit over, and parse the new one.
 	ret = (ret << BITS_PER_HEX_DIGIT) | ParseHexDigitDirectly(c);
+	// consume the byte
+	statusBufConsumeByte_Unchecked(b);
 	return ret;
 }
 uint16_t statusBufConsumeHexDigits4_16(BufWithStatus_t *b)

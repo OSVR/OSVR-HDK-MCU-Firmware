@@ -33,6 +33,8 @@ SYSTEM_FLAGS ?= -isystem "$(ATMEL_STUDIO_TOOLCHAIN_ROOT)/avr/include"
 
 # Can use "shellutils" folder of utilities.
 RM := "$(ATMEL_STUDIO_ROOT)/shellutils/rm.exe" -f
+TR := "$(ATMEL_STUDIO_ROOT)/shellutils/tr.exe"
+CAT := "$(ATMEL_STUDIO_ROOT)/shellutils/cat.exe"
 # must be recursively evaluated - it's a function
 FUNC_MKDIR_P = "$(ATMEL_STUDIO_ROOT)/shellutils/mkdir.exe" -p "$1"
 FUNC_CP = "$(ATMEL_STUDIO_ROOT)/shellutils/cp.exe" "$1" "$2"
@@ -55,6 +57,8 @@ TOOL_EXTENSION :=
 PATH_SEPARATOR = /
 PATH_CONVERT = $1
 RM := rm -f
+TR := tr
+CAT := cat
 FUNC_CP = cp "$1" "$2"
 FUNC_MKDIR_P = mkdir -p "$1"
 

@@ -71,6 +71,7 @@ src/USB.c \
 src/main.c \
 src/my_hardware.c \
 src/SideBySide.c \
+src/Revision.c \
 src/uart_xmega.c \
 src/NXP/AVRHDMI.c \
 src/NXP/NXP_AVR_Internal.c \
@@ -172,7 +173,8 @@ COMMON_INCLUDE_DIRS = \
 BASE_DEFINES := CONFIG_NVM_IGNORE_XMEGA_A3_D3_REVB_ERRATA \
            IOPORT_XMEGA_COMPAT \
            DEBUG \
-           BOARD=USER_BOARD
+           BOARD=USER_BOARD \
+           SVR_HMDMCU_MAKEFILE
 
 ALL_DEFINES := $(BASE_DEFINES) $(DEFINES)
 
@@ -321,6 +323,11 @@ $(call make_build_dirs,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): OPTI
 # below seems insufficient, thus -w disables all warnings...
 $(call make_build_dirs,src/NXP/tmbslTDA1997X_functions.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
 $(call make_build_dirs,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
+
+include git-revision.mk
+#$(info GIT_CFLAGS $(GIT_CFLAGS))
+$(call make_build_dirs,src/Revision.o): gitdefheader
+$(call make_build_dirs,src/Revision.o): override CFLAGS += -I.
 
 # Makes the hex file
 $(call make_build_dirs,$(OUTPUT_HEX)): %/$(OUTPUT_HEX) : %/$(OUTPUT_FILE_PATH)

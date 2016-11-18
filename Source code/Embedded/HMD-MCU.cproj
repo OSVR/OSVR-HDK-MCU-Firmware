@@ -1198,6 +1198,14 @@
     <Compile Include="src\NXP\NXP_AVR_Internal.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\Revision.c">
+      <SubType>compile</SubType>
+      <Link>Embedded\src\Revision.c</Link>
+    </Compile>
+    <Compile Include="src\Revision.h">
+      <SubType>compile</SubType>
+      <Link>Embedded\src\Revision.h</Link>
+    </Compile>
     <Compile Include="src\SideBySide.c">
       <SubType>compile</SubType>
     </Compile>

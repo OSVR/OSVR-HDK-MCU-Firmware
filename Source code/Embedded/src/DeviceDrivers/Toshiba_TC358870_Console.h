@@ -190,6 +190,34 @@ static inline void Toshiba_TC358870_Console_S(BufWithStatus_t cmd)
 		}
 		break;
 	}
+	/// DSI command
+	case 'd':
+	case 'D':
+	{
+		statusBufConsumeByte(&cmd);
+
+		uint8_t command = statusBufConsumeHexDigits2_8(&cmd);
+		if (!cmd.valid)
+		{
+			WriteLn("send DSI command: dxxyy where yy is optional parameter");
+			break;
+		}
+		uint8_t parameter = statusBufConsumeHexDigits2_8(&cmd);
+		char buf[50];
+		if (cmd.valid)
+		{
+			sprintf(buf, "DSI short write command %02" PRIx8 ", parameter %02" PRIx8, command, parameter);
+			WriteLn(buf);
+			Toshiba_TC358870_DSI_Write_Cmd_Short_Param(command, parameter);
+		}
+		else
+		{
+			sprintf(buf, "DSI short write command %02" PRIx8, command);
+			WriteLn(buf);
+			Toshiba_TC358870_DSI_Write_Cmd_Short(command);
+		}
+		break;
+	}
 	default:
 		break;
 	}

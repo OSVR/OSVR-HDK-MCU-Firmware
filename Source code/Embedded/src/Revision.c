@@ -66,3 +66,9 @@ const char * svr_hmdmcu_revision =
     "Dev build with no Git revision information available"
 #endif
 ;
+
+#ifdef SVR_HMDMCU_BUILDINFO
+const char * svr_hmdmcu_extrabuildinfo = SVR_HMDMCU_BUILDINFO;
+#else
+const char * svr_hmdmcu_extrabuildinfo = "";
+#endif

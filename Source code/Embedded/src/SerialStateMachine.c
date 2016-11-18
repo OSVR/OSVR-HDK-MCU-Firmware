@@ -43,6 +43,7 @@
 #include "uart.h"
 #include "SerialStateMachine.h"
 #include "config/my_hardware.h"
+#include "Revision.h"
 
 #include "stdio.h"
 #include "DeviceDrivers/Display.h"
@@ -444,10 +445,10 @@ uint32_t statusBufConsumeHexDigits8_32(BufWithStatus_t *b)
 
 static void Display_software_version(void)
 {
-	char OutString[12];
+	char OutString[20];
 
 	Write("Version ");
-	sprintf(OutString, "%d.%2.2d", MajorVersion, MinorVersion);
+	sprintf(OutString, "%d.%2.2d%s", MajorVersion, MinorVersion, svr_version_suffix);
 	Write(OutString);
 	Write("  ");
 	WriteLn(__DATE__);
@@ -465,6 +466,10 @@ static void Display_software_version(void)
 static void Display_firmware_details(void)
 {
 	WriteLn("Firmware Variant: " SVR_VARIANT_STRING);
+	Write("Revision: ");
+	WriteLn(svr_hmdmcu_revision);
+	Write("Build info: ");
+	WriteLn(svr_hmdmcu_extrabuildinfo);
 	Write("Special Config Defines:");
 // flag define, undefined as soon as we print something for a special config.
 #define SVR_NO_SPECIAL_CONFIG

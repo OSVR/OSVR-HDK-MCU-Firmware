@@ -25,11 +25,19 @@
 // info for #?f
 const char svrEdidInfoString[] = "SVR1019, EDID spec v1.4, with updated 90Hz timings";
 
+#if 0
 // do not enforce the core key pass system - it's "accepted" by default
 static uint8_t core_key_pass = 1;
 // no matter what you enter if you choose to enter a key, it will be accepted as well.
 #define CORE_KEY_PASS_FAIL_VALUE 1
 #define CORE_KEY_PASS_SUCCESS_VALUE 1
+#else
+// enforce the core key pass system
+static uint8_t core_key_pass = 0;
+
+#define CORE_KEY_PASS_FAIL_VALUE 0
+#define CORE_KEY_PASS_SUCCESS_VALUE 1
+#endif
 
 /// SVR1019
 const unsigned char EDID_LUT[256] = {

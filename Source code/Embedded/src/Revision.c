@@ -33,14 +33,20 @@
 #define SVR_REVISION_UNKNOWN
 #endif
 
+#ifdef SVR_HMDMCU_MAKEFILE
 
-#if defined(SVN_GIT_DIRTY) || (defined(SVR_HMDMCU_MAKEFILE) && !defined(SVR_GIT_AT_TAG))
-#define SVR_IS_DEV_BUILD
+#if SVR_GIT_DIRTY || SVR_GIT_NOT_FOUND || !SVR_GIT_AT_TAG
+#define HAVE_SUFFIX
 const char * svr_version_suffix = " (DEV)";
-#elif !defined(SVR_HMDMCU_MAKEFILE)
+#endif
+
+#else // not makefile
 #define SVR_IS_IDE_DEV_BUILD
+#define HAVE_SUFFIX
 const char * svr_version_suffix = " (DEV-IDE)";
-#else
+#endif
+
+#ifndef HAVE_SUFFIX
 const char * svr_version_suffix = " (RELEASE)";
 #endif
 

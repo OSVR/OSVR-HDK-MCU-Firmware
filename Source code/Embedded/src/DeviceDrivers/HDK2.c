@@ -182,12 +182,15 @@ static inline void debugPrintf(const char *format, ...)
 }
 
 #define TC_EDID_BASE UINT16_C(0x8c00)
+/// HDK2 model number is VR17-C14122, so putting a decimal 122 in.
+#define MODEL_COMPONENT_OF_SERIAL_NUMBER 122
 void OSVR_HDK_EDID(void)
 {
 	uint8_t edid_week = EDID_WEEK_MODEL_YEAR_FLAG;                         // model year
 	uint8_t edid_year = EDID_20XX_YEAR_TRANSFORM(SVR_DEFAULT_MODEL_YEAR);  // 26 => 2016.
 	uint32_t edid_sn_numeric = 0;
-	uint8_t edid_sn_numeric_bytes[4] = {0, 0, 0, 0};
+	/// May need a non-zero default for some validity checks.
+	uint8_t edid_sn_numeric_bytes[4] = {MODEL_COMPONENT_OF_SERIAL_NUMBER, 1, 1, 1};
 
 	bool sn_ok = eep_read_sn();
 	if (sn_ok)
@@ -209,6 +212,8 @@ void OSVR_HDK_EDID(void)
 		}
 
 		edid_sn_numeric = ascii_to_dec_16(s_sn + 11);
+		/// Put the model component as "most significant"
+		edid_sn_numeric += UINT8_C(MODEL_COMPONENT_OF_SERIAL_NUMBER) * UINT32_C(10000000);
 		edid_sn_numeric_bytes[0] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(0, edid_sn_numeric);
 		edid_sn_numeric_bytes[1] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(1, edid_sn_numeric);
 		edid_sn_numeric_bytes[2] = BITUTILS_GET_NTH_LEAST_SIG_BYTE(2, edid_sn_numeric);
@@ -220,12 +225,12 @@ void OSVR_HDK_EDID(void)
 	{  // debug message.
 		char buf[50];
 		dWriteLn("S/N Info...\n", debugHDK2Mask);
-		sprintf(buf, "Year: %" PRId8, edid_year);
+		sprintf(buf, "Year: %" PRIu8, edid_year);
 		dWriteLn(buf, debugHDK2Mask);
-		sprintf(buf, "Week: %" PRId8, edid_week);
+		sprintf(buf, "Week: %" PRIu8, edid_week);
 		dWriteLn(buf, debugHDK2Mask);
 
-		sprintf(buf, "Numeric S/N: %" PRId32, edid_sn_numeric);
+		sprintf(buf, "Numeric S/N: %" PRIu32, edid_sn_numeric);
 		dWriteLn(buf, debugHDK2Mask);
 		sprintf(buf, "%02" PRIX8 "-%02" PRIX8 "-%02" PRIX8 "-%02" PRIX8, edid_sn_numeric_bytes[3],
 		        edid_sn_numeric_bytes[2], edid_sn_numeric_bytes[1], edid_sn_numeric_bytes[0]);

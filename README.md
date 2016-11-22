@@ -9,7 +9,8 @@ The variants primarily supported in this repository, listed by their Atmel Studi
 
 - `HDK_Sharp_LCD` - OSVR HDK 1.1 and derived custom devices containing a 5.5" Sharp LCD. (makefile target: `hdk_lcd`)
 - `HDK_OLED` - OSVR HDK 1.2, 1.3/1.4 and derived custom devices containing a single AUO low-persistence OLED panel. (makefile target: `hdk_oled`)
-- `HDK_20` - OSVR HDK 2 and derived custom devices containing dual AUO OLED panels and the Toshiba TC358770 HDMI-dual MIPI converter. (makefile target: `hdk_oled`)
+- `HDK_20_SVR` - OSVR HDK 2 and derived custom devices containing dual AUO OLED panels and the Toshiba TC358870 HDMI-dual MIPI converter. (makefile target: `hdk2svr` for the Sensics-defined EDID)
+    - `HDK_20` (makefile target `hdk2`) is similar but uses legacy Razer-dictated EDID data.
 
 **Other variants are present**, but this repository is not necessarily the authoritative source for those variants. Any changes **must not break other variants** present in this codebase.
 

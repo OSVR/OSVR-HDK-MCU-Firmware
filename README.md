@@ -15,7 +15,9 @@ The variants primarily supported in this repository, listed by their Atmel Studi
 **Other variants are present**, but this repository is not necessarily the authoritative source for those variants. Any changes **must not break other variants** present in this codebase.
 
 ## Building
-The canonical build environment is a fully-updated install of Atmel Studio 7.0 on Windows, though the build should be portable to non-Windows. There are two methods of building, both of which should work and should be updated for new code.
+The canonical build environment is a fully-updated install of Atmel Studio 7.0 on Windows, though the build is portable to non-Windows.
+There are two methods of building, both of which must work and must be updated for new code.
+**Releases are built with the makefile method, along with any other builds that may be distributed** - inconsistent/faulty support for pre/post build steps in Atmel Studio means that Atmel Studio IDE builds cannot carry detailed git commit version metadata accessible via `#?v` and `#?f`, and makefile builds of the variants are easier to maintain in sync with one another with regards to build flags, etc.
 
 ### Atmel Studio project
 Open the solution file in the `Source Code` folder, and build one of the variants, selected using the configuration menu (where you might see "Release" or "Debug" in Visual Studio).

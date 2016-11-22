@@ -3,21 +3,21 @@
 
 This repository contains the source code to the main microcontroller firmware for a family of HMDs related to the OSVR HDKs, originally and primarily developed by [Sensics](http://sensics.com).
 
-The firmware is developed using a "product-line engineering" approach, with each variant sharing the bulk of the code but differing mainly in an include path that contains primarily/only the `VariantOptions.h` configuration header. Each variant can be selected by choosing a corresponding configuration in Atmel Studio or building the corresponding target using the makefile build.
+The firmware is developed using a "product-line engineering" approach, with each variant sharing the bulk of the code but differing mainly in an include path that contains primarily/only the `VariantOptions.h` configuration header. Each variant can be selected by choosing a corresponding configuration in Atmel Studio or building the corresponding target using the Makefile build.
 
 The variants primarily supported in this repository, listed by their Atmel Studio configuration names, are:
 
-- `HDK_Sharp_LCD` - OSVR HDK 1.1 and derived custom devices containing a 5.5" Sharp LCD. (makefile target: `hdk_lcd`)
-- `HDK_OLED` - OSVR HDK 1.2, 1.3/1.4 and derived custom devices containing a single AUO low-persistence OLED panel. (makefile target: `hdk_oled`)
-- `HDK_20_SVR` - OSVR HDK 2 and derived custom devices containing dual AUO OLED panels and the Toshiba TC358870 HDMI-dual MIPI converter. (makefile target: `hdk2svr` for the Sensics-defined EDID)
-    - `HDK_20` (makefile target `hdk2`) is similar but uses legacy Razer-dictated EDID data.
+- `HDK_Sharp_LCD` - OSVR HDK 1.1 and derived custom devices containing a 5.5" Sharp LCD. (Makefile target: `hdk_lcd`)
+- `HDK_OLED` - OSVR HDK 1.2, 1.3/1.4 and derived custom devices containing a single AUO low-persistence OLED panel. (Makefile target: `hdk_oled`)
+- `HDK_20_SVR` - OSVR HDK 2 and derived custom devices containing dual AUO OLED panels and the Toshiba TC358870 HDMI-dual MIPI converter. (Makefile target: `hdk2svr` for the Sensics-defined EDID)
+    - `HDK_20` (Makefile target `hdk2`) is similar but uses legacy Razer-dictated EDID data.
 
 **Other variants are present**, but this repository is not necessarily the authoritative source for those variants. Any changes **must not break other variants** present in this codebase.
 
 ## Building
 The canonical build environment is a fully-updated install of Atmel Studio 7.0 on Windows, though the build is portable to non-Windows.
 There are two methods of building, both of which must work and must be updated for new code.
-**Releases are built with the makefile method, along with any other builds that may be distributed** - inconsistent/faulty support for pre/post build steps in Atmel Studio means that Atmel Studio IDE builds cannot carry detailed git commit version metadata accessible via `#?v` and `#?f`, and makefile builds of the variants are easier to maintain in sync with one another with regards to build flags, etc.
+**Releases are built with the Makefile method, along with any other builds that may be distributed** - inconsistent/faulty support for pre/post build steps in Atmel Studio means that Atmel Studio IDE builds cannot carry detailed git commit version metadata accessible via `#?v` and `#?f`, and Makefile builds of the variants are easier to maintain in sync with one another with regards to build flags, etc.
 
 ### Atmel Studio project
 Open the solution file in the `Source Code` folder, and build one of the variants, selected using the configuration menu (where you might see "Release" or "Debug" in Visual Studio).
@@ -25,7 +25,7 @@ Open the solution file in the `Source Code` folder, and build one of the variant
 ### Makefile
 Open a command prompt: to make it easier (to avoid needing to provide a full path to `make` in the `shelltools` subdirectory of the Atmel Studio install directory or install your own copy of `make` using [chocolatey](https://chocolatey.org) ) you can choose Tools, Command Prompt in Atmel Studio to open one with the PATH already extended. You also need git on your path, for automatic version stamping of builds based on tags - you may instead pass `GIT=c:/path/to/git.exe` as an argument to `make` if git isn't on your PATH.
 
-Change directory to the source tree, subdirectory `Source Code/Embedded/makefile-build`. Here, you can run `make` (or `make all`) to build all variants (not just the main variants listed above) and copy their hex files, renamed after their makefile target, to the current directory. Of course, `make hdk2svr` or any other single target name will just make that one target. `make help` will list some information - but open the Makefile in a text editor for more help.
+Change directory to the source tree, subdirectory `Source Code/Embedded/makefile-build`. Here, you can run `make` (or `make all`) to build all variants (not just the main variants listed above) and copy their hex files, renamed after their Makefile target, to the current directory. Of course, `make hdk2svr` or any other single target name will just make that one target. `make help` will list some information - but open the Makefile in a text editor for more help.
 
 This build system is portable to non-Windows installs of `avr-gcc` with `avr-libc`, but has not been rigorously tested on other platforms. The Atmel Studio bundled toolchain reports the following:
 

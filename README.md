@@ -35,22 +35,30 @@ This build system is portable to non-Windows installs of `avr-gcc` with `avr-lib
 gcc version 4.9.2 (AVR_8_bit_GNU_Toolchain_3.5.3_1700)
 ```
 
-## Development
+## Development/Contribution
 
 ### Code Formatting
-A clang-format file is present, and `/Source code/Embedded/format-code.sh` is a script that should run on *nix as well as under "git bash" to automatically apply clang-format to a subset of the source tree (the "non-vendor" portions). Changes should have clang-format applied to "non-vendor" code at every commit (not in one commit at the end of a branch) for clarity and ease of review, so that diffs are minimal and contain just the "meat" of the changes, not frivolous whitespace changes due to badly-behaving editors. The "git clang-format" utility, which formats just patched/staged code, can be a useful assistant in this.
+A clang-format file is present, and `/Source code/Embedded/format-code.sh` is a script (usable both on Unix-like systems as well as under "git bash") to automatically apply clang-format to a subset of the source tree (the "non-vendor" portions).
+*Changes shall have clang-format applied to "non-vendor" code at every commit* (not in one commit at the end of a branch) for clarity and ease of review, so that diffs are minimal and contain just the "meat" of the changes, not frivolous whitespace changes due to badly-behaving editors.
+The ["git clang-format" utility](https://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/git-clang-format), which formats just patched/staged code, can be a useful assistant in this.
+
+Use a recent version of clang/clang-format: [LLVM Windows snapshots](http://llvm.org/builds/) are the canonical source for Windows clang-format for this project.
 
 ### Build System and Atmel Studio Project/Files
-Atmel Studio frequently modifies the `.cproj`, `.componentinfo.xml`, and `.atsln` file but with no substantial cross-developer content. Until this upstream design flaw is fixed by Atmel and user preferences (such as debug tool and component versions) are split out from project description files, be very cautious before staging and committing any changes to those files. Typically, the only time to do so would be if you add a new file to the build, or need to change the build flags for a variant or add a variant, and then you can stage just the part of the `.cproj` file diff that matters. **Do not** stage changes that just add/change the debug tool (JTAG/ICE) or metion `PackRepoDir`, since they vary from system to system and are automatically performed by each user's installation of Atmel Studio.
+Atmel Studio frequently modifies the `.cproj`, `.componentinfo.xml`, and `.atsln` file but with no substantial cross-developer content.
+Until this upstream design flaw is fixed by Atmel and user preferences (such as debug tool and component versions) are split out from project description files, be very cautious before staging and committing any changes to those files - *do not commit changes to this file unless required, in which case stage only the portions required for your update.*
+Typically, the only time to do so would be if you add a new file to the build, or need to change the build flags for a variant or add a variant, and then you can stage just the part of the `.cproj` file diff that matters.
+**Do not** stage changes that just add/change the debug tool (JTAG/ICE) or mention `PackRepoDir`, since they vary from system to system and are automatically performed by each user's installation of Atmel Studio.
 
-Please note, also, that if you actually have a need to modify these files, you'll typically have a need to modify the Makefile as well - this can also be used as a test: if you didn't need to modify the makefile, unless all you did was add a header file to the repo/IDE project, then you probably don't need to modify the Atmel Studio files.
+Please note, also, that if you actually have a need to modify these files, you'll typically have a need to modify the Makefile as well.
+This can also be used as a test: if you didn't need to modify the Makefile, unless all you did was add a header file to the repo/IDE project, then you probably don't need to modify the Atmel Studio files.
 
-If you modified only one of the two build systems, please say why in your pull request - and if it's just "I'm not good at makefiles", that's OK, we can suggest what to do, but this information is important.
+If you modified only one of the two build systems, please say why in your pull request - and if it's just "I'm not good at Makefiles", that's OK, we can suggest what to do, but this information is important.
 
 ### Code review and testing
 Pull requests are used for code review. Fork or branch from the latest master, and make a branch with just a single logical set of changes.
 
-The minimal testing required is that you run a makefile build of all variants - `make clean` followed by `make all` - and that it complete successfully, however, this is just a smoketest.
+The minimal testing required is that you run a Makefile build of all variants in all supported flag sets - `make clean` followed by `make complete` - and that it complete successfully, however, this is just an initial smoketest and not comprehensive.
 
 In your pull request, please state which devices you've installed your patched firmware on and how you've tested the change.
 

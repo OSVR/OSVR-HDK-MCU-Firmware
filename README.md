@@ -68,7 +68,7 @@ See individual files for licenses. If not marked, files should be assumed to be:
 
 > Copyright 2008-2016 Sensics, Inc. All rights reserved.
 
-A goal is to eventually be able to open source as much of this firmware as possible under the Apache License, version 2.0. A number of vendored files have already been relicensed, with permission, under the Apache License, version 2.0. As such, **new contributions are asked to be licensed under the Apache License, version 2.0**.
+A goal is to eventually be able to open source as much of this firmware as possible under the Apache License, version 2.0. A number of vendored files have already been relicensed, with permission, under the Apache License, version 2.0. As such, **new non-Sensics contributions shall be licensed under the Apache License, version 2.0**.
 
 - `Source Code/Embedded/src/ASF` - the Atmel Software Framework, with some minimal modifications (see version control), under its own license:
 

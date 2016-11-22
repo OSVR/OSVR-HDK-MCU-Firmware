@@ -26,7 +26,7 @@
 #if SVR_GIT_NOT_FOUND
 #define SVR_IS_DEV_BUILD
 #define SVR_REVISION_UNKNOWN
-#endif // SVR_GIT_NOT_FOUND
+#endif  // SVR_GIT_NOT_FOUND
 
 #else
 // IDE builds
@@ -37,20 +37,20 @@
 
 #if SVR_GIT_DIRTY || SVR_GIT_NOT_FOUND || !SVR_GIT_AT_TAG
 #define HAVE_SUFFIX
-const char * svr_version_suffix = " (DEV)";
+const char* svr_version_suffix = " (DEV)";
 #endif
 
-#else // not makefile
+#else  // not makefile
 #define SVR_IS_IDE_DEV_BUILD
 #define HAVE_SUFFIX
-const char * svr_version_suffix = " (DEV-IDE)";
+const char* svr_version_suffix = " (DEV-IDE)";
 #endif
 
 #ifndef HAVE_SUFFIX
-const char * svr_version_suffix = " (RELEASE)";
+const char* svr_version_suffix = " (RELEASE)";
 #endif
 
-const char * svr_hmdmcu_revision =
+const char* svr_hmdmcu_revision =
 #if defined(SVR_IS_DEV_BUILD)
     "(DEV) "
 #elif defined(SVR_IS_IDE_DEV_BUILD)
@@ -60,21 +60,23 @@ const char * svr_hmdmcu_revision =
 #ifdef SVR_HMDMCU_MAKEFILE
 #if SVR_GIT_AT_TAG
     "Built from source tagged " SVR_GIT_LAST_TAG
-#else // not SVR_GIT_AT_TAG
-    "Based on source tagged " SVR_GIT_LAST_TAG " and " SVR_GIT_COMMIT_COUNT " additional commits (commit hash " SVR_GIT_COMMIT_HASH ")"
-#endif // SVR_GIT_AT_TAG
+#else   // not SVR_GIT_AT_TAG
+    "Based on source tagged " SVR_GIT_LAST_TAG " and " SVR_GIT_COMMIT_COUNT
+    " additional commits (commit hash " SVR_GIT_COMMIT_HASH
+    ")"
+#endif  // SVR_GIT_AT_TAG
 #if SVR_GIT_DIRTY
     " with additional (uncommitted) changes"
-#endif // SVR_GIT_DIRTY
-#endif // SVR_HMDMCU_MAKEFILE
+#endif  // SVR_GIT_DIRTY
+#endif  // SVR_HMDMCU_MAKEFILE
 
 #ifdef SVR_REVISION_UNKNOWN
     "Dev build with no Git revision information available"
 #endif
-;
+    ;
 
 #ifdef SVR_HMDMCU_BUILDINFO
-const char * svr_hmdmcu_extrabuildinfo = SVR_HMDMCU_BUILDINFO;
+const char* svr_hmdmcu_extrabuildinfo = SVR_HMDMCU_BUILDINFO;
 #else
-const char * svr_hmdmcu_extrabuildinfo = "";
+const char* svr_hmdmcu_extrabuildinfo = "";
 #endif

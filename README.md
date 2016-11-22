@@ -60,27 +60,26 @@ See individual files for licenses. If not marked, files should be assumed to be:
 
 A goal is to eventually be able to open source as much of this firmware as possible under the Apache License, version 2.0. A number of vendored files have already been relicensed, with permission, under the Apache License, version 2.0. As such, **new contributions are asked to be licensed under the Apache License, version 2.0**.
 
-- `Source code/Embedded/vendor/libhdk20` - Developed for Razer for the HDK2, header slightly modified for consistency by Sensics, complete sources not presently committed though derived from this repository, license unknown.
 - `Source Code/Embedded/src/ASF` - the Atmel Software Framework, with some minimal modifications (see version control), under its own license:
 
 > Copyright (c) 2008-2016 Atmel Corporation. All rights reserved.
 >
 > Redistribution and use in source and binary forms, with or without
 > modification, are permitted provided that the following conditions are met:
-> 
+>
 > 1. Redistributions of source code must retain the above copyright notice,
 >    this list of conditions and the following disclaimer.
-> 
+>
 > 2. Redistributions in binary form must reproduce the above copyright notice,
 >    this list of conditions and the following disclaimer in the documentation
 >    and/or other materials provided with the distribution.
-> 
+>
 > 3. The name of Atmel may not be used to endorse or promote products derived
 >    from this software without specific prior written permission.
-> 
+>
 > 4. This software may only be redistributed and used in connection with an
 >    Atmel microcontroller product.
-> 
+>
 > THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
 > WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 > MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE

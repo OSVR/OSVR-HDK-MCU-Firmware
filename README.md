@@ -1,7 +1,7 @@
 # OSVR HDK Microcontroller Firmware
 > Maintained at <https://github.com/OSVR/OSVR-HDK-MCU-Firmware>
 
-This repository contains the source code to the main microcontroller firmware for a family of HMDs related to the OSVR HDK, originally and primarily developed by [Sensics](http://sensics.com).
+This repository contains the source code to the main microcontroller firmware for a family of HMDs related to the OSVR HDKs, originally and primarily developed by [Sensics](http://sensics.com).
 
 The firmware is developed using a "product-line engineering" approach, with each variant sharing the bulk of the code but differing mainly in an include path that contains primarily/only the `VariantOptions.h` configuration header. Each variant can be selected by choosing a corresponding configuration in Atmel Studio or building the corresponding target using the makefile build.
 
@@ -23,11 +23,11 @@ There are two methods of building, both of which must work and must be updated f
 Open the solution file in the `Source Code` folder, and build one of the variants, selected using the configuration menu (where you might see "Release" or "Debug" in Visual Studio).
 
 ### Makefile
-Open a command prompt: to make it easier (to avoid needing to provide a full path to `make` in the shell tools subdirectory of the Atmel Studio install directory or install your own copy of `make` using [chocolatey](https://chocolatey.org) ) you can choose Tools, Command Prompt in Atmel Studio to open one with the PATH already extended.
+Open a command prompt: to make it easier (to avoid needing to provide a full path to `make` in the `shelltools` subdirectory of the Atmel Studio install directory or install your own copy of `make` using [chocolatey](https://chocolatey.org) ) you can choose Tools, Command Prompt in Atmel Studio to open one with the PATH already extended. You also need git on your path, for automatic version stamping of builds based on tags - you may instead pass `GIT=c:/path/to/git.exe` as an argument to `make` if git isn't on your PATH.
 
-Change directory to the source tree, subdirectory `Source Code/Embedded/makefile-build`. Here, you can run `make` (or `make all`) to build all variants (not just the main variants listed above) and copy their hex files, renamed after their makefile target, to the current directory. Of course, `make hdk2` or any other single target name will just make that one target. `make help` will list some information - but open the Makefile in a text editor for more help.
+Change directory to the source tree, subdirectory `Source Code/Embedded/makefile-build`. Here, you can run `make` (or `make all`) to build all variants (not just the main variants listed above) and copy their hex files, renamed after their makefile target, to the current directory. Of course, `make hdk2svr` or any other single target name will just make that one target. `make help` will list some information - but open the Makefile in a text editor for more help.
 
-This build system should be portable to non-Windows installs of `avr-gcc` with `avr-libc`, but has not been tested. The Atmel Studio bundled toolchain reports the following:
+This build system is portable to non-Windows installs of `avr-gcc` with `avr-libc`, but has not been rigorously tested on other platforms. The Atmel Studio bundled toolchain reports the following:
 
 ```
 > avr-gcc -v

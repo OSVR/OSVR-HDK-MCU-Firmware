@@ -64,7 +64,7 @@
 /* The following includes are used by I2C access function for ARM7. If    */
 /* you need to rewrite these functions for your own SW infrastructure, then   */
 /* it can be removed                                                          */
-#include "I2C.h"
+#include "i2c.h"
 
 
 #ifdef TMFL_TDA19972_FAMILY

@@ -107,21 +107,44 @@ extern uint8_t
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 #define TC358870_Reset_Pin IOPORT_CREATE_PIN(PORTD, 5)  // out, active low, >12ms.
+#define TC358870_TWI_PORT (&TWIE)                       // Dennis Yeh 2016/03/14 : for TC358870
 
+/// This pin is used as address select during reset, interrupt the rest of the time.
+/// out, Active high, It's also I2C address selection: Slave address = 0x0F if INT = Low
+/// during reset, Slave address = 0x1F if INT = High during reset
+#define TC358870_ADDR_SEL_INT IOPORT_CREATE_PIN(PORTD, 2)
+
+// Warning - because IOPORT_CREATE_PIN doesn't do expansion before token pasting, we can't use this as an input, so it
+// has to be kept in sync manually... and you need the trailing underscore since PORTD is a define itself
+#define TC358870_ADDR_SEL_INT_PORT PORTD_INT
+
+// We'll use interrupt 1 on this port - interrupt 0 is used by BNO already.
+#define TC358870_PORT_INT 1
+
+// Display interrupts will be medium level
+#define TC358870_INT_LEVEL MED
+
+// To get the ISR definition, use DeviceDrivers/Toshiba_TC358870_ISR.h
+
+/// in, 1.8v power good, asserts low if output voltage is low due to thermal shutdown,
+/// overcurrent, over/under-voltage or EN shut down.
+#define TC358870_PWR_GOOD IOPORT_CREATE_PIN(PORTD, 0)
 #endif  // SVR_HAVE_TOSHIBA_TC358870
 
 #ifdef SVR_IS_HDK_20
 #define PANEL_RESET IOPORT_CREATE_PIN(PORTF, 4)  // out, panel reset. hw power reset.
 #endif
 
-/// @todo This section is pins that are entirely unreferenced anywhere in the HDK_20 Coretronic fork except in
-/// custom_board_init
 #ifdef SVR_IS_HDK_20
 #define MCU_LEVEL_SHIFT_OE IOPORT_CREATE_PIN(PORTA, 1)  // out, level shift enable, low enable. U55
-#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)          // out, Right Panel SWIRE
-#define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)         // out, Right Panel SWIRE
-#define ANA_PWR_IN IOPORT_CREATE_PIN(PORTA, 6)          // in, 5v power good.
-#define EDID_EEP_WP IOPORT_CREATE_PIN(PORTA, 7)         // out, edid eeprom write protection, 0: write protect
+#define HDMI_HPD IOPORT_CREATE_PIN(PORTF, 3)            //< @todo out, HDMI_HPD on schematic?
+#define MCU_LED_R IOPORT_CREATE_PIN(PORTA, 3)           //< @todo LD17 - aka MCU_EDID_R - just an LED or something more?
+
+#define Left_SWIRE IOPORT_CREATE_PIN(PORTF, 1)   // out, Left Panel SWIRE //< @todo NC?
+#define Right_SWIRE IOPORT_CREATE_PIN(PORTF, 3)  // out, Right Panel SWIRE //< @todo PF3 is HDMI_HPD on schematic?
+
+#define ANA_PWR_IN IOPORT_CREATE_PIN(PORTA, 6)   // in, 5v power good. "ANA_TMP1" - there is also PA4 HDMI_D5V
+#define EDID_EEP_WP IOPORT_CREATE_PIN(PORTA, 7)  // out, edid eeprom write protection, 0: write protect
 
 // port B
 #define AUD_JACK_DETECT IOPORT_CREATE_PIN(PORTB, 0)  // in, Audio jack detection, 0: plug, 1: unplug
@@ -135,15 +158,7 @@ extern uint8_t
 #define AUD_MUTE IOPORT_CREATE_PIN(PORTC, 3)
 
 // port D
-#define PWR_GOOD_2V5 \
-	IOPORT_CREATE_PIN(PORTD, 0)  // in, 1.8v power good, asserts low if output voltage is low due to thermal shutdown,
-                                 // overcurrent, over/under-voltage or EN shut down.
-#define USB_SW_OC IOPORT_CREATE_PIN(PORTD, 1)  // out, HW NC, Don't care.
-
-/// @todo Comment says this is used as output, but Coretronic fork has this initialized as input... (f.k.a Int_HDMI_A)
-#define I2C_Addr_Sel \
-	IOPORT_CREATE_PIN(PORTD, 2)  // out, Active high, It's also I2C address selection: Slave address = 0x0F if INT = Low
-                                 // during reset, Slave address = 0x1F if INT = High during reset
+#define USB_SW_OC IOPORT_CREATE_PIN(PORTD, 1)  // out, HW NC, Don't care. //< @todo schematic says in, present
 
 #endif  // SVR_IS_HDK_20
 
@@ -154,7 +169,7 @@ void set_pwm_values(uint8_t Display1, uint8_t Display2);  // sets pwm values for
 // indicates version of HDK, e.g. 1.1, 1.2, 1.3
 extern uint8_t HDK_Version_Major;
 extern uint8_t HDK_Version_Minor;
-extern char ProductName[];
+extern unsigned char ProductName[];
 // Must be manually kept in sync with the string in my_hardware.c (and conf_usb.h), but a static assert ensures it is
 // so.
 #if SVR_HDK_DEFAULT_MAJOR_VER == 1 && SVR_HDK_DEFAULT_MINOR_VER == 2

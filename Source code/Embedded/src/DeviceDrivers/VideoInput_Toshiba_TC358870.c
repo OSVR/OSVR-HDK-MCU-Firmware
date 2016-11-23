@@ -9,78 +9,46 @@
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 
-#include <libhdk20.h>
 #include "VideoInput_Protected.h"
 #include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/Toshiba_TC358870.h"
+#include "DeviceDrivers/Toshiba_TC358870_ISR.h"
 #include "my_hardware.h"
 #include "Console.h"
 #include "SvrYield.h"
+#include "BitUtilsC.h"
 
-#include <stdio.h>  // for sprintf
+#include <stdio.h>     // for sprintf
+#include <inttypes.h>  // for stdint.h-matching format specifier macros
 
-#define SVR_DEBUG_LIBHDK2_BEHAVIOR
-
-/// @todo Despite this function being empty in the Coretronic fork (and the original contents since being renamed to be
-/// namespaced in the mainline), we need to define it libhdk20.a can link against it circularly...
-/// (IsVideoExistingPolling contains a reference to it)
-void UpdateResolutionDetection(void);
-void UpdateResolutionDetection()
-{
-#ifdef SVR_DEBUG_LIBHDK2_BEHAVIOR
-	if (VideoInput_Get_Status())
-	{
-		WriteLn("libhdk20: called UpdateResolutionDetection() when video signal present.");
-	}
-	else
-	{
-		WriteLn("libhdk20: called UpdateResolutionDetection() when video signal absent.");
-	}
-#endif
-}
-#if 0
-/// @todo We actually need to export this function as bool HDMI_IsVideoExisting(void) so libhdk20.a can link against it
-/// circularly... (IsVideoExistingPolling contains a reference to it)
-///
-/// Yes, this is effectively a duplicate of code in Toshiba_TC358870, except that we've interposed our signal report
-/// methods in it.
-///
-/// IsVideoExistingPolling calls this method.
-bool HDMI_IsVideoExisting(void);
-bool HDMI_IsVideoExisting()
-{
-	uint8_t tc_data;
-
-	if (TC358870_i2c_Read(0x8520, &tc_data) != TC358870_OK)
-	{  // get SYS_STATUS
-		WriteLn("TC358870_i2c_Read failed!");
-		VideoInput_Protected_Report_No_Signal();
-		return false;
-	}
-
-	if (tc_data != 0x9F)
-	{
-		VideoInput_Protected_Report_No_Signal();
-		return false;
-	}
-
-	VideoInput_Protected_Report_Signal();
-	return true;
-}
-#endif
-static bool haveInitOnce = false;
 void VideoInput_Init(void)
 {
-	// No separate init required - all done in Display_System_Init() since it's just one chip.
-	if (haveInitOnce)
+	static bool haveInit = false;
+	if (!haveInit)
+	{
+		// This is real-deal, first time initialization.
+		haveInit = true;
+		// start the chip, if it hasn't been started.
+		Toshiba_TC358870_Init_Once();
+	}
+	else
 	{
 		// This is a repeat init - presumably from serial console - so we'll actually call over to the TC358870 driver
 		// (used in Display_System_Init()) since that's where the meat of initializing the chip happens.
-		Toshiba_TC358870_Init();
-	}
-	else
-	{
-		haveInitOnce = true;
+		bool haveVideo = VideoInput_Get_Status();
+
+		Toshiba_TC358870_Disable_Video_TX();
+		// software reset HDMI
+		Toshiba_TC358870_HDMI_SW_Reset();
+
+		Toshiba_TC358870_HDMI_Setup();
+
+		/// Turn on interrupts.
+		Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
+		if (haveVideo)
+		{
+			Toshiba_TC358870_Enable_Video_TX();
+		}
 	}
 
 	VideoInput_Protected_Init_Succeeded();
@@ -93,16 +61,66 @@ void VideoInput_Update_Resolution_Detection(void)
 	HDMIStatus = (VideoInput_Get_Status() ? VIDSTATUS_VIDEO_LANDSCAPE : VIDSTATUS_NOVIDEO);
 }
 
-void VideoInput_Task(void) {}
+static volatile bool s_gotVideoInterrupt = false;
+TC358870_ISR()
+{
+	s_gotVideoInterrupt = true;
+	/// Clears the interrupt on the MCU, but not on the receiver.
+	Toshiba_TC358870_MCU_Ints_Clear_Flag();
+}
+
+static inline bool tc_getStatus(void)
+{
+	char myMessage[50];
+	uint8_t data = 0;
+	bool ret = Toshiba_TC358870_Have_Video_Sync_Detailed(&data);
+	sprintf(myMessage, "System status reg 0x8520: %#04x", data);
+	WriteLn(myMessage);
+	return ret;
+}
+
+void VideoInput_Task(void)
+{
+	bool gotInterrupt;
+	Toshiba_TC358870_MCU_Ints_Suspend();
+	barrier();
+	/// Get the state of the "got interrupt" flag atomically.
+	{
+		gotInterrupt = s_gotVideoInterrupt;
+		s_gotVideoInterrupt = false;
+	}
+	if (gotInterrupt)
+	{
+		Toshiba_TC358870_Disable_All_Interrupts();
+		bool origStatus = VideoInput_Get_Status();
+		WriteLn("Got a video sync change interrupt!");
+		bool status = tc_getStatus();
+		if (origStatus != status)
+		{
+			// OK, this is an actual change we want to respond to.
+			// Apply the new video sync status.
+			WriteLn("Reporting an actual change!");
+			VideoInput_Protected_Report_Status(status);
+		}
+		barrier();
+		// OK to re-enable the sync change interrupt now - also clears the interrupt flag on the toshiba chip.
+		Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
+	}
+	barrier();
+	Toshiba_TC358870_MCU_Ints_Resume();
+}
+
 void VideoInput_Reset(uint8_t inputId)
 {
-	if (inputId == 1)
+	if (inputId != 1)
 	{
-		WriteLn("reset HDMI1");
-		Toshiba_TC358870_Trigger_Reset();
-	}
-	else
 		WriteLn("Wrong HDMI num");
+		return;
+	}
+
+	WriteLn("reset HDMI1");
+	Toshiba_TC358870_Trigger_Reset();
+	VideoInput_Poll_Status();
 }
 
 static const char LIBHDK2_NOT_SUPPORTED[] = "TC358870 via libhdk20 does not support this feature.";
@@ -110,23 +128,117 @@ static const char LIBHDK2_NOT_SUPPORTED[] = "TC358870 via libhdk20 does not supp
 void VideoInput_Suspend(void) { WriteLn(LIBHDK2_NOT_SUPPORTED); }
 void VideoInput_Resume(void) { WriteLn(LIBHDK2_NOT_SUPPORTED); }
 void VideoInput_Poll_Status(void) { VideoInput_Protected_Report_Status(Toshiba_TC358870_Have_Video_Sync()); }
+#define VITC_GETBIT(VAL, BIT) ((uint8_t)(((VAL & BITUTILS_BIT(BIT)) >> (BIT))))
+
+static inline void vi_tc_dump_reg_status(uint16_t reg, uint8_t bytes)
+{
+	char myMessage[50];
+	sprintf(myMessage, "TC358870 reg %#06" PRIx16 ": ", reg);
+	Write(myMessage);
+
+	uint32_t data = 0;
+	Toshiba_TC358870_I2C_Read32(reg, &data);
+
+	// access through a character pointer is OK even with strict aliasing.
+	unsigned char* buf = (unsigned char*)(&data);
+
+	switch (bytes)
+	{
+	case 1:
+	{
+		sprintf(myMessage, " (as 8-bit hex %#04" PRIx8 ") ", buf[0]);
+		Write(myMessage);
+		break;
+	}
+	case 2:
+	{
+		// not violating strict aliasing...
+		uint16_t justMyData;
+		unsigned char* myBuf = (unsigned char*)(&justMyData);
+		myBuf[0] = buf[0];
+		myBuf[1] = buf[1];
+
+		sprintf(myMessage, " (as 16-bit hex %#06" PRIx16 ") ", justMyData);
+		Write(myMessage);
+		break;
+	}
+
+	case 4:
+	{
+		sprintf(myMessage, " (as 32-bit hex %#010" PRIx32 ") ", data);
+		Write(myMessage);
+		break;
+	}
+	}
+
+	for (uint8_t i = 0; i < bytes; ++i)
+	{
+		unsigned char val = buf[bytes - i - 1];
+		sprintf(myMessage, "%d%d%d%d %d%d%d%d ", VITC_GETBIT(val, 7), VITC_GETBIT(val, 6), VITC_GETBIT(val, 5),
+		        VITC_GETBIT(val, 4), VITC_GETBIT(val, 3), VITC_GETBIT(val, 2), VITC_GETBIT(val, 1),
+		        VITC_GETBIT(val, 0));
+		Write(myMessage);
+	}
+	WriteEndl();
+}
+
 // to console
 void VideoInput_Report_Status(void)
 {
-	Write("Last time libhdk20:IsVideoExistingPolling() called HDMI_IsVideoExisting(), ");
+	Write("Video input status: ");
 	if (VideoInput_Get_Status())
 	{
-		WriteLn("video input was available.");
+		WriteLn("have sync.");
 	}
 	else
 	{
-		WriteLn("no video input was available.");
+		WriteLn("no sync available.");
 	}
 	char myMessage[50];
 	sprintf(myMessage, "TC358870_Init called %d times", Toshiba_TC358870_Get_Init_Count());
 	WriteLn(myMessage);
 
-	sprintf(myMessage, "VideoInput_Init called once: %d", (haveInitOnce ? 1 : 0));
+	sprintf(myMessage, "Address select/interrupt pin: %d", ioport_get_value(TC358870_ADDR_SEL_INT));
 	WriteLn(myMessage);
+	{
+		uint16_t data = 0;
+		Toshiba_TC358870_I2C_Read16(0x0000, &data);
+		uint8_t highByte = (uint8_t)((data >> 8) & 0xff);
+		uint8_t lowByte = (uint8_t)(data & 0xff);
+		sprintf(myMessage, "Chip ID: %#04" PRIx8 " (expected 0x47)", highByte);
+		WriteLn(myMessage);
+		sprintf(myMessage, "Rev ID: %#04" PRIx8 " (expected 0x00)", lowByte);
+		WriteLn(myMessage);
+	}
+	Write("System Status ");
+	vi_tc_dump_reg_status(0x8520, 1);
+
+	Write("ConfCtl0 ");
+	vi_tc_dump_reg_status(0x0004, 2);
+	Write("ConfCtl1 ");
+	vi_tc_dump_reg_status(0x0006, 2);
+
+	Write("LANE_STATUS_HS (DSI-TX0) - want 8f - ");
+	vi_tc_dump_reg_status(0x0290, 4);
+
+	Write("LANE_STATUS_LS (DSI-TX0) - want 0 - ");
+	vi_tc_dump_reg_status(0x0294, 4);
+
+	Write("MIPI_PLL_CNF (DSI-TX0) ");
+	vi_tc_dump_reg_status(0x02AC, 4);
+
+	Write("FUNC_MODE (DSI-TX0) ");
+	vi_tc_dump_reg_status(0x0150, 4);
+	Write("LANE_STATUS_HS (DSI-TX1) - want 8f - ");
+	vi_tc_dump_reg_status(0x0490, 4);
+
+	Write("LANE_STATUS_LS (DSI-TX1) - want 0 - ");
+	vi_tc_dump_reg_status(0x0494, 4);
+
+	Write("MIPI_PLL_CNF (DSI-TX1) ");
+	vi_tc_dump_reg_status(0x04AC, 4);
+
+	Write("FUNC_MODE (DSI-TX1) ");
+	vi_tc_dump_reg_status(0x0350, 4);
 }
 #endif

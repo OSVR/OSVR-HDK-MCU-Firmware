@@ -16,6 +16,8 @@
 #  error The stack instumentation code is intended for AVR 8-bit targets only.
 #endif
 
+#ifdef SVR_ENABLE_STACKCHECKER
+
 /** Linker provided symbols for the end of the static data section, and the
  *  of the stack.
  */
@@ -46,7 +48,9 @@ void _StackPaint(void)
 {
 	uint32_t* fill_start = (uint32_t*)__ALIGN32_UPWARDS(&_end);
 	uint32_t* fill_end   = (uint32_t*)__ALIGN32_DOWNWARDS(&__stack);
-	
+
 	for (uint32_t* fill_pos = fill_start; fill_pos < fill_end; fill_pos++)
 		*fill_pos = __SWAP_ENDIAN32(0xDEADBEEF);
 }
+
+#endif

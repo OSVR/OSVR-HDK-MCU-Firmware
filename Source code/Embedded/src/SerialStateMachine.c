@@ -43,11 +43,12 @@
 #include "uart.h"
 #include "SerialStateMachine.h"
 #include "config/my_hardware.h"
+#include "Revision.h"
 
 #include "stdio.h"
 #include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/VideoInput.h"
-#include "boot.h"
+#include "Boot.h"
 #include "Console.h"
 #include "main.h"
 #include "TimingDebug.h"
@@ -71,19 +72,21 @@
 #include "DeviceDrivers/BNO070.h"
 #endif
 
+#include "DeviceDrivers/Toshiba_TC358870_Console.h"
+
 #ifdef SVR_USING_NXP
-#include "nxp/AVRHDMI.h"
-#include "nxp/tmbslHdmiRx_types.h"
-#include "nxp/tmdlHdmiRx.h"
-#include "nxp/tmdlHdmiRx_cfg.h"
-#include "nxp/tmbslTDA1997X_functions.h"
-#include "nxp/tmbslTDA1997X_local.h"
-#include "nxp/i2c.h"
-#include "nxp/my_bit.h"
+#include "NXP/AVRHDMI.h"
+#include "NXP/tmbslHdmiRx_types.h"
+#include "NXP/tmdlHdmiRx.h"
+#include "NXP/tmdlHdmiRx_cfg.h"
+#include "NXP/tmbslTDA1997X_Functions.h"
+#include "NXP/tmbslTDA1997X_local.h"
+#include "NXP/i2c.h"
+#include "NXP/my_bit.h"
 #endif
 
 #ifdef SVR_IS_HDK_20
-#include <libhdk20.h>
+#include "DeviceDrivers/HDK2.h"
 #endif
 
 #include <avr/io.h>
@@ -375,6 +378,8 @@ uint8_t statusBufConsumeHexDigits2_8(BufWithStatus_t *b)
 
 	// shift the previous digit over, and parse the new one.
 	ret = (ret << BITS_PER_HEX_DIGIT) | ParseHexDigitDirectly(c);
+	// consume the byte
+	statusBufConsumeByte_Unchecked(b);
 	return ret;
 }
 uint16_t statusBufConsumeHexDigits4_16(BufWithStatus_t *b)
@@ -440,10 +445,10 @@ uint32_t statusBufConsumeHexDigits8_32(BufWithStatus_t *b)
 
 static void Display_software_version(void)
 {
-	char OutString[12];
+	char OutString[20];
 
 	Write("Version ");
-	sprintf(OutString, "%d.%2.2d", MajorVersion, MinorVersion);
+	sprintf(OutString, "%d.%2.2d%s", MajorVersion, MinorVersion, svr_version_suffix);
 	Write(OutString);
 	Write("  ");
 	WriteLn(__DATE__);
@@ -461,6 +466,10 @@ static void Display_software_version(void)
 static void Display_firmware_details(void)
 {
 	WriteLn("Firmware Variant: " SVR_VARIANT_STRING);
+	Write("Revision: ");
+	WriteLn(svr_hmdmcu_revision);
+	Write("Build info: ");
+	WriteLn(svr_hmdmcu_extrabuildinfo);
 	Write("Special Config Defines:");
 // flag define, undefined as soon as we print something for a special config.
 #define SVR_NO_SPECIAL_CONFIG
@@ -668,6 +677,7 @@ void ProcessCommand(void)
 			WriteLn(";Unrecognized command");
 		}
 	}
+	WriteEndl();
 	SerialState = AwaitingCommand;  // todo: should this be here?
 }
 
@@ -1085,10 +1095,10 @@ void ProcessSPICommand(void)
 		{
 			WriteLn("OE high");
 			ioport_configure_pin(SPI_Mux_OE, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-			gpio_set_pin_high(SPI_Mux_OE);
+			ioport_set_pin_low(SPI_Mux_OE);
 		}
 		else if (CommandToExecute[2] == '4')
-			gpio_toggle_pin(SPI_Mux_OE);
+			ioport_toggle_pin_level(SPI_Mux_OE);
 #endif
 		else
 			WriteLn("Wrong Solomon ID");
@@ -1101,9 +1111,14 @@ void ProcessSPICommand(void)
 		break;
 	}
 #endif  // SVR_HAVE_SOLOMON
+#ifdef SVR_HAVE_TOSHIBA_TC358870
+	default:
+	{
+		Toshiba_TC358870_Console_S(statusBufCreate(&(CommandToExecute[1])));
+		break;
 	}
-
-	WriteLn("");
+#endif
+	}
 }
 
 // send one or more bytes to the I2C interface and prints the received bytes
@@ -1377,11 +1392,22 @@ void ProcessHDMICommand(void)
 		HDMI_task = true;
 		break;
 	}
+	case 'p':
+	case 'P':
+	{
+		VideoInput_Poll_Status();
+		break;
+	}
 	case '0':
 	{
 		VideoInput_Reset(HexDigitToDecimal(2));
 		break;
 	}
+#ifdef SVR_HAVE_TOSHIBA_TC358870
+	default:
+		Toshiba_TC358870_Console_H(statusBufCreate(&(CommandToExecute[1])));
+		break;
+#endif
 #ifdef SVR_HAVE_NXP
 	case 'S':
 	case 's':

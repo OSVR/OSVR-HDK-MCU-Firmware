@@ -14,7 +14,7 @@
 #include "board.h"
 
 #include "my_hardware.h"
-#include "nxp/my_bit.h"  // for lo() and hi()
+#include "NXP/my_bit.h"  // for lo() and hi()
 
 #include <spi_master.h>
 

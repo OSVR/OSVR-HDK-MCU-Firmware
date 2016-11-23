@@ -54,7 +54,7 @@
 
 /// Sensics addition
 #include "uart.h"
-#include "usb.h"
+#include "USB.h"
 /// End Sensics addition
 
 #ifdef UDI_CDC_LOW_RATE

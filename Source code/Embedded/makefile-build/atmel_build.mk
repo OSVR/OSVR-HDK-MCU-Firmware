@@ -7,18 +7,34 @@ ifeq ($(OS),Windows_NT)
 
 PATH_SEPARATOR = \
 PATH_CONVERT = $(subst /,$(PATH_SEPARATOR),$1)
-
+ifndef ATMEL_STUDIO_ROOT
 ifdef ProgramFiles(x86)
 ATMEL_STUDIO_ROOT := ${subst \,/,${ProgramFiles(x86)}}/Atmel/Studio/7.0
 else
 ATMEL_STUDIO_ROOT := $(subst \,/,${ProgramFiles})/Atmel/Studio/7.0
 endif
-TOOLCHAIN_ROOT := $(ATMEL_STUDIO_ROOT)/toolchain/avr8/avr8-gnu-toolchain
+endif
+
+ifneq (,$(ATMEL_STUDIO_ROOT))
+ATMEL_STUDIO_TOOLCHAIN_ROOT := $(ATMEL_STUDIO_ROOT)/toolchain/avr8/avr8-gnu-toolchain
+endif
+
+
 TOOL_EXTENSION := .exe
 
 ifeq ($(strip $(NO_ATMEL_STUDIO)),)
+
+ifndef TOOLCHAIN_ROOT
+TOOLCHAIN_ROOT := $(ATMEL_STUDIO_TOOLCHAIN_ROOT)
+endif
+
+# Flags implied by the build system but that libtooling/clang wouldn't know
+SYSTEM_FLAGS ?= -isystem "$(ATMEL_STUDIO_TOOLCHAIN_ROOT)/avr/include"
+
 # Can use "shellutils" folder of utilities.
 RM := "$(ATMEL_STUDIO_ROOT)/shellutils/rm.exe" -f
+TR := "$(ATMEL_STUDIO_ROOT)/shellutils/tr.exe"
+CAT := "$(ATMEL_STUDIO_ROOT)/shellutils/cat.exe"
 # must be recursively evaluated - it's a function
 FUNC_MKDIR_P = "$(ATMEL_STUDIO_ROOT)/shellutils/mkdir.exe" -p "$1"
 FUNC_CP = "$(ATMEL_STUDIO_ROOT)/shellutils/cp.exe" "$1" "$2"
@@ -41,7 +57,9 @@ TOOL_EXTENSION :=
 PATH_SEPARATOR = /
 PATH_CONVERT = $1
 RM := rm -f
-FUNC_CP := cp
+TR := tr
+CAT := cat
+FUNC_CP = cp "$1" "$2"
 FUNC_MKDIR_P = mkdir -p "$1"
 
 FUNC_PRINT_LIST = foreach elt in $($1); do echo $2 $$elt; done

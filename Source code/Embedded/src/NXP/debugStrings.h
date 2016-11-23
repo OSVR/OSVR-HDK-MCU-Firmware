@@ -1,3 +1,5 @@
+#include <avr/pgmspace.h>
+
 const char cInput[] PROGMEM="Input ";
 const char cA[] PROGMEM="A: ";
 const char cB[] PROGMEM="B: ";

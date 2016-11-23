@@ -42,7 +42,7 @@
 uint8_t HDK_Version_Major = SVR_HDK_DEFAULT_MAJOR_VER;
 uint8_t HDK_Version_Minor = SVR_HDK_DEFAULT_MINOR_VER;  // set default version from VariantOptions.h
 
-char ProductName[] = USB_DEVICE_PRODUCT_NAME;
+unsigned char ProductName[] = USB_DEVICE_PRODUCT_NAME;
 _Static_assert(sizeof(ProductName) == SVR_HDK_PRODUCT_NAME_STRING_LENGTH,
                "SVR_HDK_PRODUCT_NAME_STRING_LENGTH needs to be updated to match the current length of ProductName");
 
@@ -78,28 +78,28 @@ void set_pwm_values(uint8_t Display1, uint8_t Display2)
 void custom_board_init(void)
 
 {
+	ioport_init();
+
 /// @todo This is pin setup code for part of the block of pins that are referred to nowhere else in the source code for
 /// the HDK_20. Unclear how much of this is actually required for proper operation and how much is just extraneous: the
 /// system did work with just the level shifter output enable setup.
 #ifdef SVR_IS_HDK_20
-	/// @todo Is this an MCU feature that just the HDK20 needs, or is this effectively dead code?
-	ioport_configure_pin(
-	    MCU_LEVEL_SHIFT_OE,
-	    IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // I/O level shift gate enable. (i2c, hdmi_rst, 2848_reset).
-/// @todo the device was functional without these configured.
+	ioport_configure_pin(TC358870_PWR_GOOD, IOPORT_DIR_INPUT);  // TPS54478 (U16) 1.8v power good indicator.
+	/// @todo the device was functional without these configured.
+	ioport_configure_pin(ANA_PWR_IN, IOPORT_DIR_INPUT);                       // 5v power good indicator.
+	ioport_configure_pin(EDID_EEP_WP, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // EDID EEP write protect (Low protect)
 #if 0
-		ioport_configure_pin(ANA_PWR_IN, IOPORT_DIR_INPUT);                       // 5v power good indicator.
-		ioport_configure_pin(EDID_EEP_WP, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // EDID EEP write protect (Low protect)
+	ioport_set_pin_low(HDMI_HPD);
+	ioport_set_pin_dir(HDMI_HPD, IOPORT_DIR_OUTPUT);
+#endif
 
-		// audio block IO   (All of this block are reserved !! HW NC)
-		ioport_configure_pin(AUD_JACK_DETECT, IOPORT_DIR_INPUT);               // audio phone jack detection.
-		ioport_configure_pin(AUD_DEEM, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // AUD_DEEM,  de-emphasis , 0:off, 1:on
-		ioport_configure_pin(AUD_MUTE,
-		IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // audio soft mute, low: mute off, high: mute on.
-		// AUD_PCS, it's DAC output for audio codec operation mode. (Reserve)
+	// audio block IO   (All of this block are reserved !! HW NC)
+	ioport_configure_pin(AUD_JACK_DETECT, IOPORT_DIR_INPUT);               // audio phone jack detection.
+	ioport_configure_pin(AUD_DEEM, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // AUD_DEEM,  de-emphasis , 0:off, 1:on
+	ioport_configure_pin(AUD_MUTE,
+	                     IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // audio soft mute, low: mute off, high: mute on.
+// AUD_PCS, it's DAC output for audio codec operation mode. (Reserve)
 
-		ioport_configure_pin(PWR_GOOD_2V5, IOPORT_DIR_INPUT);  // TPS54478 (U16) 1.8v power good indicator.
-#endif  // 0
 #endif
 
 // Solomon SSD2848 IO Init.
@@ -131,10 +131,17 @@ void custom_board_init(void)
 	ioport_configure_pin(Debug_LED, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
-	ioport_configure_pin(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, > 12ms.
-	/// @todo why is this being initialized as input? The pin is used as Int_HDMI_A on other variants, but on HDK_20
-	/// it's I2C_Addr_Sel
-	ioport_configure_pin(I2C_Addr_Sel, IOPORT_DIR_INPUT);
+	// ioport_configure_pin(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // HW power on reset, > 12ms.
+	ioport_set_pin_low(TC358870_Reset_Pin);  // HW power on reset, > 12ms.
+	ioport_set_pin_dir(TC358870_Reset_Pin, IOPORT_DIR_OUTPUT);
+
+	/// This is both address selection and an interrupt pin. We will not impose our own pull-up or pull-down
+	/// (IOPORT_TOTEM), but we will sense rising edges.
+	// ioport_configure_pin(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT | IOPORT_TOTEM | IOPORT_RISING);
+	ioport_set_pin_dir(TC358870_ADDR_SEL_INT, IOPORT_DIR_INPUT);
+	ioport_set_pin_mode(TC358870_ADDR_SEL_INT, IOPORT_TOTEM);
+	ioport_set_pin_sense_mode(TC358870_ADDR_SEL_INT, IOPORT_SENSE_RISING);
+
 #endif
 
 #ifdef SVR_HAVE_NXP1
@@ -157,7 +164,20 @@ void custom_board_init(void)
 /// @todo initialize USB_SW_OC except on SVR_IS_HDK_20 where it may be HW NC?
 
 #ifdef SVR_IS_HDK_20
-	ioport_configure_pin(PANEL_RESET, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, low > 10us
+	// ioport_configure_pin(PANEL_RESET, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);  // HW power on reset, low > 10us
+	ioport_set_pin_low(PANEL_RESET);  // Reset active on low
+	ioport_set_pin_dir(PANEL_RESET, IOPORT_DIR_OUTPUT);
+
+	// configure the level shifter last, since it holds the panel and toshiba chip reset low (open drain) when OE is
+	// disabled.
+	// there's an external pullup (to the low-voltage side of the level shifter) on this pin, so it's really nOE.
+	ioport_set_pin_low(MCU_LEVEL_SHIFT_OE);
+	ioport_set_pin_dir(MCU_LEVEL_SHIFT_OE, IOPORT_DIR_OUTPUT);
+#if 0
+	ioport_configure_pin(
+	MCU_LEVEL_SHIFT_OE,
+	IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // I/O level shift gate enable. (i2c, hdmi_rst, 2848_reset).
+#endif
 #endif
 
 #ifdef SVR_IS_HDK_1_x

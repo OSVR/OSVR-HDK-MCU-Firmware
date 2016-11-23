@@ -19,6 +19,7 @@ uint8_t DebugLevel = 0xff;  // start by opening all debug messages
 
 static const uint8_t s_timeoutCountLimit = 100;
 
+uint8_t GetDebugLevel() { return DebugLevel; }
 void Write(const char *const Data)
 {
 	if (!usb_cdc_is_active())

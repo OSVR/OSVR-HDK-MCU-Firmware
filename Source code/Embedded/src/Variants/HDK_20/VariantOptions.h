@@ -43,8 +43,11 @@
 
 // Interval in number of mainloop cycles that should elapse between polling for video status.
 // Quite a few, because polling this is fairly expensive.
-#define SVR_VIDEO_INPUT_POLL_INTERVAL 10000
+///#define SVR_VIDEO_INPUT_POLL_INTERVAL 10000
 
 #define SVR_VARIANT_STRING "HDK_20"
+
+#define SVR_HAVE_EDID_INFO_STRING
+extern const char svrEdidInfoString[];
 
 #endif /* VARIANTOPTIONS_H_ */

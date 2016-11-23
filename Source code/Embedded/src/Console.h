@@ -13,8 +13,11 @@
 
 #define debugI2CReadMask 1
 #define debugNXPLineMask 2
+/// HDK2 and NXP are mutually exclusive
+#define debugHDK2Mask 2
 #define debugSolomonMask 4
 
+uint8_t GetDebugLevel(void);
 void Write(const char *const Data);
 void dWrite(const char *const Data, uint8_t DebugMask);
 void WriteLn(const char *const Data);

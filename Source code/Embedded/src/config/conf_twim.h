@@ -68,7 +68,7 @@
 
 #ifdef SVR_HAVE_TOSHIBA_TC358870
 	/// @todo Defined, but not used anywhere because all interaction was hidden in libhdk2
-	#define TWI_TC358870_PORT		(&TWIE) // Dennis Yeh 2016/03/14 : for TC358870
+
 #endif
 
 #endif // _CONF_TWIM_H_

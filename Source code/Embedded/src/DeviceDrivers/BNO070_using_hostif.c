@@ -467,7 +467,7 @@ bool init_BNO070(void)
 	int result;
 
 	// determine if we are in GRV or RV mode
-	GetValidConfigValueOrWriteDefault(SideBySideOffset, BNO_USE_GRV, &SELECT_GRV);
+	GetValidConfigValueOrWriteDefault(GRVOffset, BNO_USE_GRV, &SELECT_GRV);
 
 	// Clear BNO070_Report so we don't send garbage out the USB.
 	memset(BNO070_Report, 0, sizeof(BNO070_Report));

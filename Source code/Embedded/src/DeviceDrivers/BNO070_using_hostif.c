@@ -214,6 +214,8 @@ static void configureScdFrs(void)
 	}
 }
 
+//In order to fix compiler warning to mark this function,because this function doesn't been used anywhere
+/*
 static void clearScdFrs(void)
 {
 	int status;
@@ -224,7 +226,7 @@ static void clearScdFrs(void)
 		sensorhub.debugPrintf("Clear of SCD failed: %d", status);
 	}
 }
-
+*/
 static void loadDefaultConfig(struct BNO070_Config *cfg)
 {
 	int32_t common_period;
@@ -611,8 +613,8 @@ bool Tare_BNO070(void)
 {
 	// execute tare commands
 
-	// In HID parlance, this is a write to the command register, where the command is “set output report.” The ‘07’ byte
-	// is the axes (P2) and the preceding ‘00’ byte is the tare basis.
+	// In HID parlance, this is a write to the command register, where the command is set output report. The 07 byte
+	// is the axes (P2) and the preceding 00 byte is the tare basis.
 
 	const uint8_t tare_now[] = {0x3f, 0x03, 0x05, 0x00, 0x2F, 0x03, 0x87, 0x06, 0x00, 0x0D, 0x00,
 	                            0x00, 0x03, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};

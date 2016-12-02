@@ -72,6 +72,7 @@ bool HDMI_task = false;
 bool HDMISwitch_task = true;
 
 void HandleHDMI(void);
+void load_configuration(void);
 
 void load_configuration(void)
 {

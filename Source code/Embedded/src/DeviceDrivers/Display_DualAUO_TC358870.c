@@ -31,7 +31,7 @@
 static void AUO_Null_Param_DSI_Cmd(uint8_t cmd);
 
 static void AUO_H381DLN01_Send_Panel_Init_Commands(void);
-static void AUO_H381DLN01_Panel_Reset(void);
+
 
 typedef struct CommandSequenceElt
 {

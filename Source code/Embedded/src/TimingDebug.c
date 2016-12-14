@@ -11,7 +11,8 @@
 #include "Console.h"
 #include <stdio.h>
 
-#ifdef MeasurePerformance
+#if defined(MeasurePerformance) || defined (HDK_20)
+
 bool CollectData = true;
 uint8_t TimeLogIndex = 0;
 uint16_t TimeLog1[256];

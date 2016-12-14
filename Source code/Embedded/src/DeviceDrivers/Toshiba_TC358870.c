@@ -679,4 +679,24 @@ void Toshiba_TC358770_Setup_TX_Parameterized(const TC358870_DSITX_Config_t* para
 	Toshiba_TC358870_I2C_Write16(0x0500, 0x0004);        // CMD_SEL - send dcs cmds to both tx
 }
 
+
+#ifdef HDK_20
+void Toshiba_TC358870_Init(void)
+{
+#ifdef HDMI_VERBOSE
+	WriteLn("Toshiba_TC358870_Init: Start");
+#endif
+	// Dennis Yeh 2016/03/14 : for TC358870
+	uint8_t tc_data;
+	TC358870_i2c_Init();
+	TC358870_i2c_Read(0x0000, &tc_data);
+
+	PowerOnSeq();
+	s_tc358870_init_count++;
+#ifdef HDMI_VERBOSE
+	WriteLn("Toshiba_TC358870_Init: End");
+#endif
+}    
+#endif  // HDK_20
+
 #endif  // SVR_HAVE_TOSHIBA_TC358870

@@ -277,4 +277,8 @@ void Toshiba_TC358870_Disable_All_Interrupts(void);
 
 void Toshiba_TC358770_Setup_TX_Parameterized(const TC358870_DSITX_Config_t* params);
 
+
+#ifdef HDK_20
+void Toshiba_TC358870_Init(void);
+#endif  // HDK_20
 #endif /* TOSHIBA_TC358870_H_ */

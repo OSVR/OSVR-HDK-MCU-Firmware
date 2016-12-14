@@ -47,4 +47,25 @@ void OSVR_HDK_EDID(void);
 void ProcessFactoryCommand(void);
 void nvm_eeprom_write_byte_(eeprom_addr_t address, uint8_t value);
 
+#ifdef HDK_20
+
+#define VIDEO_POLLING_PERIOD     60000
+#define VIDEO_POLLING_TIMER      TCC2
+#define DEBUG_LED_ON    0
+#define DEBUG_LED_OFF   1
+#define TC358870_NoSync	0
+#define TC358870_Sync	1
+
+typedef enum {
+    VIDEO_NOT_EXIST,
+    VIDEO_EXIST
+} VIDEO_EXISTING;
+
+void IsVideoExistingPolling (void);
+int TC358870_Init_Receive_HDMI_Signal(void);
+int TC358870_i2c_Init(void);
+bool PowerOnSeq(void);
+
+#endif  // HDK_20
+
 #endif /* HDKV15_H_ */

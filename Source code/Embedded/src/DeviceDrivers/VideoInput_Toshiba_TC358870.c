@@ -21,6 +21,26 @@
 #include <stdio.h>     // for sprintf
 #include <inttypes.h>  // for stdint.h-matching format specifier macros
 
+#ifdef HDK_20
+void VideoInput_Init(void)
+{
+    static bool haveInitOnce = false;
+
+	// No separate init required - all done in Display_System_Init() since it's just one chip.
+	if (haveInitOnce)
+	{
+		// This is a repeat init - presumably from serial console - so we'll actually call over to the TC358870 driver
+		// (used in Display_System_Init()) since that's where the meat of initializing the chip happens.
+		Toshiba_TC358870_Init();
+	}
+	else
+	{
+		haveInitOnce = true;
+	}
+
+	VideoInput_Protected_Init_Succeeded();
+}
+#else
 void VideoInput_Init(void)
 {
 	static bool haveInit = false;
@@ -53,6 +73,7 @@ void VideoInput_Init(void)
 
 	VideoInput_Protected_Init_Succeeded();
 }
+#endif
 
 void VideoInput_Update_Resolution_Detection(void)
 {

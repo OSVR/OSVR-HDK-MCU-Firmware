@@ -61,7 +61,7 @@
 #include "TimingDebug.h"
 
 #include "USB.h"
-
+#include "DeviceDrivers/HDK2.h"
 /// The HDK 1.x OLED firmware works across lots of hardware versions, so we determine a product string at runtime based
 /// on the BNO firmware version (loaded at the factory).
 #if defined(SVR_IS_HDK_1_x) && defined(H546DLT01) && defined(BNO070)
@@ -72,6 +72,7 @@ bool HDMI_task = false;
 bool HDMISwitch_task = true;
 
 void HandleHDMI(void);
+void load_configuration(void);
 
 void load_configuration(void)
 {
@@ -109,8 +110,13 @@ int main(void)
 
 	load_configuration();
 
+#ifndef HDK_20
 	// Sets up video display part of data path: MIPI bridge (Solomon) or other output device
 	Display_System_Full_Init();
+#else
+    TC358870_i2c_Init();
+    PowerOnSeq();
+#endif  //HDK_20
 
 	// init the incoming serial state machine
 	InitSerialState();
@@ -134,10 +140,11 @@ int main(void)
 
 #ifdef OSVRHDK
 // ioport_set_pin_low(FPGA_Reset_Pin);	// hold FPGA reset
-#ifdef MeasurePerformance
+#if defined(MeasurePerformance) || defined (HDK_20)
 	TimingDebug_init();
 #endif  // MeasurePerformance
 #endif  // OSVRHDK
+
 
 #ifdef SVR_ENABLE_VIDEO_INPUT
 #ifdef BNO070
@@ -171,51 +178,11 @@ int main(void)
 	// Sets up video input part of data path: switch (if present), HDMI receiver.
 	VideoInput_Init();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has
 	                    // already been initialized
-	// Poll once on startup to see if we have video at start.
+#ifndef HDK_20      
+    // Poll once on startup to see if we have video at start.
 	VideoInput_Poll_Status();
 	HandleHDMI();
-#if 0
-	/// @todo can this be folded into HandleHDMI?
-	if (VideoInput_Events.videoDetected)
-	{
-		// Clear the event flag.
-		VideoInput_Events.videoDetected = false;
-
-		WriteLn("Video at start");
-
-#ifdef SVR_HAVE_DISPLAY1
-		Display_On(Display1);
-		VideoInput_Update_Resolution_Detection();
-#ifdef BNO070
-		Update_BNO_Report_Header();
-#endif  // BNO070
-
-#endif  // SVR_HAVE_DISPLAY1
-
-#ifdef SVR_HAVE_DISPLAY2
-		Display_On(Display2);
-#endif  // SVR_HAVE_DISPLAY2
-	}
-
-	if (VideoInput_Events.videoLost)
-	{
-		// Clear the event flag.
-		VideoInput_Events.videoLost = false;
-
-#ifdef SVR_HAVE_DISPLAY1
-		Display_Off(Display1);
-		VideoInput_Update_Resolution_Detection();
-#ifdef BNO070
-		Update_BNO_Report_Header();
-#endif  // BNO070
-
-#endif  // SVR_HAVE_DISPLAY1
-
-#ifdef SVR_HAVE_DISPLAY2
-		Display_Off(Display2);
-#endif  // SVR_HAVE_DISPLAY2
-	}
-#endif  // 0
+#endif
 
 #ifdef DSIGHT
 	/// @todo isn't this redundant with the videoDetected check above? or is the waiting for 1 second important for
@@ -254,6 +221,7 @@ int main(void)
 #endif
 #endif
 
+#ifndef HDK_20
 #ifdef SVR_ENABLE_VIDEO_INPUT
 #ifdef SVR_VIDEO_INPUT_POLL_INTERVAL
 		if (HDMI_task)
@@ -268,6 +236,10 @@ int main(void)
 #endif  // SVR_VIDEO_INPUT_POLL_INTERVAL
 		HandleHDMI();
 #endif  // SVR_ENABLE_VIDEO_INPUT
+#else
+        IsVideoExistingPolling();
+#endif	// non HDK_20
+
 	}
 }
 

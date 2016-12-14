@@ -122,9 +122,7 @@ typedef struct
 
 static EEPROM_type EEPROM;
 
-// todo: is this required?
-static uint8_t I2CAddress = 0;   // selected I2C address
-static bool NXPLeftSide = true;  // selected eye (left or right)
+
 
 static uint8_t BufferPos = 0;       /* position of character to be received in new buffer. When command is completed,
                               this also shows the length of the command */
@@ -913,8 +911,6 @@ void ProcessBNO070Commands(void)
 // (and/or interact with displays, conventionally attached to a Solomon controller on SPI)
 void ProcessSPICommand(void)
 {
-	uint16_t SolID, SolRegister;
-	char OutString[12];
 
 	switch (CommandToExecute[1])
 	{
@@ -1126,10 +1122,6 @@ void ProcessSPICommand(void)
 void ProcessI2CCommand(void)
 
 {
-	uint8_t TxByte, RxByte, Num, Page;
-	bool Result = false;
-
-	char OutString[14];
 
 	switch (CommandToExecute[1])
 	{
@@ -1648,6 +1640,8 @@ static inline const char *bodStatusToString(BOD_Status_t status)
 		return "Continuous";
 	case BOD_Status_Sampled:
 		return "Sampled";
+    default:
+        break;
 	}
 	return "Disabled";
 }

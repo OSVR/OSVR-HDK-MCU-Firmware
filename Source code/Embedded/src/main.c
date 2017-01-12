@@ -61,6 +61,7 @@
 #include "TimingDebug.h"
 
 #include "USB.h"
+#include "SvrYield.h"
 
 /// The HDK 1.x OLED firmware works across lots of hardware versions, so we determine a product string at runtime based
 /// on the BNO firmware version (loaded at the factory).
@@ -203,13 +204,7 @@ int main(void)
 		}
 
 		delay_us(50);  // Some delay is required to allow USB interrupt to process
-
-#ifdef BNO070
-/// @todo why is this guarded to be just OSVRHDK? BNO should be sufficient.
-#ifdef OSVRHDK
-		BNO_Yield();
-#endif
-#endif
+		svr_yield();
 
 #ifdef SVR_ENABLE_VIDEO_INPUT
 #ifdef SVR_VIDEO_INPUT_POLL_INTERVAL

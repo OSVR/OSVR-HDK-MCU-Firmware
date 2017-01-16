@@ -95,7 +95,7 @@ bool usart_init_rs232(USART_t *usart, const usart_rs232_options_t *opt)
  */
 void usart_init_spi(USART_t *usart, const usart_spi_options_t *opt)
 {
-    ioport_pin_t sck_pin;
+    ioport_pin_t sck_pin = 0;
     bool invert_sck;
 
     sysclk_enable_peripheral_clock(usart);

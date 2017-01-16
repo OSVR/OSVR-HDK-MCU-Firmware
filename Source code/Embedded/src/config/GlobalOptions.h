@@ -10,8 +10,8 @@
 
 #include "VariantOptions.h"
 
-#define MajorVersion 2
-#define MinorVersion 0
+#define MajorVersion 1
+#define MinorVersion 99
 
 /// @ingroup Build-time options
 /// @{
@@ -52,7 +52,7 @@
 #define SENSICS_DISPLAY_CONFIGURED
 #endif
 
-#if defined(OSVRHDK) && !defined(HDK_20)
+#if defined(OSVRHDK) && !defined(SVR_IS_HDK_20)
 #define SVR_IS_HDK_1_x
 #endif
 

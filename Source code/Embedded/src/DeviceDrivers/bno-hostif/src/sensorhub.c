@@ -17,6 +17,11 @@ uint32_t sensorhub_empty_events = 0;
 
 static int sensorhub_pollForReport(const sensorhub_t * sh, uint8_t * report);
 
+uint32_t avr_read32(const avrDfuStream_t *dfuStream, unsigned long index);
+uint32_t avr_read32be(const avrDfuStream_t *dfuStream, unsigned long index);
+uint8_t avr_read8(const avrDfuStream_t *dfuStream, unsigned long index);
+uint8_t avr_read8(const avrDfuStream_t *dfuStream, unsigned long index);
+void avr_readBuf(uint8_t *buf, unsigned long length, const avrDfuStream_t *dfuStream, unsigned long index);
 
 static int checkError(const sensorhub_t * sh, int rc)
 {
@@ -1001,11 +1006,6 @@ void avr_readBuf(uint8_t *buf, unsigned long length,
 		 unsigned long index)
 {
     int n = 0;
-	static int trap = 0;
-
-	if(index == 63949) {
-		trap = 1;
-	}
 
     for (n = 0; n < length; n++) {
         uint8_t byte = pgm_read_byte_far(dfuAddr(index));

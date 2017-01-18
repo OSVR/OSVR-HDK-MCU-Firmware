@@ -92,8 +92,11 @@ void VideoInput_Task(void)
 	if (gotInterrupt)
 	{
 		Toshiba_TC358870_Disable_All_Interrupts();
-		bool origStatus = VideoInput_Get_Status();
 		WriteLn("Got a video sync change interrupt!");
+/// @todo Acting on interrupts disabled - seen to fire too frequently on 16.2.x AMD drivers upon direct mode app
+/// startup.
+#if 0
+		bool origStatus = VideoInput_Get_Status();
 		bool status = tc_getStatus();
 		if (origStatus != status)
 		{
@@ -102,6 +105,7 @@ void VideoInput_Task(void)
 			WriteLn("Reporting an actual change!");
 			VideoInput_Protected_Report_Status(status);
 		}
+#endif
 		barrier();
 		// OK to re-enable the sync change interrupt now - also clears the interrupt flag on the toshiba chip.
 		Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();

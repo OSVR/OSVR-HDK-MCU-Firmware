@@ -61,6 +61,7 @@
 #include "TimingDebug.h"
 
 #include "USB.h"
+#include "SvrYield.h"
 
 /// The HDK 1.x OLED firmware works across lots of hardware versions, so we determine a product string at runtime based
 /// on the BNO firmware version (loaded at the factory).
@@ -174,48 +175,6 @@ int main(void)
 	// Poll once on startup to see if we have video at start.
 	VideoInput_Poll_Status();
 	HandleHDMI();
-#if 0
-	/// @todo can this be folded into HandleHDMI?
-	if (VideoInput_Events.videoDetected)
-	{
-		// Clear the event flag.
-		VideoInput_Events.videoDetected = false;
-
-		WriteLn("Video at start");
-
-#ifdef SVR_HAVE_DISPLAY1
-		Display_On(Display1);
-		VideoInput_Update_Resolution_Detection();
-#ifdef BNO070
-		Update_BNO_Report_Header();
-#endif  // BNO070
-
-#endif  // SVR_HAVE_DISPLAY1
-
-#ifdef SVR_HAVE_DISPLAY2
-		Display_On(Display2);
-#endif  // SVR_HAVE_DISPLAY2
-	}
-
-	if (VideoInput_Events.videoLost)
-	{
-		// Clear the event flag.
-		VideoInput_Events.videoLost = false;
-
-#ifdef SVR_HAVE_DISPLAY1
-		Display_Off(Display1);
-		VideoInput_Update_Resolution_Detection();
-#ifdef BNO070
-		Update_BNO_Report_Header();
-#endif  // BNO070
-
-#endif  // SVR_HAVE_DISPLAY1
-
-#ifdef SVR_HAVE_DISPLAY2
-		Display_Off(Display2);
-#endif  // SVR_HAVE_DISPLAY2
-	}
-#endif  // 0
 
 #ifdef DSIGHT
 	/// @todo isn't this redundant with the videoDetected check above? or is the waiting for 1 second important for
@@ -238,7 +197,6 @@ int main(void)
 	// Main loop
 	while (true)
 	{
-		// sleepmgr_enter_sleep(); // todo - probably remove this since the board has to work without USB
 		if (CommandReady)
 		{
 			ProcessCommand();
@@ -246,13 +204,7 @@ int main(void)
 		}
 
 		delay_us(50);  // Some delay is required to allow USB interrupt to process
-
-#ifdef BNO070
-/// @todo why is this guarded to be just OSVRHDK? BNO should be sufficient.
-#ifdef OSVRHDK
-		BNO_Yield();
-#endif
-#endif
+		svr_yield();
 
 #ifdef SVR_ENABLE_VIDEO_INPUT
 #ifdef SVR_VIDEO_INPUT_POLL_INTERVAL

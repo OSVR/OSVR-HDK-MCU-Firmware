@@ -214,19 +214,6 @@ static void configureScdFrs(void)
 	}
 }
 
-//In order to fix compiler warning to mark this function,because this function doesn't been used anywhere
-/*
-static void clearScdFrs(void)
-{
-	int status;
-	sensorhub.debugPrintf("Clearing SCD.\r\n");
-	status = sensorhub_writeFRS(&sensorhub, SENSORHUB_FRS_SCD_ACTIVE, NULL, 0);
-	if (status != SENSORHUB_STATUS_SUCCESS)
-	{
-		sensorhub.debugPrintf("Clear of SCD failed: %d", status);
-	}
-}
-*/
 static void loadDefaultConfig(struct BNO070_Config *cfg)
 {
 	int32_t common_period;

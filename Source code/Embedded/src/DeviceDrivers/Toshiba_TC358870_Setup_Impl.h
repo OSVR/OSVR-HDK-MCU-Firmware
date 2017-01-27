@@ -29,6 +29,7 @@
 // Internal Includes
 #include "Toshiba_TC358870.h"
 #include "SvrYield.h"
+#include "VariantOptions.h"
 
 // Library/third-party includes
 // - none
@@ -431,11 +432,19 @@ void Toshiba_TC358870_HDMI_Setup(void)
 
 	// HDMI Interrupt Mask, Clears any pending video sync change interrupt flags and allows only those through.
 	TC358870_i2c_Write(0x850B, 0xFF, 1);  // MISC_INT
-	TC358870_i2c_Write(0x851B, 0xFD, 1);  // MISC_INTM
+#ifdef SVR_VIDEO_INPUT_POLL_INTERVAL
+	TC358870_i2c_Write(0x851B, 0xFF, 1);  // MISC_INTM
+#else
+	TC358870_i2c_Write(0x851B, 0xFD, 1);    // MISC_INTM
+#endif  // SVR_VIDEO_INPUT_POLL_INTERVAL
 
 	// Interrupt Control (TOP level)
 	TC358870_i2c_Write(0x0014, 0x0FBF, 2);  // IntStatus
+#ifdef SVR_VIDEO_INPUT_POLL_INTERVAL
+	TC358870_i2c_Write(0x0016, 0x0FBF, 2);  // IntMask
+#else
 	TC358870_i2c_Write(0x0016, 0x0DBF, 2);  // IntMask
+#endif  // SVR_VIDEO_INPUT_POLL_INTERVAL
 
 	// EDID
 	TC358870_i2c_Write(0x85E0, 0x01, 1);    // EDID_MODE  Internal EDID-RAM & DDC2B mode

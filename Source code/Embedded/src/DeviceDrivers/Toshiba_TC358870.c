@@ -218,8 +218,10 @@ static void Toshiba_TC358870_Base_Init_Impl(bool firstTime, bool hardResetToshib
 #ifdef HDMI_VERBOSE
 	WriteLn("Toshiba_TC358870_Init: Start");
 #endif
+#ifndef SVR_VIDEO_INPUT_POLL_INTERVAL
 	// disable interrupts
 	Toshiba_TC358870_MCU_Ints_Suspend();
+#endif  // !SVR_VIDEO_INPUT_POLL_INTERVAL
 	if (firstTime)
 	{
 		twi_master_options_t opt = {
@@ -289,7 +291,8 @@ static void Toshiba_TC358870_Base_Init_Impl(bool firstTime, bool hardResetToshib
 	Toshiba_TC358870_HDMI_Setup();
 
 	s_tc358870_init_count++;
-
+// Only one of polling or interrupts
+#ifndef SVR_VIDEO_INPUT_POLL_INTERVAL
 	if (firstTime)
 	{
 		if (shouldStartInterrupts)
@@ -313,6 +316,7 @@ static void Toshiba_TC358870_Base_Init_Impl(bool firstTime, bool hardResetToshib
 			Toshiba_TC358870_MCU_Ints_Resume();
 		}
 	}
+#endif  // !SVR_VIDEO_INPUT_POLL_INTERVAL
 	WriteLn("Toshiba_TC358870_Init: End");
 }
 

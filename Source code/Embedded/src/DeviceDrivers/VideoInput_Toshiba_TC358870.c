@@ -43,8 +43,10 @@ void VideoInput_Init(void)
 
 		Toshiba_TC358870_HDMI_Setup();
 
+#ifndef SVR_VIDEO_INPUT_POLL_INTERVAL
 		/// Turn on interrupts.
 		Toshiba_TC358870_Enable_HDMI_Sync_Status_Interrupts();
+#endif  // !SVR_VIDEO_INPUT_POLL_INTERVAL
 		if (haveVideo)
 		{
 			Toshiba_TC358870_Enable_Video_TX();
@@ -61,6 +63,7 @@ void VideoInput_Update_Resolution_Detection(void)
 	HDMIStatus = (VideoInput_Get_Status() ? VIDSTATUS_VIDEO_LANDSCAPE : VIDSTATUS_NOVIDEO);
 }
 
+#ifndef SVR_VIDEO_INPUT_POLL_INTERVAL
 static volatile bool s_gotVideoInterrupt = false;
 TC358870_ISR()
 {
@@ -78,9 +81,13 @@ static inline bool tc_getStatus(void)
 	WriteLn(myMessage);
 	return ret;
 }
+#endif  // !SVR_VIDEO_INPUT_POLL_INTERVAL
 
 void VideoInput_Task(void)
 {
+/// @todo Acting on interrupts disabled - seen to fire too frequently on 16.2.x AMD drivers upon direct mode app
+/// startup.
+#ifndef SVR_VIDEO_INPUT_POLL_INTERVAL
 	bool gotInterrupt;
 	Toshiba_TC358870_MCU_Ints_Suspend();
 	barrier();
@@ -92,8 +99,8 @@ void VideoInput_Task(void)
 	if (gotInterrupt)
 	{
 		Toshiba_TC358870_Disable_All_Interrupts();
-		bool origStatus = VideoInput_Get_Status();
 		WriteLn("Got a video sync change interrupt!");
+		bool origStatus = VideoInput_Get_Status();
 		bool status = tc_getStatus();
 		if (origStatus != status)
 		{
@@ -108,6 +115,7 @@ void VideoInput_Task(void)
 	}
 	barrier();
 	Toshiba_TC358870_MCU_Ints_Resume();
+#endif  // !SVR_VIDEO_INPUT_POLL_INTERVAL
 }
 
 void VideoInput_Reset(uint8_t inputId)

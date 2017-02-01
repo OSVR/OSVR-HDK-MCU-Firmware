@@ -372,7 +372,8 @@ void udi_cdc_comm_disable(void)
 void udi_cdc_data_disable(void)
 {
     uint8_t port;
-
+    UNUSED(port);
+	
     Assert(udi_cdc_nb_data_enabled != 0);
     udi_cdc_nb_data_enabled--;
     port = udi_cdc_nb_data_enabled;

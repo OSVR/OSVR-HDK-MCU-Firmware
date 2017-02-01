@@ -31,7 +31,6 @@
 static void AUO_Null_Param_DSI_Cmd(uint8_t cmd);
 
 static void AUO_H381DLN01_Send_Panel_Init_Commands(void);
-static void AUO_H381DLN01_Panel_Reset(void);
 
 typedef struct CommandSequenceElt
 {
@@ -144,8 +143,8 @@ void Display_On(uint8_t deviceID)
 #endif
 	Debug_LED_Turn_On();
 
-	TC358870_InputMeasurements_t measurements = Toshiba_TC358770_Print_Input_Measurements();
 #ifdef SVR_MULTIRATE_HDK2
+	TC358870_InputMeasurements_t measurements = Toshiba_TC358770_Print_Input_Measurements();
 	bool wasReset = false;
 	if (measurements.reg8405 == 0x71 || measurements.reg8405 == 0x70)
 	{
@@ -158,6 +157,7 @@ void Display_On(uint8_t deviceID)
 		wasReset = Toshiba_TC358770_Update_DSITX_Config_And_Reinit(&TC358870_DSITX_Config_60hz_2160_1200);
 	}
 #else
+	Toshiba_TC358770_Print_Input_Measurements();
 	bool wasReset = Toshiba_TC358770_Update_DSITX_Config_And_Reinit(&TC358870_DSITX_Config_90hz_2160_1200);
 #endif
 	if (wasReset)

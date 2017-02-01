@@ -74,7 +74,7 @@ bool HDMISwitch_task = true;
 
 void HandleHDMI(void);
 
-void load_configuration(void)
+static void load_configuration(void)
 {
 	GetValidConfigValueOrWriteDefault(PersistenceOffset, Display_Strobing_Rate, &Display_Strobing_Rate);
 	GetValidConfigValueOrWriteDefault(PersistencePercentOffset, Display_Strobing_Percent, &Display_Strobing_Percent);

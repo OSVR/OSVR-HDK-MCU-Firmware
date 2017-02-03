@@ -10,8 +10,8 @@
 
 #include "VariantOptions.h"
 
-#define MajorVersion 1
-#define MinorVersion 99
+#define MajorVersion 2
+#define MinorVersion 00
 
 /// @ingroup Build-time options
 /// @{

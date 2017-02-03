@@ -5,13 +5,13 @@
 ifeq ($(OS),Windows_NT)
 # this is Windows
 
-PATH_SEPARATOR = \
+PATH_SEPARATOR := $(eval)\$(eval)
 PATH_CONVERT = $(subst /,$(PATH_SEPARATOR),$1)
 ifndef ATMEL_STUDIO_ROOT
 ifdef ProgramFiles(x86)
-ATMEL_STUDIO_ROOT := ${subst \,/,${ProgramFiles(x86)}}/Atmel/Studio/7.0
+ATMEL_STUDIO_ROOT := ${subst \\,/,${ProgramFiles(x86)}}/Atmel/Studio/7.0
 else
-ATMEL_STUDIO_ROOT := $(subst \,/,${ProgramFiles})/Atmel/Studio/7.0
+ATMEL_STUDIO_ROOT := $(subst \\,/,${ProgramFiles})/Atmel/Studio/7.0
 endif
 endif
 
@@ -54,7 +54,7 @@ else
 # not Windows
 TOOLCHAIN_ROOT ?= /usr
 TOOL_EXTENSION :=
-PATH_SEPARATOR = /
+PATH_SEPARATOR := /
 PATH_CONVERT = $1
 RM := rm -f
 TR := tr

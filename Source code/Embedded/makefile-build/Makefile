@@ -387,6 +387,17 @@ distclean: realclean
 	$(QUIETRULE)-$(MAKE) $(CONFIG_REALCLEAN_TARGETS)
 .PHONY: distclean
 
+# A target for use at tagged versions
+release:
+	$(QUIETRULE)-$(MAKE) distclean
+	$(QUIETRULE)-$(MAKE) -f bundled.mk
+.PHONY: release
+
+# A target for use at commits that aren't tagged versions
+snapshot:
+	$(QUIETRULE)-$(MAKE) -f bundled.mk SNAPSHOT=1
+.PHONY: snapshot
+
 # like all, except also including all of the known configs as well.
 complete: all $(SPECIAL_CONFIG_TARGETS)
 
@@ -406,4 +417,6 @@ help:
 	$(call FUNC_PRINT_LIST,SPECIAL_CONFIG_TARGETS, - )
 	@echo The extreme target "complete" will build a normal make all, as well as all those special config targets.
 	@echo make compiledb will generate compile_commands.json in each variant directory for use with Clang-related tools (libtooling-based).
+	@echo make release when at a release tag in a clean souce tree will distclean then build a subdirectory containing all the files, named appropriately, needed for release.
+	@echo make snapshot is like make release, except that it functions at any commit in a clean source tree and does not distclean first.
 .PHONY: help

@@ -382,16 +382,20 @@ realclean: clean
 .PHONY: realclean
 
 # A special target that's typically only called with no DEFINES contents.
+ifeq (,$(strip $(DEFINES)))
 distclean: realclean
 	@echo [distclean$(SUFFIX)] Recursing to realclean known configs using these targets: $(CONFIG_REALCLEAN_TARGETS)
 	$(QUIETRULE)-$(MAKE) $(CONFIG_REALCLEAN_TARGETS)
 .PHONY: distclean
+endif
 
 # A target for use at tagged versions
+ifeq (,$(strip $(DEFINES)))
 release:
 	$(QUIETRULE)-$(MAKE) distclean
 	$(QUIETRULE)-$(MAKE) -f bundled.mk
 .PHONY: release
+endif
 
 # A target for use at commits that aren't tagged versions
 snapshot:

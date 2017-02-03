@@ -326,6 +326,8 @@ $(call make_build_dirs,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-out
 
 include git-revision.mk
 #$(info GIT_CFLAGS $(GIT_CFLAGS))
+# Force rebuild of recursive targets if git changes.
+$(SPECIAL_CONFIG_TARGETS): gitdefheader
 $(call make_build_dirs,src/Revision.o): gitdefheader
 $(call make_build_dirs,src/Revision.o): override CFLAGS += -I.
 

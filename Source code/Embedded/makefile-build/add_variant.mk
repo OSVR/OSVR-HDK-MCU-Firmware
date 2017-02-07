@@ -175,6 +175,12 @@ DEFINES_CONTENTS := PERFORM_BNO_DFU
 SKIP_VARIANTS := dSight_Sharp_LCD HDK_Sharp_LCD
 include add_config.mk
 
+# This one only applies to hdk_oled
+CONFIG_SHORT_NAME := WirelessOnly
+DEFINES_CONTENTS := WirelessOnly
+USE_VARIANTS := HDK_OLED
+include add_config.mk
+
 
 # set target-specific variables - have to do this here, where these are not recursively defined.
 $(BUILD_DIR)/%: SUFFIX := $(SUFFIX)

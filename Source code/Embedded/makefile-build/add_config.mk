@@ -3,7 +3,7 @@
 # All rights reserved.
 
 # Helper makefile included by add_variant.mk:
-# Set CONFIG_SHORT_NAME and DEFINES_CONTENTS, and optionally SKIP_VARIANTS
+# Set CONFIG_SHORT_NAME and DEFINES_CONTENTS, and optionally SKIP_VARIANTS or USE_VARIANTS
 # immediately each time before including this file.
 # add_variant.mk is expected to already have defined SHORT_NAME and VARIANT.
 # In a single place in the overall makefile:
@@ -12,7 +12,7 @@
 # CONFIG_SHORT_NAMES, CONFIG_CLEAN_TARGETS, CONFIG_REALCLEAN_TARGETS should be defined as empty and simply-expanded
 #
 # Creates a $(SHORT_NAME)_$(CONFIG_SHORT_NAME) rule to build the $(VARIANT) with DEFINES=$(DEFINES_CONTENTS)
-# as long as $(VARIANT) is not in $(SKIP_VARIANTS)
+# as long as $(VARIANT) is not in $(SKIP_VARIANTS) (or is in $(USE_VARIANTS))
 #
 # If not already existing, creates a $(CONFIG_SHORT_NAME) target which will
 # depend on all $(SHORT_NAME)_$(CONFIG_SHORT_NAME) for all variants with this particular config, as
@@ -63,8 +63,25 @@ CONFIG_REALCLEAN_TARGETS += $(CONFIG_REALCLEAN_TARGET)
 
 endif
 
-ifneq (,$(filter-out $(SKIP_VARIANTS),$(VARIANT)))
-# If this variant is not disabled for this config:
+
+ifneq (,$(strip $(USE_VARIANTS)))
+# USE_VARIANTS is defined. Check the list.
+ConfigValidForVariant :=
+ifeq (,$(filter-out $(USE_VARIANTS),$(VARIANT)))
+# We're in the USE_VARIANTS list.
+ConfigValidForVariant := 1
+endif
+else
+# USE_VARIANTS is not usefully defined. Assume we're in unless SKIP_VARIANTS says so.
+ConfigValidForVariant := 1
+ifeq (,$(filter-out $(SKIP_VARIANTS),$(VARIANT)))
+# We're in the SKIP_VARIANTS list.
+ConfigValidForVariant :=
+endif
+endif
+
+ifneq (,$(strip $(ConfigValidForVariant)))
+# If this variant is not disabled or is explicitly enabled for this config:
 
 CONFIG_TARGET_NAME := $(SHORT_NAME)_$(CONFIG_SHORT_NAME)
 
@@ -92,3 +109,4 @@ CONFIG_TARGET_NAME :=
 CONFIG_SHORT_NAME :=
 DEFINES_CONTENTS :=
 SKIP_VARIANTS :=
+USE_VARIANTS :=

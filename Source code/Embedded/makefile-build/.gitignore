@@ -1,3 +1,5 @@
 /config.mk
 /gitdefines.h
 /gitdefines.h.tmp
+release-*/
+snapshot-*/

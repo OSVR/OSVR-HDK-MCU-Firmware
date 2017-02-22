@@ -13,16 +13,17 @@
 #ifdef SVR_HAVE_FPGA
 bool SideBySideMode = false;
 
-void FPGA_reset(void)
+void FPGA_start_reset() { ioport_set_pin_low(FPGA_Reset_Pin); }
+void FPGA_end_reset() { ioport_set_pin_high(FPGA_Reset_Pin); }
 
+void FPGA_reset(void)
 {
-	ioport_set_pin_low(FPGA_Reset_Pin);
+	FPGA_start_reset();
 	delay_ms(1);
-	ioport_set_pin_high(FPGA_Reset_Pin);
-};
+	FPGA_end_reset();
+}
 
 void FPGA_write(uint8_t FPGANun, uint8_t Command, uint8_t Value)
-
 {
 	switch (FPGANun)
 	{
@@ -46,10 +47,9 @@ void FPGA_write(uint8_t FPGANun, uint8_t Command, uint8_t Value)
 		break;
 	}
 	}
-};
+}
 
 uint8_t FPGA_read(uint8_t FPGANun, uint8_t Command)
-
 {
 	uint8_t Value = 0;
 
@@ -79,6 +79,6 @@ uint8_t FPGA_read(uint8_t FPGANun, uint8_t Command)
 	}
 	}
 	return Value;
-};
+}
 
 #endif  // SVR_HAVE_FPGA

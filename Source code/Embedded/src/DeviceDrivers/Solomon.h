@@ -11,6 +11,7 @@
 #include "GlobalOptions.h"
 #include "DeviceDrivers/Display.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef SVR_HAVE_SOLOMON1
 #define Solomon1 0
@@ -31,6 +32,9 @@
 #define SPI_Mux_OE IOPORT_CREATE_PIN(PORTC, 2)
 #define SPI_Mux_Select IOPORT_CREATE_PIN(PORTC, 3)
 #endif  // SVR_HAVE_SOLOMON2
+
+#define SOLOMON_REG_CONFIG UINT8_C(0xB7)
+#define SOLOMON_REG_PACKET_DROP UINT8_C(0xBF)
 
 void init_solomon(void);
 bool init_solomon_device(uint8_t deviceID);

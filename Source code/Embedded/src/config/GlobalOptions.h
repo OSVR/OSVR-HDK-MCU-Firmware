@@ -63,7 +63,7 @@
 #define SVR_HAVE_DISPLAY2
 #endif
 
-#if defined(LS050T1SX01) || defined(LS050T1SX01)
+#if defined(LS050T1SX01) || defined(LS055T1SX01)
 #define SVR_HAVE_SHARP_LCD
 #elif defined(H546DLT01)
 #define SVR_HAVE_AUO_OLED

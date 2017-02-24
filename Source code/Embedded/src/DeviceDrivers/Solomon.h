@@ -41,6 +41,11 @@ void raise_sdc(uint8_t channel);
 void lower_sdc(uint8_t channel);
 void Solomon_Reset(uint8_t SolomonNum);
 
+/// Writes out the config register to the console.
+void Solomon_Dump_All_Config_Debug(const char* loc);
+/// Writes out the config register to the console for just one device.
+void Solomon_Dump_Config_Debug(uint8_t deviceId, const char* loc);
+
 // read the solomon ID
 uint16_t read_Solomon_ID(uint8_t channel);
 

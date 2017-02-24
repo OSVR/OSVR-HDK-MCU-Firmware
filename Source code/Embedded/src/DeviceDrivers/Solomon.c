@@ -23,6 +23,8 @@
 
 #include <stdio.h>
 
+#include "BitUtilsC.h"
+
 #define Solomon_CLOCK_SPEED 1000000  // todo: consider increasing
 
 // useful registers
@@ -51,6 +53,27 @@ bool init_solomon_spi(uint8_t deviceID)
 	spi_master_setup_device(spi[deviceID], &devices[deviceID], spi_flags, Solomon_CLOCK_SPEED, devices[deviceID].id);
 	spi_enable(spi[deviceID]);  // todo: is this necessary?
 	return true;
+}
+
+void Solomon_Dump_All_Config_Debug(const char *loc)
+{
+	for (uint8_t deviceId = 0; deviceId < SVR_HAVE_SOLOMON; ++deviceId)
+	{
+		Solomon_Dump_Config_Debug(deviceId, loc);
+	}
+}
+void Solomon_Dump_Config_Debug(uint8_t deviceId, const char *loc)
+{
+	char msg[20];
+	uint16_t config = read_solomon(deviceId, SOLOMON_REG_CONFIG);
+	char confStr[] = BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(config);
+	sprintf(msg, "Config %d: ", deviceId);
+	Write(msg);
+
+	Write(confStr);
+	Write(" [");
+	Write(loc);
+	WriteLn("]");
 }
 
 bool init_solomon_device(uint8_t deviceID)

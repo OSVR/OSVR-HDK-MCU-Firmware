@@ -34,10 +34,12 @@
 
 #define ACC_REG(a,p)            (UInt16)(((p)<<8)|(a))
 //#define RETIF(cond, rslt) {if ((cond)){return (rslt);} }
+#ifndef RETIF
 #define RETIF(cond, rslt)       if ((cond)) \
 	{NXP_Private_PRINTIF(1998,__LINE__); \
 	return (rslt);\
 	}
+#endif
 
 #define MAX_UNIT                2
 

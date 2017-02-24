@@ -110,9 +110,6 @@ int main(void)
 
 	load_configuration();
 
-	// Sets up video display part of data path: MIPI bridge (Solomon) or other output device
-	Display_System_Full_Init();
-
 	// init the incoming serial state machine
 	InitSerialState();
 
@@ -168,6 +165,13 @@ int main(void)
 
 	// Start USB stack to authorize VBus monitoring
 	udc_start();
+
+	// to assist in debug
+	delay_s(1);
+	WriteLn("Start");
+
+	// Sets up video display part of data path: MIPI bridge (Solomon) or other output device
+	Display_System_Full_Init();
 
 	// Sets up video input part of data path: switch (if present), HDMI receiver.
 	VideoInput_Init();  // make sure Solomon is init before HDMI because HDMI init assumes that I2C port for NXP2 has

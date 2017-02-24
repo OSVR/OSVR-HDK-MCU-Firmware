@@ -39,6 +39,7 @@
 
 /* Standard includes */
 #include <stdint.h>
+#include <stdbool.h>
 #include <limits.h>
 
 /// Given a uint8_t value and corresponding 8-bit mask with just one bit set, checks to see if that bit is set.

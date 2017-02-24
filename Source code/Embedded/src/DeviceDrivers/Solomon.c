@@ -90,6 +90,7 @@ bool init_solomon_device(uint8_t deviceID)
 		return false;
 	}
 
+	Solomon_Dump_All_Config_Debug("init_solomon_device - before");
 // ssd 2828 initialize
 #ifndef H546DLT01
 	write_solomon(deviceID, 0xB1, 0x0216);  // VSA=2, HSA=22
@@ -247,6 +248,7 @@ delay_ms(16);*/
 	svr_yield_ms(100);
 #endif
 
+	Solomon_Dump_All_Config_Debug("init_solomon_device - after");
 	return true;
 }
 

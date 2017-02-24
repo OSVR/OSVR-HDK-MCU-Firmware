@@ -221,9 +221,9 @@ static tmdlHdmiRxMuteAndVideoPort_t muteAndVideoPortList = { False,
                                                              TMDL_HDMIRX_AUDIOFORMAT_I2S32,
                                                              False,
                                                              TMDL_HDMIRX_VPRESOLUTION_10_BITS,
-                                                             TMDL_HDMIRX_OUTPUTSIGNAL_U,
-                                                             TMDL_HDMIRX_OUTPUTSIGNAL_Y,
-                                                             TMDL_HDMIRX_OUTPUTSIGNAL_V,
+                                                             (tmbslHdmiRxVideoPortSelection_t)TMDL_HDMIRX_OUTPUTSIGNAL_U,
+                                                             (tmbslHdmiRxVideoPortSelection_t)TMDL_HDMIRX_OUTPUTSIGNAL_Y,
+                                                             (tmbslHdmiRxVideoPortSelection_t)TMDL_HDMIRX_OUTPUTSIGNAL_V,
 #ifdef TMFL_TDA19972_FAMILY
 {   {TMDL_HDMI_RX_VP24_G4_3_0,TMDL_HDMI_RX_B_CB_7_4},
     {TMDL_HDMI_RX_VP24_G4_7_4,TMDL_HDMI_RX_B_CB_11_8},
@@ -2453,8 +2453,8 @@ tmErrorCode_t tmdlHdmiRxSelectInput
 #ifdef TMFL_TDA19972_FAMILY
     errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxConfigurePixelClockGenerator(instance,
               BSLHDMIRX_PIXCLK_OUT_TOGGLE_OFF,
-              instanceStatusInfo[instance].pVideoInfo->videoFormat,
-              instanceStatusInfo[instance].pVideoInfo->outputClockMode);
+              (tmbslHdmiRxOutputFormat_t)instanceStatusInfo[instance].pVideoInfo->videoFormat,
+              (tmbslHdmiRxOutClockEdgeMode_t)instanceStatusInfo[instance].pVideoInfo->outputClockMode);
 #else
     errCode = gtmdlHdmiRxDriverConfigTable[instance].ptmbslHdmiRxFunctionsList->tmbslHdmiRxConfigurePixelClockGenerator(instance,
               BSLHDMIRX_PIXCLK_OUT_TOGGLE_ON,
@@ -3555,11 +3555,11 @@ tmErrorCode_t tmdlHdmiRxSetVideoOutputFormat
     /* type conversion */
     if (clockMode == TMDL_HDMIRX_OUTCLKMODE_SINGLE_EDGE)
     {
-        clockOutEdgeMode = TMDL_HDMIRX_OUTCLKMODE_SINGLE_EDGE;
+        clockOutEdgeMode = (tmbslHdmiRxOutClockEdgeMode_t)TMDL_HDMIRX_OUTCLKMODE_SINGLE_EDGE;
     }
     else
     {
-        clockOutEdgeMode = TMDL_HDMIRX_OUTCLKMODE_DOUBLE_EDGE;
+        clockOutEdgeMode = (tmbslHdmiRxOutClockEdgeMode_t)TMDL_HDMIRX_OUTCLKMODE_DOUBLE_EDGE;
 
     }
 #endif

@@ -68,6 +68,7 @@ $(BUILD_DIR)/%.i: $(REL_ROOT)/%.c
 	$(CANNED_RECIPE_BEGINNING_SHOW_IN_AND_OUT)
 	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -w -E -dDI -C -o "$@" "$<"
 
+
 # For all non-ASF files, make a shortcut phony target that's just $(BUILD_DIR)/basename.i to keep the typing shorter.
 define make_preprocess_phony_target
 # only if this would actually be a shortcut and not just replace the real target
@@ -99,7 +100,7 @@ json_stringify = jq -R "." >>"$@"
 # These complement SYSTEM_FLAGS (which typically is something like -isystem path/to/your/avr/includes)
 # by including notable things from avr-gcc -mmcu=$(MCU) -dM -E dummy.c output
 
-WELL_KNOWN_SYSTEM_FLAGS = -DAVR -D__AVR=1 -D__AVR__=1 -D__WITH_AVRLIBC__=1 -D__AVR_DEVICE_NAME__=$(MCU) -D__AVR_$(MIXED_CASE_MCU)__=1
+WELL_KNOWN_SYSTEM_FLAGS := -DAVR -D__AVR=1 -D__AVR__=1 -D__WITH_AVRLIBC__=1 -D__AVR_DEVICE_NAME__=$(MCU) -D__AVR_$(MIXED_CASE_MCU)__=1
 
 ARCH5_FLAGS := -D__AVR_ENHANCED__=1 \
                -D__AVR_HAVE_JMP_CALL__=1 \
@@ -129,10 +130,13 @@ endif
 ifeq ($(strip $(MCU)),atxmega256a3bu)
 WELL_KNOWN_SYSTEM_FLAGS += -D__AVR_ARCH__=106 $(ARCH106_FLAGS) -D__AVR_3_BYTE_PC__=1
 else
+ifeq ($(strip $(MCU)),atxmega256a3u)
+WELL_KNOWN_SYSTEM_FLAGS += -D__AVR_ARCH__=106 $(ARCH106_FLAGS) -D__AVR_3_BYTE_PC__=1
+else
 WELL_KNOWN_SYSTEM_FLAGS += $(DEFAULT_ARCH_SYSTEM_FLAGS)
 $(warning Do not know the pre-defined constants for that MCU, sorry! your compiledb $(COMPILATION_DATABASE_FILENAME) might be insufficient!)
 endif
-
+endif
 
 # the PARAMS get sucked in as a string array: lines as follows:
 # the main part of the compile command (some must be manually kept in sync!)
@@ -185,6 +189,7 @@ include add_config.mk
 # set target-specific variables - have to do this here, where these are not recursively defined.
 $(BUILD_DIR)/%: SUFFIX := $(SUFFIX)
 $(BUILD_DIR)/%: VARIANT := $(VARIANT)
+$(BUILD_DIR)/%: MCU := $(MCU)
 
 # Clean up work variables
 C_OBJS :=

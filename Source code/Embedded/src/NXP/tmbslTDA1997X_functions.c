@@ -418,6 +418,15 @@ bslTDA1997XForceEqualizerGain
 
  ******************************************************************************/
 
+/// @todo Note: referenced in AVRHDMI.c as well.
+tmErrorCode_t
+bslTDA1997XWriteI2C
+(
+tmUnitSelect_t          unit,
+UInt16                  firstRegister,
+UInt8                   lengthData,
+UInt8                   *pBuffer
+); // definition for I2C routine
 
 
 tmErrorCode_t

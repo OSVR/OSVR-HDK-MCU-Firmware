@@ -442,7 +442,7 @@ typedef enum
 } tmdlHdmiRxVPResolution_t;
 
 /**
- * \brief Enum listing all dignal available for output
+ * \brief Enum listing all signal available for output
  */
 typedef enum
 {

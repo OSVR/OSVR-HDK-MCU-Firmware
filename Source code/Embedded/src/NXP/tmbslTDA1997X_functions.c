@@ -8996,7 +8996,7 @@ bslTDA1997XSetVHSyncValues
 /*============================================================================*/
 
 
-void HZ5()
+static void HZ5(void)
 {
     // debug routine
     /* WA enable power switch  - SRAM content is always valid (in case E-MTP is not or bad programmed)*/

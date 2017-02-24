@@ -7033,7 +7033,7 @@ static void dlHdmiRxRecoverChannelAssignment
 
 #include "tmbslTDA1997X_local.h"
 
-void reportLinesPixels()
+static void reportLinesPixels(void)
 // read and report how many lines and pixels the NXP sees
 {
 
@@ -7711,7 +7711,7 @@ tmErrorCode_t tmdlHdmiRxGetHdmiFlags
 
 #ifdef TMFL_TDA19972_FAMILY
 
-tmbslHdmiRxVideoPortPinGroup_t dl2bslVP (tmdlHdmiRxVideoPortPinGroup_t portPinGroup)
+static tmbslHdmiRxVideoPortPinGroup_t dl2bslVP (tmdlHdmiRxVideoPortPinGroup_t portPinGroup)
 {
     switch (portPinGroup)
     {
@@ -7768,7 +7768,7 @@ tmbslHdmiRxVideoPortPinGroup_t dl2bslVP (tmdlHdmiRxVideoPortPinGroup_t portPinGr
     }
 }
 
-tmbslHdmiRxVideoColorQuartet_t dl2bslColQ (tmdlHdmiRxVideoColorQuartet_t ColorQuartet)
+static tmbslHdmiRxVideoColorQuartet_t dl2bslColQ (tmdlHdmiRxVideoColorQuartet_t ColorQuartet)
 {
     switch (ColorQuartet)
     {

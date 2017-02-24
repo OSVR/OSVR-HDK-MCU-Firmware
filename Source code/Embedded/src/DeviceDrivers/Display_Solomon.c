@@ -21,6 +21,7 @@ void Display_System_Init() { init_solomon(); }
 void Display_Init(uint8_t id) { init_solomon_device(id); }
 void Display_On(uint8_t deviceID)
 {
+	Solomon_Dump_Config_Debug(deviceID, "Display_On - before");
 #ifdef H546DLT01  // AUO 5.46" OLED
 	// svr_yield_ms(500);
 	WriteLn("Turning display on");
@@ -38,10 +39,12 @@ void Display_On(uint8_t deviceID)
 	write_solomon(deviceID, 0xBF, 0x0029);  // display on
 
 #endif
+	Solomon_Dump_Config_Debug(deviceID, "Display_On - after");
 }
 
 void Display_Off(uint8_t deviceID)
 {
+	Solomon_Dump_Config_Debug(deviceID, "Display_Off - before");
 #ifdef H546DLT01  // AUO 5.46" OLED
 
 	WriteLn("Turning display off");
@@ -54,6 +57,7 @@ void Display_Off(uint8_t deviceID)
 	svr_yield_ms(20);                       // delay > 1 frames
 
 #endif
+	Solomon_Dump_Config_Debug(deviceID, "Display_Off - after");
 }
 void Display_Reset(uint8_t deviceID) { Solomon_Reset(deviceID); }
 // power cycles display connected to the specific device

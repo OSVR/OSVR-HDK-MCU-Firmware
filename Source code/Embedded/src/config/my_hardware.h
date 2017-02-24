@@ -72,12 +72,14 @@
 #endif  // SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 
 #ifdef SVR_HAVE_PWM_OUTPUTS
-#define PWM_A IOPORT_CREATE_PIN(PORTE, 3)  // high:on; low:off
-#define PWM_B IOPORT_CREATE_PIN(PORTF, 2)  // high:on; low:off
+#define PWM_A IOPORT_CREATE_PIN(PORTE, 3)  // high:on; low:off GPIO_E_X2_CH-2
+#define PWM_B IOPORT_CREATE_PIN(PORTF, 2)  // high:on; low:off GPIO_E_X3_CH-2
 
 #endif  // SVR_HAVE_PWM_OUTPUTS
 
 #ifdef SVR_HAVE_FPGA
+/// @todo PB0 is VTT_PGOOD_X on DSIGHT
+/// PE2 is GPIO_E_X1_CH-2
 #define FPGA_Reset_Pin IOPORT_CREATE_PIN(PORTB, 0)  // low holds the FPGA in reset, high releases it
 
 #endif  // SVR_HAVE_FPGA

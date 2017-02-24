@@ -91,4 +91,31 @@ static inline __always_inline uint8_t bitUtils_highByte(uint16_t val)
 /// Portable equivalent of _BV
 #define BITUTILS_BIT(B) (0x01 << (B))
 
+/// Get the value (0 or 1) of a single bit.
+#define BITUTILS_GETBIT(VAL, BIT) ((uint8_t)(((VAL & BITUTILS_BIT(BIT)) >> (BIT))))
+
+/// Get '0' or '1' for a single bit.
+#define BITUTILS_GETBIT_ASCII(VAL, BIT) (BITUTILS_GETBIT(VAL, BIT) + '0')
+
+/// Get a C string initializer (that is, null-terminated initializer for char[]) of the ASCII version of a 8-bit value
+/// in binary, spaces between nibbles.
+#define BITUTILS_CSTR_INIT_FROM_U8_TO_BIN(VAL)                                                              \
+	{                                                                                                       \
+		BITUTILS_GETBIT_ASCII(VAL, 7)                                                                       \
+		, BITUTILS_GETBIT_ASCII(VAL, 6), BITUTILS_GETBIT_ASCII(VAL, 5), BITUTILS_GETBIT_ASCII(VAL, 4), ' ', \
+		    BITUTILS_GETBIT_ASCII(VAL, 3), BITUTILS_GETBIT_ASCII(VAL, 2), BITUTILS_GETBIT_ASCII(VAL, 1),    \
+		    BITUTILS_GETBIT_ASCII(VAL, 0), '\0'                                                             \
+	}
+
+/// Get a C string initializer (that is, null-terminated initializer for char[]) of the ASCII version of a 16-bit value
+/// in binary, spaces between nibbles.
+#define BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(VAL)                                                                \
+	{                                                                                                          \
+		BITUTILS_GETBIT_ASCII(VAL, 15)                                                                         \
+		, BITUTILS_GETBIT_ASCII(VAL, 14), BITUTILS_GETBIT_ASCII(VAL, 13), BITUTILS_GETBIT_ASCII(VAL, 12), ' ', \
+		    BITUTILS_GETBIT_ASCII(VAL, 11), BITUTILS_GETBIT_ASCII(VAL, 10), BITUTILS_GETBIT_ASCII(VAL, 9),     \
+		    BITUTILS_GETBIT_ASCII(VAL, 8), ' ', BITUTILS_GETBIT_ASCII(VAL, 7), BITUTILS_GETBIT_ASCII(VAL, 6),  \
+		    BITUTILS_GETBIT_ASCII(VAL, 5), BITUTILS_GETBIT_ASCII(VAL, 4), ' ', BITUTILS_GETBIT_ASCII(VAL, 3),  \
+		    BITUTILS_GETBIT_ASCII(VAL, 2), BITUTILS_GETBIT_ASCII(VAL, 1), BITUTILS_GETBIT_ASCII(VAL, 0), '\0'  \
+	}
 #endif

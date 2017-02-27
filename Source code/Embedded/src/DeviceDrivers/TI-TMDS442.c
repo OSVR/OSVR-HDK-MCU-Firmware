@@ -18,6 +18,7 @@
 #include "NXP/i2c.h"
 #include "my_hardware.h"
 #include "SideBySide.h"
+#include "VideoInput_Protected.h"
 
 // asf headers
 #include <ioport.h>
@@ -75,6 +76,7 @@ void ProgramHDMISwitch(void)
 		WriteLn("No inputs");
 		HDMI_config(Sink1_port_config, Fixed_mask);  //|Sink_TMDS_off);
 		HDMI_config(Sink2_port_config, Fixed_mask);  //|Sink_TMDS_off);
+		VideoInput_Protected_Report_Status(false);
 		break;
 	}
 	case 1:  // just input A
@@ -84,11 +86,7 @@ void ProgramHDMISwitch(void)
 		HDMI_config(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_1);
 		// switch to side by side mode as there is one input
 		SxS_Enable();
-		init_solomon_device(Solomon1);
-		init_solomon_device(Solomon2);
-		delay_ms(1000);
-		init_solomon_device(Solomon1);
-		init_solomon_device(Solomon2);
+		VideoInput_Protected_Report_Status(true);
 		break;
 	}
 	case 2:  // just input B
@@ -98,11 +96,7 @@ void ProgramHDMISwitch(void)
 		HDMI_config(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_2);
 		// switch to side by side mode as there is one input
 		SxS_Enable();
-		init_solomon_device(Solomon1);
-		init_solomon_device(Solomon2);
-		delay_ms(1000);
-		init_solomon_device(Solomon1);
-		init_solomon_device(Solomon2);
+		VideoInput_Protected_Report_Status(true);
 		break;
 	}
 	case 3:  // both inputs
@@ -112,11 +106,7 @@ void ProgramHDMISwitch(void)
 		HDMI_config(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_2);
 		// switch to regular (not side-by-side) mode as there are two inputs
 		SxS_Disable();
-		init_solomon_device(Solomon1);
-		init_solomon_device(Solomon2);
-		delay_ms(1000);
-		init_solomon_device(Solomon1);
-		init_solomon_device(Solomon2);
+		VideoInput_Protected_Report_Status(true);
 		break;
 	}
 	}

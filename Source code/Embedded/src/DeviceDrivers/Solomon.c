@@ -65,7 +65,7 @@ void Solomon_Dump_All_Config_Debug(const char *loc)
 void Solomon_Dump_Config_Debug(uint8_t deviceId, const char *loc)
 {
 	char msg[20];
-	uint16_t config = read_solomon(deviceId, SOLOMON_REG_CONFIG);
+	uint16_t config = read_solomon(deviceId, SOLOMON_REG_CFGR);
 	char confStr[] = BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(config);
 	sprintf(msg, "Config %d: ", deviceId);
 	Write(msg);

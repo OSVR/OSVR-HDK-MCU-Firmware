@@ -78,8 +78,7 @@
 #endif  // SVR_HAVE_PWM_OUTPUTS
 
 #ifdef SVR_HAVE_FPGA
-/// @todo PB0 is VTT_PGOOD_X on DSIGHT
-/// PE2 is GPIO_E_X1_CH-2
+/// @todo PB0 is VTT_PGOOD_X on DSIGHT?
 #define FPGA_Reset_Pin IOPORT_CREATE_PIN(PORTB, 0)  // low holds the FPGA in reset, high releases it
 
 #endif  // SVR_HAVE_FPGA

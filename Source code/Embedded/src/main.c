@@ -179,18 +179,6 @@ int main(void)
 	// Poll once on startup to see if we have video at start.
 	VideoInput_Poll_Status();
 	HandleHDMI();
-
-#ifdef DSIGHT
-	/// @todo isn't this redundant with the videoDetected check above? or is the waiting for 1 second important for
-	/// dSight specifically?
-	if (VideoInput_Events.videoDetected)
-	{
-		delay_ms(1000);
-		Display_Init(Display1);
-		Display_Init(Display2);
-	}
-#endif  // DSIGHT
-
 // ProgramMTP0();
 #endif  // SVR_ENABLE_VIDEO_INPUT
 

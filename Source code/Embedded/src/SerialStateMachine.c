@@ -1320,6 +1320,7 @@ void ProcessFPGACommand(void)
 	}
 	switch (CommandToExecute[2])
 	{
+#if 0
 	case 'r':
 	case 'R':
 	{
@@ -1339,6 +1340,7 @@ void ProcessFPGACommand(void)
 		FPGA_write(FPGANum, Addr, Data);
 		break;
 	}
+#endif  // 0
 	case 's':
 	case 'S':  // toggle side by side
 	{

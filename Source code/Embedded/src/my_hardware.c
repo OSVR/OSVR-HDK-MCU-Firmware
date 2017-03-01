@@ -197,19 +197,6 @@ void custom_board_init(void)
 // ioport_configure_pin(Backlight,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
 
 #ifdef SVR_HAVE_FPGA
-	// init both UARTs
-	static usart_rs232_options_t usart_options = {.baudrate = FPGA_USART_BAUD_RATE,
-	                                              .charlength = FPGA_USART_SERIAL_CHAR_LENGTH,
-	                                              .paritytype = FPGA_USART_SERIAL_PARITY,
-	                                              .stopbits = FPGA_USART_SERIAL_STOP_BIT};
-
-	if (!usart_init_rs232(FPGA1_USART, &usart_options))
-		WriteLn("FPGA1 init err");
-
-#if SVR_HAVE_FPGA == 2
-	if (!usart_init_rs232(FPGA2_USART, &usart_options))
-		WriteLn("FPGA2 init err");
-#endif  // SVR_HAVE_FPGA == 2
 
 #ifdef OSVRHDK
 	ioport_configure_pin(FPGA_Reset_Pin,

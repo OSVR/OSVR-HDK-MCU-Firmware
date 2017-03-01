@@ -44,31 +44,4 @@
 #ifndef CONF_USART_SERIAL_H_INCLUDED
 #define CONF_USART_SERIAL_H_INCLUDED
 
-#include "GlobalOptions.h"
-
-#define  FPGA1_USART               &USARTF0
-//#define  FPGA1_USART_RX_Vect       USARTF0_RXC_vect
-//#define  FPGA1_USART_DRE_Vect      USARTF0_DRE_vect
-//#define  FPGA1_USART_SYSCLK        SYSCLK_USART0
-//#define  FPGA1_USART_PORT          PORTF
-//#define  FPGA1_USART_PORT_PIN_TX   0x08  // PF3 (TXC0)
-//#define  FPGA1_USART_PORT_PIN_RX   0x04  // PF2 (RXC0)
-//#define  FPGA1_USART_PORT_SYSCLK   SYSCLK_PORT_F
-
-#ifndef OSVRHDK
-    #define  FPGA2_USART               &USARTE0
-    //#define  FPGA2_USART_RX_Vect       USARTE0_RXC_vect
-    //#define  FPGA2_USART_DRE_Vect      USARTE0_DRE_vect
-    //#define  FPGA2_USART_SYSCLK        SYSCLK_USART0
-    //#define  FPGA2_USART_PORT          PORTE
-    //#define  FPGA2_USART_PORT_PIN_TX   0x08  // PE3 (TXC0)
-    //#define  FPGA2_USART_PORT_PIN_RX   0x04  // PE2 (RXC0)
-    //#define  FPGA2_USART_PORT_SYSCLK   SYSCLK_PORT_E
-#endif
-
-#define FPGA_USART_BAUD_RATE				19200
-#define FPGA_USART_SERIAL_CHAR_LENGTH    USART_CHSIZE_8BIT_gc
-#define FPGA_USART_SERIAL_PARITY         USART_PMODE_DISABLED_gc
-#define FPGA_USART_SERIAL_STOP_BIT       false
-
 #endif /* CONF_USART_SERIAL_H_INCLUDED */

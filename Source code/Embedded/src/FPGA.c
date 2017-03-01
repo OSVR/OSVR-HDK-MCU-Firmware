@@ -22,7 +22,7 @@ void FPGA_reset(void)
 	delay_ms(1);
 	FPGA_end_reset();
 }
-
+#if 0
 void FPGA_write(uint8_t FPGANun, uint8_t Command, uint8_t Value)
 {
 	switch (FPGANun)
@@ -80,5 +80,5 @@ uint8_t FPGA_read(uint8_t FPGANun, uint8_t Command)
 	}
 	return Value;
 }
-
+#endif
 #endif  // SVR_HAVE_FPGA

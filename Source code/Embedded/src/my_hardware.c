@@ -152,10 +152,14 @@ void custom_board_init(void)
 	ioport_configure_pin(Int_HDMI_B, IOPORT_DIR_INPUT);
 #endif
 
+#ifdef SVR_IS_DSIGHT
 	ioport_configure_pin(USB_Hub_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 
 	/// @todo HW NC on SVR_IS_HDK_20?
 	ioport_configure_pin(USB_Hub_Power_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
+
+	ioport_set_pin_high(USB_Hub_Reset_Pin);  // free hub from reset
+#endif
 
 /// @todo initialize USB_SW_OC except on SVR_IS_HDK_20 where it may be HW NC?
 

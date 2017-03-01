@@ -113,10 +113,6 @@ int main(void)
 	// init the incoming serial state machine
 	InitSerialState();
 
-	ioport_set_pin_high(USB_Hub_Reset_Pin);  // free hub from reset
-	// disable this after removing the appropriate resistor
-	ioport_set_pin_low(USB_Hub_Power_Pin);  // enable power on hub
-
 // delay_ms(100);
 
 // delay_s(1);

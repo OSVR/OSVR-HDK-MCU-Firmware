@@ -1153,6 +1153,12 @@
     <Compile Include="src\DeviceDrivers\HDK2.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\DeviceDrivers\Solomon_SSD2828.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\DeviceDrivers\Solomon_SSD2828.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\DeviceDrivers\Toshiba_TC358870.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1187,6 +1193,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\DeviceDrivers\VideoInput_Toshiba_TC358870.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\DisplayControllerSPI.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\MacroUtils.h">

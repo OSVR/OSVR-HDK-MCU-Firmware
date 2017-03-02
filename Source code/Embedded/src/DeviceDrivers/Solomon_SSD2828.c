@@ -98,11 +98,8 @@ void solomon_write_reg_word(Solomon_t const* sol, uint8_t addr, uint16_t data)
 
 void solomon_read_reg(Solomon_t const* sol, uint8_t addr, uint8_t* data, size_t len)
 {
-	uint8_t lrrVal = SOLOMON_REG_LRR_RESET_VALUE;
-	if (sol->lrrBehavior == SOLOMON_LRR_USE_ADDRESS)
-	{
-		lrrVal = addr;
-	}
+	const uint8_t lrrVal = (sol->lrrBehavior == SOLOMON_LRR_USE_ADDRESS) ? addr : SOLOMON_REG_LRR_RESET_VALUE;
+
 	solomon_write_reg_2byte(sol, SOLOMON_REG_LRR, lrrVal, 0x00);
 	// Component switches to read mode if the second command byte
 	// byte equals the contents of register

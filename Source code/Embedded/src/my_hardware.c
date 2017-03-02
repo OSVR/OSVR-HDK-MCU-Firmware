@@ -104,9 +104,9 @@ void custom_board_init(void)
 
 // Solomon SSD2848 IO Init.
 #ifdef SVR_HAVE_SOLOMON1
-	ioport_configure_pin(AT86RFX_SPI_SCK, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-	ioport_configure_pin(AT86RFX_SPI_MOSI, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-	ioport_configure_pin(AT86RFX_SPI_MISO, IOPORT_DIR_INPUT);
+	ioport_configure_pin(Solomon_SPI_SCK, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+	ioport_configure_pin(Solomon_SPI_MOSI, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+	ioport_configure_pin(Solomon_SPI_MISO, IOPORT_DIR_INPUT);
 
 	ioport_configure_pin(Solomon1_CSN, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	ioport_configure_pin(Solomon1_AddrData, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);

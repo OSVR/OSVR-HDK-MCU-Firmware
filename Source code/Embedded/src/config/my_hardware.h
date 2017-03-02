@@ -17,15 +17,6 @@
 // asf header
 #include <board.h>
 
-#ifdef SVR_HAVE_SOLOMON1
-//! \note Perform unit tests using SPI instance SPIC
-#define Solomon1_SPI SPIC
-#endif  // SVR_HAVE_SOLOMON1
-
-#ifdef SVR_HAVE_SOLOMON2
-#define Solomon2_SPI SPID
-#endif  // SVR_HAVE_SOLOMON2
-
 #define Debug_LED IOPORT_CREATE_PIN(PORTF, 0)
 
 #ifdef SVR_HAVE_NXP1

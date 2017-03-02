@@ -15,22 +15,10 @@
 
 #ifdef SVR_HAVE_SOLOMON1
 #define Solomon1 0
-#define Solomon1_CSN IOPORT_CREATE_PIN(PORTC, 4)
-#define Solomon1_AddrData IOPORT_CREATE_PIN(PORTB, 1)
-#define Solomon1_VOUT_Shutdown IOPORT_CREATE_PIN(PORTA, 1)  // when low, Solomon is activated
-#define Solomon1_Reset IOPORT_CREATE_PIN(PORTA, 2)
 #endif  // SVR_HAVE_SOLOMON1
 
 #ifdef SVR_HAVE_SOLOMON2
 #define Solomon2 1
-// todo: map to actual one and enable
-//#define Solomon2_CSN            IOPORT_CREATE_PIN(PORTF, 3)
-#define Solomon2_AddrData IOPORT_CREATE_PIN(PORTB, 3)  // todo: map to actual one and enable
-#define Solomon2_VOUT_Shutdown IOPORT_CREATE_PIN(PORTA, 3)
-#define Solomon2_Reset IOPORT_CREATE_PIN(PORTA, 4)
-/* When Mux_OE is low, Mux_select low is Solomon1, Mux_select high is Solomon2 */
-#define SPI_Mux_OE IOPORT_CREATE_PIN(PORTC, 2)
-#define SPI_Mux_Select IOPORT_CREATE_PIN(PORTC, 3)
 #endif  // SVR_HAVE_SOLOMON2
 
 void init_solomon(void);

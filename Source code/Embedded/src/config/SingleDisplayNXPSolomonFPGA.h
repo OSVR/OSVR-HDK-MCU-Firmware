@@ -36,4 +36,23 @@
 // Single display to control
 #define SVR_NUM_LOGICAL_DISPLAYS 1
 
+#define Solomon_SPI_MOSI IOPORT_CREATE_PIN(PORTC, 5)
+#define Solomon_SPI_MISO IOPORT_CREATE_PIN(PORTC, 6)
+#define Solomon_SPI_SCK IOPORT_CREATE_PIN(PORTC, 7)
+
+#define Solomon1_CSN IOPORT_CREATE_PIN(PORTC, 4)
+#define Solomon1_AddrData IOPORT_CREATE_PIN(PORTB, 1)
+#define Solomon1_VOUT_Shutdown IOPORT_CREATE_PIN(PORTA, 1)  // when low, Solomon is activated
+#define Solomon1_Reset IOPORT_CREATE_PIN(PORTA, 2)
+
+#define Solomon1_SPI SPIC
+
+// turn off mux support in dcspi
+#define DCSPI_MUX_SUPPORT 0
+#define Solomon1_Struct                                                                                               \
+	{                                                                                                                 \
+		.spi = &Solomon1_SPI, .dcSpi = {.addrData = Solomon1_AddrData, .addrLevel = false},                           \
+		.dcSpiDevice = {.spiDevice = {Solomon1_CSN}}, .voutShutdown = Solomon1_VOUT_Shutdown, .reset = Solomon1_Reset \
+	}
+
 #endif /* SINGLEDISPLAYNXPSOLOMONFPGA_H_ */

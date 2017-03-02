@@ -8,6 +8,7 @@
 #ifndef SOLOMON_H_
 #define SOLOMON_H_
 
+#define SOLOMON_DEPRECATED __attribute__((deprecated))
 #include "GlobalOptions.h"
 #include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/Solomon_SSD2828.h"
@@ -15,7 +16,7 @@
 /// For the little debug code here
 #include "BitUtilsC.h"
 #include "Console.h"
-#include <stdio.h> // for sprintf
+#include <stdio.h>  // for sprintf
 
 static inline void solomon_debug_value(const char name[], uint16_t val)
 {
@@ -38,13 +39,16 @@ static inline void solomon_debug_value(const char name[], uint16_t val)
 #define Solomon2 1
 #endif  // SVR_HAVE_SOLOMON2
 
+extern Solomon_t g_solomons[SVR_HAVE_SOLOMON];
+
+__always_inline static Solomon_t* solomon_get_channel(uint8_t channel) { return &(g_solomons[channel]); }
 void init_solomon(void);
 bool init_solomon_device(uint8_t deviceID);
 uint16_t read_solomon(uint8_t channel, uint8_t address);
 void write_solomon(uint8_t channel, uint8_t address, uint16_t data);
 void write_solomon_pair(uint8_t channel, uint8_t address, uint16_t data1, uint16_t data2);
-void raise_sdc(uint8_t channel);
-void lower_sdc(uint8_t channel);
+SOLOMON_DEPRECATED void raise_sdc(uint8_t channel);
+SOLOMON_DEPRECATED void lower_sdc(uint8_t channel);
 void Solomon_Reset(uint8_t SolomonNum);
 
 /// Writes out the config register to the console.

@@ -113,20 +113,16 @@ void custom_board_init(void)
 #endif  // SVR_HAVE_SOLOMON1
 
 #if defined(SVR_HAVE_SOLOMON1) && defined(SVR_HAVE_SOLOMON2)
-	ioport_configure_pin(SPI_Mux_OE, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-	ioport_configure_pin(SPI_Mux_Select, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
+	ioport_set_pin_dir(SPI_Mux_OE, IOPORT_DIR_OUTPUT);
+	// keep it low.
+	// leave permanently low per Zeev
+	ioport_set_pin_level(SPI_Mux_OE, false);
+	ioport_enable_pin(SPI_Mux_OE);
+
+	ioport_set_pin_dir(SPI_Mux_Select, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_level(SPI_Mux_Select, false);
+	ioport_enable_pin(SPI_Mux_Select);
 #endif  // SVR_HAVE_SOLOMON1 && SVR_HAVE_SOLOMON2
-
-#ifdef SVR_HAVE_SOLOMON1
-	ioport_configure_pin(Solomon1_VOUT_Shutdown, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-	ioport_configure_pin(Solomon1_Reset, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-#endif
-
-#ifdef SVR_HAVE_SOLOMON2
-	ioport_configure_pin(Solomon2_VOUT_Shutdown, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-	ioport_configure_pin(Solomon2_Reset, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-	ioport_configure_pin(Solomon2_AddrData, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-#endif
 
 	ioport_configure_pin(Debug_LED, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 

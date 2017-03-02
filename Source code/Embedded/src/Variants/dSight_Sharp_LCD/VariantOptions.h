@@ -11,6 +11,7 @@
 
 // Product: Sensics dSight professional HMD
 #define DSIGHT
+#define SVR_IS_DSIGHT
 
 // sharp 5" LCD
 #define LS050T1SX01

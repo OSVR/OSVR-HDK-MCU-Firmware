@@ -107,6 +107,14 @@ void solomon_pll_enable(Solomon_t const* sol);
 /// @pre solomon_select has been called for this unit
 void solomon_pll_disable(Solomon_t const* sol);
 
+/// Pass a mask of bits to set, and bits to clear, in the CFGR config register.
+/// @pre solomon_select has been called for this unit
+static inline void solomon_cfgr_set_clear_bits(Solomon_t const* sol, uint16_t bitsToSet, uint16_t bitsToClear)
+{
+	const uint16_t val = solomon_read_reg_2byte(sol, SOLOMON_REG_CFGR);
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, (val & ~bitsToClear) | bitsToSet);
+}
+
 /// @post reset is normal (high) but voutShutdown still high.
 void solomon_reset(Solomon_t const* sol);
 

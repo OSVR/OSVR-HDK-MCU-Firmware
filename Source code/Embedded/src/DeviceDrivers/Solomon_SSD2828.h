@@ -50,6 +50,20 @@ void solomon_read_reg(Solomon_t const* sol, uint8_t addr, uint8_t* data, size_t 
 /// @pre solomon_select has been called for this unit
 uint16_t solomon_read_reg_2byte(Solomon_t const* sol, uint8_t addr);
 
+/// Checks "PLS" - to see if PLL is locked.
+/// @pre solomon_select has been called for this unit
+bool solomon_pll_is_locked(Solomon_t const* sol);
+
+/// Sets PLL enable: Sets the PEN bit of the PCR without affecting other bits in that register.
+/// Does not wait for the PLL to lock - you can use `solomon_is_pll_locked()` for that.
+/// @pre solomon_select has been called for this unit
+void solomon_pll_enable(Solomon_t const* sol);
+
+/// Clears PLL enable: Clears the PEN bit of the PCR without affecting other bits in that register.
+/// Does not wait for the PLL to lock - you can use `solomon_is_pll_locked()` for that.
+/// @pre solomon_select has been called for this unit
+void solomon_pll_disable(Solomon_t const* sol);
+
 /// @post reset is normal (high) but voutShutdown still high.
 void solomon_reset(Solomon_t const* sol);
 

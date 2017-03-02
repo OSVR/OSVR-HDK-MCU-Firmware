@@ -115,6 +115,23 @@ uint16_t solomon_read_reg_2byte(Solomon_t const* sol, uint8_t addr)
 	return ((uint16_t)tmp[0]) | (((uint16_t)tmp[1]) << CHAR_BIT);
 }
 
+bool solomon_pll_is_locked(Solomon_t const* sol)
+{
+	return BITUTILS_CHECKBIT(solomon_read_reg_2byte(sol, SOLOMON_REG_ISR), SOLOMON_ISR_PLS_bm);
+}
+
+void solomon_pll_enable(Solomon_t const* sol)
+{
+	const uint16_t val = solomon_read_reg_2byte(sol, SOLOMON_REG_PCR);
+	solomon_write_reg_word(sol, SOLOMON_REG_PCR, val | SOLOMON_PCR_PEN_bm);
+}
+
+void solomon_pll_disable(Solomon_t const* sol)
+{
+	const uint16_t val = solomon_read_reg_2byte(sol, SOLOMON_REG_PCR);
+	solomon_write_reg_word(sol, SOLOMON_REG_PCR, val & ~SOLOMON_PCR_PEN_bm);
+}
+
 void solomon_reset(Solomon_t const* sol)
 {
 	solomon_start_video_shutdown(sol);

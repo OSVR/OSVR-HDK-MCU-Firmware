@@ -12,6 +12,21 @@
 #include "DeviceDrivers/Display.h"
 #include "DeviceDrivers/Solomon_SSD2828.h"
 
+/// For the little debug code here
+#include "BitUtilsC.h"
+#include "Console.h"
+#include <stdio.h> // for sprintf
+
+static inline void solomon_debug_value(const char name[], uint16_t val)
+{
+	Write(name);
+	char hexString[20];
+	sprintf(hexString, "0x%04x - ", val);
+	Write(hexString);
+	const char msg[] = BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(val);
+	WriteLn(msg);
+}
+
 #include <stdbool.h>
 #include <stdint.h>
 

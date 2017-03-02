@@ -1086,6 +1086,7 @@ void ProcessSPICommand(void)
 		WriteLn(OutString);
 		break;
 	}
+#if 0
 	case 'u':
 	case 'U':
 	{
@@ -1120,6 +1121,8 @@ void ProcessSPICommand(void)
 			WriteLn("Wrong Solomon ID");
 		break;
 	}
+#endif  // 0
+
 	case 'p':  // persistance settings
 	case 'P':
 	{

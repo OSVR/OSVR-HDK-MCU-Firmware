@@ -215,11 +215,6 @@ static void local_display_on(uint8_t id);
 static void local_display_off(uint8_t id);
 inline static void local_display_on(uint8_t id)
 {
-/// @todo why display init every time display goes on here? is this a panel quirk that should be handled in
-/// panel-specific code?
-#if !defined(H546DLT01) && !defined(OSVRHDK)
-	Display_Init(id);  // todo: add back after debug of board
-#endif
 	Display_On(id);
 	if (id == Display1)
 	{
@@ -228,10 +223,6 @@ inline static void local_display_on(uint8_t id)
 		Update_BNO_Report_Header();
 #endif
 	}
-/// @todo and similarly, why display init again afterwards?
-#if !defined(H546DLT01) && !defined(OSVRHDK)
-	Display_Init(id);  // todo: add back after debug of board
-#endif
 }
 inline static void local_display_off(uint8_t id)
 {
@@ -245,7 +236,6 @@ inline static void local_display_off(uint8_t id)
 	}
 }
 void HandleHDMI()
-
 {
 #ifdef SVR_ENABLE_VIDEO_INPUT
 	VideoInput_Task();

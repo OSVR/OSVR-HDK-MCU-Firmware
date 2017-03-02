@@ -87,6 +87,7 @@ src/DeviceDrivers/VideoInput_Toshiba_TC358870.c \
 src/DeviceDrivers/BNO070_using_hostif.c \
 src/DeviceDrivers/HDK2.c \
 src/DeviceDrivers/Solomon.c \
+src/DeviceDrivers/Solomon_SSD2828.c \
 src/DeviceDrivers/TI-TMDS442.c \
 src/DeviceDrivers/Toshiba_TC358870.c \
 src/DeviceDrivers/bno-hostif/bno_callbacks.c \

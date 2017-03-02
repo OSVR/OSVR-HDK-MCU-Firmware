@@ -86,12 +86,12 @@ void solomon_write_reg_byte(Solomon_t const* sol, uint8_t addr, uint8_t data)
 void solomon_write_reg_2byte(Solomon_t const* sol, uint8_t addr, uint8_t data1, uint8_t data2)
 {
 	const uint8_t d[] = {data1, data2};
-	dcspi_write_packet_byteaddr(sol->spi, &(sol->dcSpi), addr, d, 2);
+	dcspi_write_packet_byteaddr(sol->spi, &(sol->dcSpi), addr, d, sizeof(d));
 }
 void solomon_write_reg_word(Solomon_t const* sol, uint8_t addr, uint16_t data)
 {
 	const uint8_t d[] = {(uint8_t)(data & 0xFF), (uint8_t)((data >> CHAR_BIT) & 0xFF)};
-	dcspi_write_packet_byteaddr(sol->spi, &(sol->dcSpi), addr, d, 2);
+	dcspi_write_packet_byteaddr(sol->spi, &(sol->dcSpi), addr, d, sizeof(d));
 }
 
 void solomon_read_reg(Solomon_t const* sol, uint8_t addr, uint8_t* data, size_t len)

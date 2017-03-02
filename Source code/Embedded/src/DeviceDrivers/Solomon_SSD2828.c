@@ -8,6 +8,8 @@
 #include "Solomon_SSD2828.h"
 #include "DisplayControllerSPI.h"
 
+#include "BitUtilsC.h"
+
 #include <spi_master.h>
 #include <delay.h>
 
@@ -90,7 +92,7 @@ void solomon_write_reg_2byte(Solomon_t const* sol, uint8_t addr, uint8_t data1, 
 }
 void solomon_write_reg_word(Solomon_t const* sol, uint8_t addr, uint16_t data)
 {
-	const uint8_t d[] = {(uint8_t)(data & 0xFF), (uint8_t)((data >> CHAR_BIT) & 0xFF)};
+	const uint8_t d[] = {BITUTILS_GET_NTH_LEAST_SIG_BYTE(0, data), BITUTILS_GET_NTH_LEAST_SIG_BYTE(1, data)};
 	dcspi_write_packet_byteaddr(sol->spi, &(sol->dcSpi), addr, d, sizeof(d));
 }
 

@@ -19,29 +19,43 @@
 #include "my_hardware.h"
 #include "SideBySide.h"
 #include "VideoInput_Protected.h"
+#include "BitUtilsC.h"
+#include "SvrYield.h"
 
 // asf headers
 #include <ioport.h>
 #include <twi_master.h>
-#include <delay.h>
 
 // standard headers
 #include <stdio.h>
 
-static uint8_t InputStatus = 0;     // bit field for the two channels. Shows how the TMDS is configured
-static uint8_t LastStatusRead = 0;  // shows the last value read from TMDS config. Used to detect changes
+static uint8_t s_InputStatus = 0;     // bit field for the two channels. Shows how the TMDS is configured
+static uint8_t s_LastStatusRead = 0;  // shows the last value read from TMDS config. Used to detect changes
 
-#define ChannelAMask 1
-#define ChannelBMask 2
-#define BothChannelMask (ChannelAMask | ChannelBMask)
+static const uint8_t ChannelAMask = BITUTILS_BIT(1);
+static const uint8_t ChannelBMask = BITUTILS_BIT(2);
+static const uint8_t BothChannelMask = BITUTILS_BIT(1) | BITUTILS_BIT(2);
 
 #define TWI_TMDS442_ADDR 0x2c
 #define TWI_SPEED 50000  //!< TWI data transfer rate
 
 // internal registers
-#define Sink1_port_config 0x01
-#define Sink2_port_config 0x02
-#define Source_plug_in_status 0x03
+#define Sink1_port_config UINT8_C(0x01)
+#define Sink2_port_config UINT8_C(0x02)
+#define Source_plug_in_status UINT8_C(0x03)
+
+#if 1
+static const uint8_t Fixed_mask = UINT8_C(0x0);  ///< 3db emphasis off, sink side I2C disabled
+#else
+static const uint8_t Fixed_mask = UINT8_C(0x0C);  // 3db emphasis off, sink side I2C enabled, output enable as well
+#endif
+
+static const uint8_t Sink_TMDS_on = UINT8_C(0x00);
+static const uint8_t Sink_TMDS_off = UINT8_C(0x04);
+static const uint8_t Source_port_1 = UINT8_C(0x00);
+static const uint8_t Source_port_2 = UINT8_C(0x01);
+static const uint8_t Source_port_3 = UINT8_C(0x02);
+static const uint8_t Source_port_4 = UINT8_C(0x03);
 
 void TMDS442_ProgramHDMISwitch(void);
 
@@ -56,15 +70,6 @@ bool TMDS442_WriteReg(uint8_t RegNum, uint8_t Value)
 	};
 	return (twi_master_write(TWI_TMDS442_PORT, &packet) == TWI_SUCCESS);
 }
-
-#define Fixed_mask 0  // 3db emphasis off, sink side I2C disabled
-//#define Fixed_mask		0x0C // 3db emphasis off, sink side I2C enabled, output enable as well
-#define Sink_TMDS_on 0x0
-#define Sink_TMDS_off 0x04
-#define Source_port_1 0
-#define Source_port_2 1
-#define Source_port_3 2
-#define Source_port_4 3
 
 bool TMDS442_ReadReg(uint8_t regNum, uint8_t *NewStatus)
 {
@@ -98,20 +103,21 @@ bool TMDS442_ReadInputStatus(uint8_t *newStatus)
 	}
 	return false;
 }
+
 void TMDS442_ProgramHDMISwitch(void)
 {
-	switch (InputStatus)
+	switch (s_InputStatus)
 	{
 	case 0:  // no inputs
 	{
-		WriteLn("No inputs");
-		TMDS442_WriteReg(Sink1_port_config, Fixed_mask); // | Sink_TMDS_off);
-		TMDS442_WriteReg(Sink2_port_config, Fixed_mask); // | Sink_TMDS_off);
+		WriteLn("TMDS442_ProgramHDMISwitch: No inputs");
+		TMDS442_WriteReg(Sink1_port_config, Fixed_mask);  // | Sink_TMDS_off);
+		TMDS442_WriteReg(Sink2_port_config, Fixed_mask);  // | Sink_TMDS_off);
 		break;
 	}
 	case 1:  // just input A
 	{
-		WriteLn("Input A to both");
+		WriteLn("TMDS442_ProgramHDMISwitch: Input A to both");
 		TMDS442_WriteReg(Sink1_port_config, Fixed_mask | Sink_TMDS_on | Source_port_1);
 		TMDS442_WriteReg(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_1);
 		// switch to side by side mode as there is one input
@@ -120,7 +126,7 @@ void TMDS442_ProgramHDMISwitch(void)
 	}
 	case 2:  // just input B
 	{
-		WriteLn("Input B to both");
+		WriteLn("TMDS442_ProgramHDMISwitch: Input B to both");
 		TMDS442_WriteReg(Sink1_port_config, Fixed_mask | Sink_TMDS_on | Source_port_2);
 		TMDS442_WriteReg(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_2);
 		// switch to side by side mode as there is one input
@@ -129,7 +135,7 @@ void TMDS442_ProgramHDMISwitch(void)
 	}
 	case 3:  // both inputs
 	{
-		WriteLn("Two inputs");
+		WriteLn("TMDS442_ProgramHDMISwitch: Two inputs");
 		TMDS442_WriteReg(Sink1_port_config, Fixed_mask | Sink_TMDS_on | Source_port_1);
 		TMDS442_WriteReg(Sink2_port_config, Fixed_mask | Sink_TMDS_on | Source_port_2);
 		// switch to regular (not side-by-side) mode as there are two inputs
@@ -137,15 +143,15 @@ void TMDS442_ProgramHDMISwitch(void)
 		break;
 	}
 	}
-	delay_ms(100);  // after programming, a few frames to allow signal to stabilize
-	VideoInput_Protected_Report_Status(InputStatus != 0);
+	svr_yield_ms(100);  // after programming, a few frames to allow signal to stabilize
+	VideoInput_Protected_Report_Status(s_InputStatus != 0);
 }
 
 void TMDS442_Init(void)
 {
-	InputStatus = 0;
+	s_InputStatus = 0;
 #if 0
-	InputStatus = 3;  // both - for EDID testing
+	s_InputStatus = 3;  // both - for EDID testing
 #endif
 	if (!TWI_TMDS442_PORT_initialized)
 	{
@@ -167,32 +173,32 @@ void TMDS442_Init(void)
 
 void TMDS442_EnableVideoA(void)
 {
-	InputStatus |= ChannelAMask;
+	s_InputStatus |= ChannelAMask;
 	TMDS442_ProgramHDMISwitch();
 }
 
 void TMDS442_DisableVideoA(void)
 {
-	InputStatus &= (ChannelAMask ^ 0xff);
+	s_InputStatus &= ~ChannelAMask;
 	TMDS442_ProgramHDMISwitch();
 }
 
 void TMDS442_EnableVideoB(void)
 {
-	InputStatus |= ChannelBMask;
+	s_InputStatus |= ChannelBMask;
 	TMDS442_ProgramHDMISwitch();
 }
 
 void TMDS442_DisableVideoB(void)
 {
-	InputStatus &= (ChannelBMask ^ 0xff);
+	s_InputStatus &= ~ChannelBMask;
 	TMDS442_ProgramHDMISwitch();
 }
 
 void TMDS442_SetInputStatus(uint8_t NewStatus)
 {
 	/// Mask new status to keep it in the bounds of the case statements.
-	InputStatus = NewStatus & BothChannelMask;
+	s_InputStatus = NewStatus & BothChannelMask;
 	TMDS442_ProgramHDMISwitch();
 }
 
@@ -205,10 +211,11 @@ void TMDS442_Task(void)
 		return;
 	}
 
-	if (NewStatus != LastStatusRead)
+	if (NewStatus != s_LastStatusRead)
 	{
+		WriteLn("TMDS442: Detected change in input status.");
+		s_LastStatusRead = NewStatus;
 		TMDS442_SetInputStatus(NewStatus);
-		LastStatusRead = NewStatus;
 	}
 }
 #endif  // SVR_HAVE_TMDS442

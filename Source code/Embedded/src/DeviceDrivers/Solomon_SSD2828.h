@@ -96,14 +96,14 @@ static const uint16_t SOLOMON_CFGR_HS_bm = (UINT16_C(0x01));
 
 /// VC Control Register
 #define SOLOMON_REG_VCR UINT8_C(0xB8)
+/// PLL control reg
+#define SOLOMON_REG_PCR UINT8_C(0xB9)
+/// PLL enable
+static const uint16_t SOLOMON_PCR_PEN_bm = (UINT16_C(0x01));
 /// packet size control register 1
 #define SOLOMON_REG_PSCR1 UINT8_C(0xBC)
 /// Packet drop register
 #define SOLOMON_REG_PDR UINT8_C(0xBF)
-/// PLL control reg
-#define SOLOMON_REG_PCR UINT8_C(0xBF)
-/// PLL enable
-static const uint16_t SOLOMON_PCR_PEN_bm = (UINT16_C(0x01));
 
 #define SOLOMON_REG_DIR UINT8_C(0xb0)  // device ID register - should return value of 0x2828
 

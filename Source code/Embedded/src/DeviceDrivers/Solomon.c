@@ -27,6 +27,8 @@
 
 #include "BitUtilsC.h"
 
+#define SOLOMON_MAX_PLL_ATTEMPTS 50
+
 Solomon_t g_solomons[SVR_HAVE_SOLOMON] = {Solomon1_Struct
 #ifdef SVR_HAVE_SOLOMON2
                                           ,
@@ -116,11 +118,16 @@ bool init_solomon_device(uint8_t deviceID)
 	Write("Trying to enable PLL...");
 	solomon_pll_enable(sol);
 	solomon_write_reg_word(sol, 0xB9, 0x0001);  // enable PLL
-	while (!solomon_pll_is_locked(sol))
+	for (uint8_t i = 0; i < SOLOMON_MAX_PLL_ATTEMPTS && !solomon_pll_is_locked(sol); ++i)
 	{
 		Write(".");
 		// no pll lock
 		svr_yield_ms(1);
+	}
+	if (!solomon_pll_is_locked(sol))
+	{
+		WriteLn(" Failed!");
+		return false;
 	}
 	WriteLn(" PLL locked");
 

@@ -163,127 +163,135 @@ bool init_solomon_device(uint8_t deviceID)
 	svr_yield_ms(50);
 
 	// module panel initialization
-	write_solomon(deviceID, 0xB7, 0x0302);  // LP generic write
-	write_solomon(deviceID, 0xB8, 0x0000);  // VC
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0302);  // LP generic write
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);   // VC
 
-#ifdef LS055T1SX01                                       // sharp 5.5"
-	write_solomon(deviceID, 0xBC, 0x0003);               // no of bytes to send
-	write_solomon_pair(deviceID, 0xBF, 0x0F51, 0x00FF);  // cmd=51, data1=0F
+#ifdef LS055T1SX01                                           // sharp 5.5"
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of bytes to send
+#if 1
+	static const uint8_t brightnessStartupCmd[] = {0x51, 0x0f, 0xff, 0x00};
+	solomon_write_reg(sol, SOLOMON_REG_PDR, brightnessStartupCmd, sizeof(brightnessStartupCmd));
+#else
+	write_solomon_pair(deviceID, SOLOMON_REG_PDR, 0x0F51, 0x00FF);  // cmd=51, data1=0F
+#endif
 
-	write_solomon(deviceID, 0xBC, 0x0002);  // no of byte send
-	write_solomon(deviceID, 0xBF, 0x0453);  // cmd=53, data=04
-	write_solomon(deviceID, 0xBF, 0x0055);  // cmd=55, data=00
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);    // cmd=53, data=04
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0055);    // cmd=55, data=00
 
-	write_solomon(deviceID, 0xB7, 0x0342);  // LP DCS write
-	write_solomon(deviceID, 0xB8, 0x0000);  // VC
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);  // LP DCS write
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);   // VC
 
-	write_solomon(deviceID, 0xBC, 0x0001);  //
-	write_solomon(deviceID, 0xBF, 0x0029);  // display on
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  //
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0029);    // display on
 	svr_yield_ms(120);
-	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0011);  // sleep out
 #endif
 
 #ifdef LS050T1SX01  // sharp 5"
 	// from LS050T1SX01 data sheet
-	write_solomon(deviceID, 0xBC, 0x0002);  // no of byte send
-	write_solomon(deviceID, 0xBF, 0x04B0);  // cmd=B0, data=04
-	write_solomon(deviceID, 0xBF, 0x01D6);  // cmd=D6, data=01
-	write_solomon(deviceID, 0xB7, 0x0342);  // LP DCS write
-	write_solomon(deviceID, 0xB8, 0x0000);  // VC
-	write_solomon(deviceID, 0xBC, 0x0003);  // no of byte send
-
-	write_solomon_pair(deviceID, 0xBF, 0x0F51, 0x00FF);  // cmd=51, data1=0F
-
-	write_solomon(deviceID, 0xBC, 0x0002);  //
-	// write_solomon(deviceID,0xBB,0x0008); // LP clock BC 0002
-	write_solomon(deviceID, 0xBF, 0x0453);  // cmd=53, data=04
-	write_solomon(deviceID, 0xBC, 0x0001);  //
-	write_solomon(deviceID, 0xBF, 0x0029);  // display on
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04B0);    // cmd=B0, data=04
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x01D6);    // cmd=D6, data=01
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);   // LP DCS write
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of byte send
+#if 1
+	static const uint8_t brightnessStartupCmd[] = {0x51, 0x0f, 0xff, 0x00};
+	solomon_write_reg(sol, SOLOMON_REG_PDR, brightnessStartupCmd, sizeof(brightnessStartupCmd));
+#else
+	write_solomon_pair(deviceID, SOLOMON_REG_PDR, 0x0F51, 0x00FF);  // cmd=51, data1=0F
+#endif
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  //
+	// solomon_write_reg_word(sol,0xBB,0x0008); // LP clock BC 0002
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);    // cmd=53, data=04
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  //
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0029);    // display on
 	svr_yield_ms(120);
-	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0011);  // sleep out
 
 // end of LS050T1SX01 data sheet
 #endif
 
 #ifdef H546DLT01  // AUO 5.46" OLED
 	// from LS050T1SX01 data sheet
-	write_solomon(deviceID, 0xBC, 0x0002);  // no of byte send
-	write_solomon(deviceID, 0xB7, 0x0321);  // LP DCS write
-	write_solomon(deviceID, 0xB8, 0x0000);  // VC
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0321);   // LP DCS write
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
 
-	// write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
+	// solomon_write_reg_word(sol,SOLOMON_REG_PSCR1,0x0002); // number of bytes to write
 	svr_yield_ms(100);
 
 #ifdef LOW_PERSISTENCE
-	write_solomon(deviceID, 0xBF, 0x08FE);  // cmd=FE, data=08
-	write_solomon(deviceID, 0xBF, 0x4003);  // cmd=FE, data=08
-	write_solomon(deviceID, 0xBF, 0x1A07);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x08FE);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x4003);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x1A07);  // cmd=FE, data=08
 	/*Add by AUO*/
-	write_solomon(deviceID, 0xBF, 0x0DFE);  // cmd=FE, data=0D
-	write_solomon(deviceID, 0xBF, 0xFE53);  // cmd=53, data=FE
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0DFE);  // cmd=FE, data=0D
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0xFE53);  // cmd=53, data=FE
 	/* -----*/
-	write_solomon(deviceID, 0xBF, 0x00FE);  // cmd=FE, data=08
-	write_solomon(deviceID, 0xBF, 0x08C2);  // cmd=FE, data=08
-	write_solomon(deviceID, 0xBF, 0xFF51);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x00FE);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x08C2);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0xFF51);  // cmd=FE, data=08
 
-	// write_solomon(deviceID,0xBF,0x9889);
-	// write_solomon(deviceID,0xBF,0x068a);
-	// write_solomon(deviceID,0xBF,0x708b);
+	// solomon_write_reg_word(sol,SOLOMON_REG_PDR,0x9889);
+	// solomon_write_reg_word(sol,SOLOMON_REG_PDR,0x068a);
+	// solomon_write_reg_word(sol,SOLOMON_REG_PDR,0x708b);
 
 	// removed for test
-	// write_solomon(deviceID,0xBF,0xE689);
-	// write_solomon(deviceID,0xBF,0x8E8a);
-	// write_solomon(deviceID,0xBF,0x118b);
+	// solomon_write_reg_word(sol,SOLOMON_REG_PDR,0xE689);
+	// solomon_write_reg_word(sol,SOLOMON_REG_PDR,0x8E8a);
+	// solomon_write_reg_word(sol,SOLOMON_REG_PDR,0x118b);
 
 	Display_Set_Strobing(deviceID, Display_Strobing_Rate, Display_Strobing_Percent);
 
-	write_solomon(deviceID, 0xBF, 0xFF51);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0xFF51);  // cmd=FE, data=08
 
 #else
-	write_solomon(deviceID, 0xBF, 0x04FE);  // cmd=FE, data=04
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04FE);           // cmd=FE, data=04
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x005E);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x005E);
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x4744);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x4744);
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x07FE);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x07FE);
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x6AA9);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x6AA9);
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x0AFE);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0AFE);
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x5214);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x5214);
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x00FE);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x00FE);
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x0135);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0135);
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x0055);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0055);
 	svr_yield_ms(16);
 #endif
-/*
-write_solomon(deviceID,0xBC,0x0001); //
-delay_ms(16);
-write_solomon(deviceID,0xBF,0x0011); // sleep out
-delay_ms(170); // delay > 10 frames
-write_solomon(deviceID,0xBF,0x0029); // display on
-delay_ms(20); // delay > 1 frames
-write_solomon(deviceID,0xBC,0x0002); // number of bytes to write
-write_solomon(deviceID,0xBF,0x07FE); // cmd=FE, data=BF
-delay_ms(100); // delay > 5 frames
-write_solomon(deviceID,0xBF,0xFAA9);
-delay_ms(16);
-write_solomon(deviceID,0xBF,0x00FE);
-delay_ms(16);
-write_solomon(deviceID,0xBC,0x0001); //
-delay_ms(16);*/
-
+#if 0
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  //
+	delay_ms(16);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0011);    // sleep out
+	delay_ms(170);                                           // delay > 10 frames
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0029);    // display on
+	delay_ms(20);                                            // delay > 1 frames
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // number of bytes to write
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x07FE);    // cmd=FE, data=BF
+	delay_ms(100);                                           // delay > 5 frames
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0xFAA9);
+	delay_ms(16);
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x00FE);
+	delay_ms(16);
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  //
+	delay_ms(16);
+#endif  // 0
 #endif
 
-#ifndef H546DLT01  // AUO 5.46" OLED
-	               // video mode on
+#ifndef H546DLT01                                          // AUO 5.46" OLED
+	                                                       // video mode on
 	svr_yield_ms(250);
-	write_solomon(deviceID, 0xB7, 0x034B);  // video mode on
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x034B);  // video mode on
 	svr_yield_ms(100);
 #endif
 

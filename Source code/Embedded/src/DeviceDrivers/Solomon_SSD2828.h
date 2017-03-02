@@ -12,6 +12,49 @@
 #include "BitUtilsC.h"
 #include <ioport.h>
 
+/// device ID register - should return value of 0x2828
+#define SOLOMON_REG_DIR UINT8_C(0xb0)
+
+/// Configuration register
+#define SOLOMON_REG_CFGR UINT8_C(0xB7)
+/// Transmit disable - setting this causes the Solomon to queue up messages until it's disabled.
+static const uint16_t SOLOMON_CFGR_TXD_bm = (UINT16_C(0x01) << 11);
+/// Long packet enable - whether the solomon should use long packets even when short will do.
+static const uint16_t SOLOMON_CFGR_LPE_bm = (UINT16_C(0x01) << 10);
+/// Read enable - next operation is a read op.
+static const uint16_t SOLOMON_CFGR_REN_bm = (UINT16_C(0x01) << 7);
+/// DCS enable - next packet is a DCS packet (vs. a generic packet)
+static const uint16_t SOLOMON_CFGR_DCS_bm = (UINT16_C(0x01) << 6);
+/// Clock select - only touch when PEN is off.
+static const uint16_t SOLOMON_CFGR_CSS_bm = (UINT16_C(0x01) << 5);
+/// video enable
+static const uint16_t SOLOMON_CFGR_VEN_bm = (UINT16_C(0x01) << 3);
+/// Sleep/ULP mode
+static const uint16_t SOLOMON_CFGR_SLP_bm = (UINT16_C(0x01) << 2);
+/// clock lane enable high speed in all cases
+static const uint16_t SOLOMON_CFGR_CKE_bm = (UINT16_C(0x01) << 1);
+/// Send data using HS interface
+static const uint16_t SOLOMON_CFGR_HS_bm = (UINT16_C(0x01));
+
+/// VC Control Register
+#define SOLOMON_REG_VCR UINT8_C(0xB8)
+
+/// PLL control reg
+#define SOLOMON_REG_PCR UINT8_C(0xB9)
+/// PLL enable bit.
+static const uint16_t SOLOMON_PCR_PEN_bm = (UINT16_C(0x01));
+
+/// packet size control register 1
+#define SOLOMON_REG_PSCR1 UINT8_C(0xBC)
+
+/// Packet drop register
+#define SOLOMON_REG_PDR UINT8_C(0xBF)
+
+/// Interrupt Status Register
+#define SOLOMON_REG_ISR UINT8_C(0xC6)
+/// PLL lock status bit.
+static const uint16_t SOLOMON_ISR_PLS_bm = BITUTILS_BIT(7);
+
 /// Detail of what byte needs to be written to the LRR register for a read. Detected by solomon_init.
 typedef enum Solomon_LRR_Behavior_Enum { SOLOMON_LRR_USE_CONSTANT, SOLOMON_LRR_USE_ADDRESS } Solomon_LRR_Behavior_t;
 
@@ -91,48 +134,5 @@ __always_inline static void solomon_deselect(Solomon_t const* sol)
 {
 	dcspi_deselect_device(sol->spi, &(sol->dcSpi), &(sol->dcSpiDevice));
 }
-
-/// device ID register - should return value of 0x2828
-#define SOLOMON_REG_DIR UINT8_C(0xb0)
-
-/// Configuration register
-#define SOLOMON_REG_CFGR UINT8_C(0xB7)
-/// Transmit disable - setting this causes the Solomon to queue up messages until it's disabled.
-static const uint16_t SOLOMON_CFGR_TXD_bm = (UINT16_C(0x01) << 11);
-/// Long packet enable - whether the solomon should use long packets even when short will do.
-static const uint16_t SOLOMON_CFGR_LPE_bm = (UINT16_C(0x01) << 10);
-/// Read enable - next operation is a read op.
-static const uint16_t SOLOMON_CFGR_REN_bm = (UINT16_C(0x01) << 7);
-/// DCS enable - next packet is a DCS packet (vs. a generic packet)
-static const uint16_t SOLOMON_CFGR_DCS_bm = (UINT16_C(0x01) << 6);
-/// Clock select - only touch when PEN is off.
-static const uint16_t SOLOMON_CFGR_CSS_bm = (UINT16_C(0x01) << 5);
-/// video enable
-static const uint16_t SOLOMON_CFGR_VEN_bm = (UINT16_C(0x01) << 3);
-/// Sleep/ULP mode
-static const uint16_t SOLOMON_CFGR_SLP_bm = (UINT16_C(0x01) << 2);
-/// clock lane enable high speed in all cases
-static const uint16_t SOLOMON_CFGR_CKE_bm = (UINT16_C(0x01) << 1);
-/// Send data using HS interface
-static const uint16_t SOLOMON_CFGR_HS_bm = (UINT16_C(0x01));
-
-/// VC Control Register
-#define SOLOMON_REG_VCR UINT8_C(0xB8)
-
-/// PLL control reg
-#define SOLOMON_REG_PCR UINT8_C(0xB9)
-/// PLL enable bit.
-static const uint16_t SOLOMON_PCR_PEN_bm = (UINT16_C(0x01));
-
-/// packet size control register 1
-#define SOLOMON_REG_PSCR1 UINT8_C(0xBC)
-
-/// Packet drop register
-#define SOLOMON_REG_PDR UINT8_C(0xBF)
-
-/// Interrupt Status Register
-#define SOLOMON_REG_ISR UINT8_C(0xC6)
-/// PLL lock status bit.
-static const uint16_t SOLOMON_ISR_PLS_bm = BITUTILS_BIT(7);
 
 #endif /* SOLOMON_SSD2828_H_ */

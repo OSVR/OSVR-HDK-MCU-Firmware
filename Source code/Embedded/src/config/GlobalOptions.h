@@ -129,13 +129,6 @@ extern char Msg[];
 
 #define MaxCommandLength 20
 
-#if !defined(OSVRHDK) || defined(SVR_HAVE_TMDS422)
-#define TMDS422  // true if TMDS HDMI switch is to be used
-#endif
-#if defined(TMDS422) && !defined(SVR_HAVE_TMDS422)
-#define SVR_HAVE_TMDS422
-#endif
-
 #ifdef HDMI_VERBOSE
 #define HDMI_DEBUG
 #endif

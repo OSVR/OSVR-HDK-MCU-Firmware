@@ -2,7 +2,7 @@
  * TI_TMDS442.h
  *
 
- driver for TI TMDS422 4-TO-2 DVI/HDMI SWITCH
+ driver for TI TMDS442 4-TO-2 DVI/HDMI SWITCH
  * Created: 10/20/2013 9:08:04 AM
  *  Author: Sensics
  */
@@ -12,25 +12,32 @@
 
 #include "GlobalOptions.h"
 
-#ifdef TMDS422
+#ifdef SVR_HAVE_TMDS442
 #include <stdint.h>
 #include <stdbool.h>
 
-void InitHDMISwitch(void);
+/// Initialize the driver and TDMS442 HDMI switch.
+void TMDS442_Init(void);
 
-void EnableVideoA(void);
-void DisableVideoA(void);
+/// Run the periodic task that checks the input status.
+void TMDS442_Task(void);
 
-void EnableVideoB(void);
-void DisableVideoB(void);
+/// @name Internal functions exposed for debugging
+/// @{
+bool TMDS442_ReadReg(uint8_t regNum, uint8_t *NewStatus);
+bool TMDS442_ReadInputStatus(uint8_t *newStatus);
+bool TMDS442_WriteReg(uint8_t RegNum, uint8_t Value);
+void TMDS442_SetInputStatus(uint8_t NewStatus);
+/// @}
 
-void SetInputStatus(uint8_t NewStatus);
+/// @name Debugging-only functions
+/// @{
+void TMDS442_EnableVideoA(void);
+void TMDS442_DisableVideoA(void);
 
-bool ReadTMDS422Status(uint8_t regNum, uint8_t *NewStatus);
+void TMDS442_EnableVideoB(void);
+void TMDS442_DisableVideoB(void);
+/// @}
 
-void TMDS_422_Task(void);
-
-bool HDMI_config(uint8_t RegNum, uint8_t Value);
-
-#endif
-#endif /* TI-TMDS442_H_ */
+#endif  // SVR_HAVE_TMDS442
+#endif  /* TI-TMDS442_H_ */

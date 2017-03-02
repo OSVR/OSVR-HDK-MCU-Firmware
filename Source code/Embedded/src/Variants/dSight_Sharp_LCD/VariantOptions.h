@@ -18,7 +18,7 @@
 #define SENSICS_DISPLAY_CONFIGURED
 
 // TI TMDS422 HDMI switch preceding the HDMI receivers in the signal path and providing connect/disconnect notification.
-#define SVR_HAVE_TMDS422
+#define SVR_HAVE_TMDS442
 
 // Dual NXP TDA-19971 HDMI receiver
 #define SVR_HAVE_NXP 2

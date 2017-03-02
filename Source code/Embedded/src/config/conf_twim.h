@@ -58,8 +58,8 @@
 	#define TWI_NXP1_PORT			(&TWIE) // j4 on ATMega Xplained for A3BU
 #endif
 
-#ifdef SVR_HAVE_TMDS422
-    #define TWI_TMDS422_PORT        (&TWIC)
+#ifdef SVR_HAVE_TMDS442
+    #define TWI_TMDS442_PORT        (&TWIC)
 #endif
 
 #ifdef SVR_HAVE_NXP2

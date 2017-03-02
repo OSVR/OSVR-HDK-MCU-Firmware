@@ -24,9 +24,9 @@ Implements I2C communications for NXP HDMI controllers */
 
 bool NXP_HDMIShadow=true; // if true, a write to one HDMI causes a write to both
 
-#ifdef TMDS422
-    bool TWI_TMDS422_PORT_initialized=false; // true if already initialized
-#endif
+#ifdef SVR_HAVE_TMDS442
+    bool TWI_TMDS442_PORT_initialized=false; // true if already initialized
+#endif // SVR_HAVE_TMDS442
 
 // function prototypes
 
@@ -243,14 +243,14 @@ tmErrorCode_t Init_i2c(void)
     opt_NXP.speed = NXP_TWI_SPEED;
     opt_NXP.chip  = NXP_1_ADDR;
     twi_master_setup(TWI_NXP1_PORT, &opt_NXP);
-#ifdef TMDS422
-    if (!TWI_TMDS422_PORT_initialized)
+#ifdef SVR_HAVE_TMDS442
+    if (!TWI_TMDS442_PORT_initialized)
     {
         // determine if port 2 has already been initialized with HDMI switch or needs a separate init
         twi_master_setup(TWI_NXP2_PORT, &opt_NXP);
-        TWI_TMDS422_PORT_initialized=true;
+        TWI_TMDS442_PORT_initialized=true;
     }
-#endif
+#endif // SVR_HAVE_TMDS442
 
 //	ioport_configure_pin(TWIE_SDA, ioport_dir
     return(TM_OK);

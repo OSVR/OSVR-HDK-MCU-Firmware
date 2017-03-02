@@ -1189,7 +1189,7 @@
     <Compile Include="src\DeviceDrivers\VideoInput_Protected.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\DeviceDrivers\VideoInput_TMDS422_NXP.c">
+    <Compile Include="src\DeviceDrivers\VideoInput_TMDS442_NXP.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\DeviceDrivers\VideoInput_Toshiba_TC358870.c">

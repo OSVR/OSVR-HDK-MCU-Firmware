@@ -64,7 +64,7 @@
 #include "FPGA.h"
 #endif
 
-#ifdef SVR_HAVE_TMDS422
+#ifdef SVR_HAVE_TMDS442
 #include "DeviceDrivers/TI-TMDS442.h"
 #endif
 
@@ -569,7 +569,7 @@ void ProcessCommand(void)
 			break;
 		}
 #endif
-#ifdef SVR_HAVE_TMDS422
+#ifdef SVR_HAVE_TMDS442
 		case 't':  // test commands for TMDS 422 switch
 		case 'T':
 		{
@@ -1498,7 +1498,7 @@ void ProcessHDMICommand(void)
 
 #endif  // SVR_ENABLE_VIDEO_INPUT
 
-#ifdef TMDS422
+#ifdef SVR_HAVE_TMDS442
 void ProcessTMDSCommand(void)
 
 {
@@ -1509,7 +1509,7 @@ void ProcessTMDSCommand(void)
 	case 'r':
 	case 'R':  // read status
 	{
-		if (ReadTMDS422Status(HexDigitToDecimal(2), &Temp))
+		if (TMDS442_ReadReg(HexDigitToDecimal(2), &Temp))
 		{
 			sprintf(Msg, "Read:%x", Temp);
 			WriteLn(Msg);
@@ -1521,24 +1521,20 @@ void ProcessTMDSCommand(void)
 	case 'w':
 	case 'W':  // write
 	{
-		HDMI_config(HexPairToDecimal(2), HexPairToDecimal(4));
+		TMDS442_WriteReg(HexPairToDecimal(2), HexPairToDecimal(4));
 		break;
 	}
 	case 's':  // set input status
 	case 'S':
 	{
 		Temp = HexPairToDecimal(2);
-		SetInputStatus(Temp);
+		TMDS442_SetInputStatus(Temp);
 		break;
 	}
 	case 't':  // start task
 	case 'T':
 	{
 		HDMISwitch_task = true;
-#ifdef TMDS422
-// TMDS_422_Task();
-// timeout_start_periodic(	TMDS_422_Timeout, 1);
-#endif
 		break;
 	}
 	case 'p':
@@ -1553,7 +1549,7 @@ void ProcessTMDSCommand(void)
 	case 'I':
 	{
 		WriteLn("Init switch");
-		InitHDMISwitch();
+		TMDS442_Init();
 		break;
 	}
 	default:

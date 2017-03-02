@@ -82,7 +82,7 @@ src/DeviceDrivers/Display_DualAUO_TC358870.c \
 src/DeviceDrivers/VideoInput.c \
 src/DeviceDrivers/VideoInput_FPGALockPin.c \
 src/DeviceDrivers/VideoInput_Single_NXP.c \
-src/DeviceDrivers/VideoInput_TMDS422_NXP.c \
+src/DeviceDrivers/VideoInput_TMDS442_NXP.c \
 src/DeviceDrivers/VideoInput_Toshiba_TC358870.c \
 src/DeviceDrivers/BNO070_using_hostif.c \
 src/DeviceDrivers/HDK2.c \

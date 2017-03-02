@@ -62,7 +62,7 @@ extern unsigned char *pt_mtd[3], *pt_mrd[3]; /* Array of read/write pointers, al
 extern unsigned char rep_start_cntr;
 
 extern bool NXP_HDMIShadow; // if true, a write to one HDMI causes a write to both	
-extern bool TWI_TMDS422_PORT_initialized; // true if port has already been initialized
+extern bool TWI_TMDS442_PORT_initialized; // true if port has already been initialized
 
 tmErrorCode_t Init_i2c(void);
 

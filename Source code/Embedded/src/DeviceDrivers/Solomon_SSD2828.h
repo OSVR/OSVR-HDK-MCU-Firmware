@@ -9,6 +9,7 @@
 #define SOLOMON_SSD2828_H_
 
 #include "DisplayControllerSPI.h"
+#include "BitUtilsC.h"
 #include <ioport.h>
 
 /// Detail of what byte needs to be written to the LRR register for a read. Detected by solomon_init.
@@ -117,5 +118,7 @@ static const uint16_t SOLOMON_PCR_PEN_bm = (UINT16_C(0x01));
 
 /// Interrupt Status Register
 #define SOLOMON_REG_ISR UINT8_C(0xC6)
+/// PLL lock status bit.
+static const uint16_t SOLOMON_ISR_PLS_bm = BITUTILS_BIT(7);
 
 #endif /* SOLOMON_SSD2828_H_ */

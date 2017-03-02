@@ -117,7 +117,6 @@ bool init_solomon_device(uint8_t deviceID)
 
 	Write("Trying to enable PLL...");
 	solomon_pll_enable(sol);
-	solomon_write_reg_word(sol, 0xB9, 0x0001);  // enable PLL
 	for (uint8_t i = 0; i < SOLOMON_MAX_PLL_ATTEMPTS && !solomon_pll_is_locked(sol); ++i)
 	{
 		Write(".");

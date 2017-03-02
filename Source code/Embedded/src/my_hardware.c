@@ -194,7 +194,9 @@ void custom_board_init(void)
 	ioport_configure_pin(PWM_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 #endif
 
-// ioport_configure_pin(Backlight,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
+#if 0
+	ioport_configure_pin(Backlight,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
+#endif
 
 #ifdef SVR_HAVE_FPGA
 

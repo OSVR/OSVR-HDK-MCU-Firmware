@@ -155,21 +155,19 @@ bool init_solomon_device(uint8_t deviceID)
 	svr_yield_ms(50);
 
 	// module panel initialization
+	/// This line sets EOT, ECD, and CKE.
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0302);  // LP generic write // TX1
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);   // VC
 
 #ifdef LS055T1SX01                                           // sharp 5.5"
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of bytes to send
-#if 1
-	static const uint8_t brightnessStartupCmd[] = {0x51, 0x0f, 0xff, 0x00};
+	/// @todo can we do this in a single write or should we do it in two?
+	static const uint8_t brightnessStartupCmd[] = {0x51, 0x0f, 0xff, 0x00};  // cmd=51, data1 = 0F, data2=ff LEDPWM 100%
 	solomon_write_reg(sol, SOLOMON_REG_PDR, brightnessStartupCmd, sizeof(brightnessStartupCmd));
-#else
-	write_solomon_pair(deviceID, SOLOMON_REG_PDR, 0x0F51, 0x00FF);  // cmd=51, data1=0F
-#endif
 
-	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);    // cmd=53, data=04
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0055);    // cmd=55, data=00
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);    // cmd=53, data=04 LEDPWM ON
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0055);    // cmd=55, data=00 CABC OFF
 
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);  // LP DCS write // TX2
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);   // VC
@@ -182,20 +180,19 @@ bool init_solomon_device(uint8_t deviceID)
 
 #ifdef LS050T1SX01  // sharp 5"
 	// from LS050T1SX01 data sheet
-	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04B0);    // cmd=B0, data=04
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x01D6);    // cmd=D6, data=01
 
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);   // LP DCS write // TX3
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
-	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of byte send
-#if 1
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of bytes to send
+
+	/// @todo can we do this in a single write or should we do it in two?
 	static const uint8_t brightnessStartupCmd[] = {0x51, 0x0f, 0xff, 0x00};
 	solomon_write_reg(sol, SOLOMON_REG_PDR, brightnessStartupCmd, sizeof(brightnessStartupCmd));
-#else
-	write_solomon_pair(deviceID, SOLOMON_REG_PDR, 0x0F51, 0x00FF);  // cmd=51, data1=0F
-#endif
-	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  //
+
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
 	// solomon_write_reg_word(sol,0xBB,0x0008); // LP clock BC 0002
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);  // cmd=53, data=04
 
@@ -209,24 +206,24 @@ bool init_solomon_device(uint8_t deviceID)
 
 #ifdef H546DLT01  // AUO 5.46" OLED
 	// from LS050T1SX01 data sheet
-	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0321);   // LP DCS write // TX4
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
 
-	// solomon_write_reg_word(sol,SOLOMON_REG_PSCR1,0x0002); // number of bytes to write
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // number of bytes to write
 	svr_yield_ms(100);
 
 #ifdef LOW_PERSISTENCE
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x08FE);  // cmd=FE, data=08
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x4003);  // cmd=FE, data=08
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x1A07);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x4003);  // cmd=03, data=40
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x1A07);  // cmd=07, data=1A
 	/*Add by AUO*/
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0DFE);  // cmd=FE, data=0D
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0xFE53);  // cmd=53, data=FE
 	/* -----*/
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x00FE);  // cmd=FE, data=08
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x08C2);  // cmd=FE, data=08
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0xFF51);  // cmd=FE, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x00FE);  // cmd=FE, data=00
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x08C2);  // cmd=C2, data=08
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0xFF51);  // cmd=51, data=FF
 
 	// solomon_write_reg_word(sol,SOLOMON_REG_PDR,0x9889);
 	// solomon_write_reg_word(sol,SOLOMON_REG_PDR,0x068a);
@@ -242,7 +239,7 @@ bool init_solomon_device(uint8_t deviceID)
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0xFF51);  // cmd=FE, data=08
 
 #else
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04FE);           // cmd=FE, data=04
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04FE);   // cmd=FE, data=04
 	svr_yield_ms(16);
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x005E);
 	svr_yield_ms(16);

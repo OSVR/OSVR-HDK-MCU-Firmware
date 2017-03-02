@@ -13,8 +13,18 @@
 #ifdef SVR_HAVE_FPGA
 bool SideBySideMode = false;
 
-void FPGA_start_reset() { ioport_set_pin_low(FPGA_Reset_Pin); }
-void FPGA_end_reset() { ioport_set_pin_high(FPGA_Reset_Pin); }
+void FPGA_start_reset()
+{
+#if 0
+	ioport_set_pin_low(FPGA_Reset_Pin);
+#endif
+}
+void FPGA_end_reset()
+{
+#if 0
+	ioport_set_pin_high(FPGA_Reset_Pin);
+#endif
+}
 
 void FPGA_reset(void)
 {

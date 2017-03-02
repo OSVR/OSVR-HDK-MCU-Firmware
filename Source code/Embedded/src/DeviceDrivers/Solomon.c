@@ -38,8 +38,6 @@ static struct spi_device devices[2];
 
 static SPI_t *spi[2];
 
-static bool SolomonInitialized = false;
-
 // uint16_t Solomon_CSN[2]; todo: can we remove?
 
 static bool init_solomon_spi(uint8_t deviceID) SOLOMON_DEPRECATED("No longer needed");

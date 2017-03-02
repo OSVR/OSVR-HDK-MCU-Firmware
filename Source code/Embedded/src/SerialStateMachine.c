@@ -124,7 +124,7 @@ static EEPROM_type EEPROM;
 
 // todo: is this required?
 #ifdef SVR_USING_NXP
-static uint8_t I2CAddress = 0;   // selected I2C address
+static uint8_t I2CAddress = 0;  // selected I2C address
 
 static bool NXPLeftSide = true;  // selected eye (left or right)
 #endif

@@ -204,7 +204,7 @@ void custom_board_init(void)
 #else
 #if 0
 	ioport_configure_pin(FPGA_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-#endif // 0
+#endif  // 0
 #endif  // OSVRHDK
 
 #endif  // SVR_HAVE_FPGA

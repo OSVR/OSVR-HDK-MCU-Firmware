@@ -63,7 +63,10 @@ void Display_Reset(uint8_t deviceID) { Solomon_Reset(deviceID); }
 // power cycles display connected to the specific device
 void Display_Powercycle(uint8_t deviceID)
 {
-	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);  // display on
+	/// @todo set SOLOMON_REG_CFGR?
+	write_solomon(deviceID, SOLOMON_REG_PSCR1, 0x0001);  // 1 byte commands
+	write_solomon(deviceID, SOLOMON_REG_VCR, 0x0000);    // VC
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);    // display on
 	svr_yield_ms(120);
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0010);  // sleep out
 
@@ -86,12 +89,16 @@ void Display_Handle_Lose_Video()
 
 void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 {
-	/// @todo Do we need #ifdef H546DLT01 here to limit this to the low-persistence AUO OLED panel?
+#ifdef H546DLT01  // limit to low-persistence AUO OLED panel
 	Display_Strobing_Rate = refresh;
 	SetConfigValue(PersistenceOffset, Display_Strobing_Rate);
 
 	Display_Strobing_Percent = percentage;
 	SetConfigValue(PersistencePercentOffset, Display_Strobing_Percent);
+
+	/// @todo set SOLOMON_REG_CFGR? Looks like it would be an LP DCS write as found in init_solomon_device
+	write_solomon(deviceID, SOLOMON_REG_PSCR1, 0x0002);  // two bytes at a time
+	write_solomon(deviceID, SOLOMON_REG_VCR, 0x0000);    // VC
 
 	// added commands to address strobing
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x08fe);
@@ -173,6 +180,7 @@ void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 	}
 
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x00fe);
+#endif  // H546DLT01
 }
 
 #endif

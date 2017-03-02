@@ -35,6 +35,10 @@
 // Two displays independently controlled
 #define SVR_NUM_LOGICAL_DISPLAYS 2
 
+// Interval in number of mainloop cycles that should elapse between polling for video status.
+// Quite a few, because polling this is fairly expensive.
+#define SVR_VIDEO_INPUT_POLL_INTERVAL 10000
+
 #define SVR_HAVE_PWM_OUTPUTS
 
 #define SVR_VARIANT_STRING "dSight_Sharp_LCD"

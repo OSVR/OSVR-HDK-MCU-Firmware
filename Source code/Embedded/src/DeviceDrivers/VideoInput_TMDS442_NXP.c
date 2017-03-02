@@ -13,6 +13,7 @@
 #include "main.h"  // for the task booleans
 #include "NXP/AVRHDMI.h"
 #include "DeviceDrivers/TI-TMDS442.h"
+#include "Console.h"
 
 void VideoInput_Init()
 {
@@ -22,6 +23,12 @@ void VideoInput_Init()
 }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
 void VideoInput_Task(void)
+{
+}
+void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
+void VideoInput_Suspend(void) { NXP_Suspend(); }
+void VideoInput_Resume(void) { NXP_Resume(); }
+void VideoInput_Poll_Status(void)
 {
 	if (HDMISwitch_task)
 	{
@@ -41,13 +48,6 @@ void VideoInput_Task(void)
 	{
 		WriteLn("HDMI task disabled");
 	}
-}
-void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
-void VideoInput_Suspend(void) { NXP_Suspend(); }
-void VideoInput_Resume(void) { NXP_Resume(); }
-void VideoInput_Poll_Status(void)
-{
-	// No polling in this driver.
 }
 void VideoInput_Report_Status(void) { NXP_Report_HDMI_status(); }
 #if 0

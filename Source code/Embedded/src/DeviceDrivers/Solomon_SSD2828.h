@@ -94,6 +94,10 @@ static const uint16_t SOLOMON_CFGR_CKE_bm = (UINT16_C(0x01) << 1);
 /// Send data using HS interface
 static const uint16_t SOLOMON_CFGR_HS_bm = (UINT16_C(0x01));
 
+/// VC Control Register
+#define SOLOMON_REG_VCR UINT8_C(0xB8)
+/// packet size control register 1
+#define SOLOMON_REG_PSCR1 UINT8_C(0xBC)
 /// Packet drop register
 #define SOLOMON_REG_PDR UINT8_C(0xBF)
 /// PLL control reg

@@ -1,0 +1,12 @@
+# http://editorconfig.org
+
+[*]
+indent_style = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset
+
+[AVRHDMI.{c,h}]
+indent_style = spaces
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true

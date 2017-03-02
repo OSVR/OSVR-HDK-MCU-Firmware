@@ -367,73 +367,31 @@ inline void solomon_wait_for_spi_rx_full(uint8_t channel)
 }
 
 uint16_t read_solomon(uint8_t channel, uint8_t address)
-
 {
 	Solomon_t *sol = solomon_get_channel(channel);
 	solomon_select(sol);
 	uint16_t data = solomon_read_reg_2byte(sol, address);
 	solomon_deselect(sol);
 	return data;
-};
-
-/* write data to solomon
-    channel: solomon1 or solomon2
-    address: address to write
-    data: data to write
-*/
+}
 
 void write_solomon(uint8_t channel, uint8_t address, uint16_t data)
-
 {
-	select_solomon(channel);
+	Solomon_t *sol = solomon_get_channel(channel);
+	solomon_select(sol);
+	solomon_write_reg_word(sol, address, data);
+	solomon_deselect(sol);
+}
 
-	spi_select_device(spi[channel], &devices[channel]);
-	lower_sdc(channel);  // lower sdc bit because this is command
-	spi_write_single(spi[channel], address);
-	solomon_wait_for_spi_rx_full(channel);
-	raise_sdc(channel);                        // raise sdc bit because here comes the data
-	spi_write_single(spi[channel], lo(data));  // low byte first. by default, MSB of each byte is
-	                                           // sent first because DORD=0
-	solomon_wait_for_spi_rx_full(channel);
-	spi_write_single(spi[channel], hi(data));
-	solomon_wait_for_spi_rx_full(channel);
-	spi_deselect_device(spi[channel], &devices[channel]);
-
-	deselect_solomon();
-};
-
-// writes a pair of data points
 void write_solomon_pair(uint8_t channel, uint8_t address, uint16_t data1, uint16_t data2)
-
 {
-	select_solomon(channel);
+	Solomon_t const *sol = solomon_get_channel(channel);
+	solomon_select(sol);
+	uint8_t data[] = {lo(data1), hi(data1), lo(data2), hi(data2)};
+	solomon_write_reg(sol, address, data, sizeof(data));
+	solomon_deselect(sol);
+}
 
-	spi_select_device(spi[channel], &devices[channel]);
-	lower_sdc(channel);  // lower sdc bit because this is command
-	spi_write_single(spi[channel], address);
-
-	solomon_wait_for_spi_rx_full(channel);
-	raise_sdc(channel);  // raise sdc bit because here comes the data
-
-	spi_write_single(spi[channel], lo(data1));  // low byte first. by default, MSB of each byte
-	                                            // is sent first because DORD=0
-
-	solomon_wait_for_spi_rx_full(channel);
-	spi_write_single(spi[channel], hi(data1));
-	solomon_wait_for_spi_rx_full(channel);
-
-	spi_write_single(spi[channel], lo(data2));  // low byte first. by default, MSB of each byte
-	                                            // is sent first because DORD=0
-	solomon_wait_for_spi_rx_full(channel);
-	spi_write_single(spi[channel], hi(data2));
-	solomon_wait_for_spi_rx_full(channel);
-
-	spi_deselect_device(spi[channel], &devices[channel]);
-
-	deselect_solomon();
-};
-
-// read the solomon ID
 uint16_t read_Solomon_ID(uint8_t channel)
 {
 	Solomon_t *sol = solomon_get_channel(channel);

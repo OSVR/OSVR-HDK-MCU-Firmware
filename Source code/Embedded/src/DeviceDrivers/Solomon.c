@@ -34,23 +34,6 @@ Solomon_t g_solomons[SVR_HAVE_SOLOMON] = {Solomon1_Struct
 #endif
 };
 
-static struct spi_device devices[2];
-
-static SPI_t *spi[2];
-
-// uint16_t Solomon_CSN[2]; todo: can we remove?
-
-static bool init_solomon_spi(uint8_t deviceID) SOLOMON_DEPRECATED("No longer needed");
-static void select_solomon(uint8_t channel) SOLOMON_DEPRECATED("use solomon_select instead of this and spi_select");
-static void deselect_solomon(void) SOLOMON_DEPRECATED("use solomon_deselect instead of this and spi_deselect");
-static void solomon_wait_for_spi_rx_full(uint8_t channel);
-
-bool init_solomon_spi(uint8_t deviceID)
-{
-	/// now done by ssd2828 driver.
-	return true;
-}
-
 void Solomon_Dump_Config_Debug_New(uint8_t deviceId, Solomon_t const *sol, const char *loc)
 {
 	uint16_t config = solomon_read_reg_2byte(sol, SOLOMON_REG_CFGR);
@@ -67,6 +50,7 @@ void Solomon_Dump_Config_Debug_New(uint8_t deviceId, Solomon_t const *sol, const
 	Write(loc);
 	WriteLn("]");
 }
+
 void Solomon_Dump_Config_Debug(uint8_t deviceId, const char *loc)
 {
 	Solomon_t *sol = solomon_get_channel(deviceId);
@@ -74,6 +58,7 @@ void Solomon_Dump_Config_Debug(uint8_t deviceId, const char *loc)
 	Solomon_Dump_Config_Debug_New(deviceId, sol, loc);
 	solomon_deselect(sol);
 }
+
 static inline void Solomon_Dump_Config_Debug_Bare(Solomon_t const *sol, const char *loc)
 {
 	uint16_t config = solomon_read_reg_2byte(sol, SOLOMON_REG_CFGR);
@@ -90,6 +75,7 @@ static inline void Solomon_Dump_Config_Debug_Bare(Solomon_t const *sol, const ch
 	Write(loc);
 	WriteLn("]");
 }
+
 static inline void Solomon_Dump_All_Config_Debug(const char *loc)
 {
 	for (uint8_t deviceId = 0; deviceId < SVR_HAVE_SOLOMON; ++deviceId)
@@ -302,24 +288,6 @@ bool init_solomon_device(uint8_t deviceID)
 
 void init_solomon(void)
 {
-#ifdef Solomon1_SPI
-	devices[Solomon1].id = Solomon1_CSN;
-	devices[Solomon1].sdc = Solomon1_AddrData;
-	spi[Solomon1] = &Solomon1_SPI;
-#endif
-
-#ifdef Solomon2_SPI
-	devices[Solomon2].id = Solomon1_CSN;
-	devices[Solomon2].sdc = Solomon2_AddrData;
-	spi[Solomon2] = &Solomon1_SPI;
-#endif
-
-	// Solomon_CSN[Solomon1]=Solomon1_CSN; // todo: can we remove?
-	// Solomon_CSN[Solomon2]=Solomon2_CSN;
-
-	init_solomon_spi(Solomon1);  // no need to do repeat for Solomon2 because both
-	                             // share the same SPI port
-
 	for (uint8_t i = 0; i < SVR_HAVE_SOLOMON; ++i)
 	{
 		Solomon_t *sol = solomon_get_channel(i);
@@ -328,41 +296,6 @@ void init_solomon(void)
 		solomon_end_reset(sol);
 		svr_yield_ms(10);
 		solomon_init(sol);
-	}
-}
-
-/* write data to solomon
-    channel: solomon1 or solomon2
-    address: address to read
-    returns 16-bit data
-*/
-
-void select_solomon(uint8_t channel)
-// enable the mux and select the correct output
-{
-#ifndef SVR_HAVE_SOLOMON2
-	return;
-#else
-	ioport_set_pin_low(SPI_Mux_OE);
-	if (channel == Solomon1)
-		ioport_set_pin_low(SPI_Mux_Select);
-	else
-		ioport_set_pin_high(SPI_Mux_Select);
-#endif
-}
-
-void deselect_solomon(void)
-
-// deselect the mux
-
-{
-	// ioport_set_pin_high(SPI_Mux_OE); // leave permanently low per Zeev
-}
-
-inline void solomon_wait_for_spi_rx_full(uint8_t channel)
-{
-	while (!spi_is_rx_full(spi[channel]))
-	{
 	}
 }
 
@@ -401,18 +334,7 @@ uint16_t read_Solomon_ID(uint8_t channel)
 	return id;
 };
 
-void raise_sdc(uint8_t channel)
-{
-	ioport_set_pin_high(devices[channel].sdc);  // // raise sdc bit because here comes the data
-}
-
-void lower_sdc(uint8_t channel)
-{
-	ioport_set_pin_low(devices[channel].sdc);  // lower sdc bit because this is command
-}
-
 void Solomon_Reset(uint8_t SolomonNum)
-
 {
 	if (SolomonNum == 1)
 	{

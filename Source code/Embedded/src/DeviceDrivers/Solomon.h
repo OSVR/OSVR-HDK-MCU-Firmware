@@ -86,8 +86,6 @@ void write_solomon(uint8_t channel, uint8_t address, uint16_t data)
 /// @note Calls solomon_select and solomon_deselect on this device
 void write_solomon_pair(uint8_t channel, uint8_t address, uint16_t data1, uint16_t data2)
     SOLOMON_INTERNALLY_DEPRECATED("Use solomon_write_reg instead");
-void raise_sdc(uint8_t channel) SOLOMON_DEPRECATED("Use solomon_write/solomon_read abstractions instead");
-void lower_sdc(uint8_t channel) SOLOMON_DEPRECATED("Use solomon_write/solomon_read abstractions instead");
 void Solomon_Reset(uint8_t SolomonNum);
 
 /// Writes out the config register to the console for just one device.

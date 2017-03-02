@@ -21,15 +21,16 @@ void Display_System_Init() { init_solomon(); }
 void Display_Init(uint8_t id) { init_solomon_device(id); }
 void Display_On(uint8_t deviceID)
 {
+	WriteLn("Turning display on");
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - before");
 #ifdef H546DLT01  // AUO 5.46" OLED
 	// svr_yield_ms(500);
-	WriteLn("Turning display on");
 
 	// display power on
 	svr_yield_ms(20);
 
 	// initial setting
+	/// @todo why are we setting bytes to 2 here? Shouldn't it be 1?
 	write_solomon(deviceID, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
 
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0011);  // sleep out
@@ -44,12 +45,14 @@ void Display_On(uint8_t deviceID)
 
 void Display_Off(uint8_t deviceID)
 {
+	WriteLn("Turning display off");
 	Solomon_Dump_Config_Debug(deviceID, "Display_Off - before");
 #ifdef H546DLT01  // AUO 5.46" OLED
 
-	WriteLn("Turning display off");
-
 	write_solomon(deviceID, SOLOMON_REG_CFGR, 0x0321);  // video mode off // TX7
+
+	write_solomon(deviceID, SOLOMON_REG_PSCR1, 0x0001);  // 1 byte commands
+	write_solomon(deviceID, SOLOMON_REG_VCR, 0x0000);    // VC
 	svr_yield_ms(16);
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);  // display off
 	svr_yield_ms(16);

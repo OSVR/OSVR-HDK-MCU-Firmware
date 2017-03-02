@@ -156,7 +156,7 @@ bool init_solomon_device(uint8_t deviceID)
 	svr_yield_ms(50);
 
 	// module panel initialization
-	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0302);  // LP generic write
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0302);  // LP generic write // TX1
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);   // VC
 
 #ifdef LS055T1SX01                                           // sharp 5.5"
@@ -172,7 +172,7 @@ bool init_solomon_device(uint8_t deviceID)
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);    // cmd=53, data=04
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0055);    // cmd=55, data=00
 
-	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);  // LP DCS write
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);  // LP DCS write // TX2
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);   // VC
 
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  //
@@ -186,7 +186,8 @@ bool init_solomon_device(uint8_t deviceID)
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04B0);    // cmd=B0, data=04
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x01D6);    // cmd=D6, data=01
-	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);   // LP DCS write
+
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);   // LP DCS write // TX3
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of byte send
 #if 1
@@ -197,8 +198,9 @@ bool init_solomon_device(uint8_t deviceID)
 #endif
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  //
 	// solomon_write_reg_word(sol,0xBB,0x0008); // LP clock BC 0002
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);    // cmd=53, data=04
-	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  //
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);  // cmd=53, data=04
+
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  // 1 byte
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0029);    // display on
 	svr_yield_ms(120);
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0011);  // sleep out
@@ -209,7 +211,7 @@ bool init_solomon_device(uint8_t deviceID)
 #ifdef H546DLT01  // AUO 5.46" OLED
 	// from LS050T1SX01 data sheet
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
-	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0321);   // LP DCS write
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0321);   // LP DCS write // TX4
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
 
 	// solomon_write_reg_word(sol,SOLOMON_REG_PSCR1,0x0002); // number of bytes to write
@@ -284,7 +286,8 @@ bool init_solomon_device(uint8_t deviceID)
 #ifndef H546DLT01                                          // AUO 5.46" OLED
 	                                                       // video mode on
 	svr_yield_ms(250);
-	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x034B);  // video mode on
+
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x034B);  // video mode on // TX5
 	svr_yield_ms(100);
 #endif
 

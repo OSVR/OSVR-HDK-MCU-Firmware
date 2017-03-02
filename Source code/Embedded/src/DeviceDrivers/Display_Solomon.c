@@ -34,7 +34,7 @@ void Display_On(uint8_t deviceID)
 
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0011);  // sleep out
 	svr_yield_ms(33);
-	write_solomon(deviceID, SOLOMON_REG_CFGR, 0x0329);  // video signal on
+	write_solomon(deviceID, SOLOMON_REG_CFGR, 0x0329);  // video signal on // TX6
 	svr_yield_ms(166);                                  //>10 frame
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0029);   // display on
 
@@ -49,7 +49,7 @@ void Display_Off(uint8_t deviceID)
 
 	WriteLn("Turning display off");
 
-	write_solomon(deviceID, SOLOMON_REG_CFGR, 0x0321);  // video mode off
+	write_solomon(deviceID, SOLOMON_REG_CFGR, 0x0321);  // video mode off // TX7
 	svr_yield_ms(16);
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);  // display off
 	svr_yield_ms(16);

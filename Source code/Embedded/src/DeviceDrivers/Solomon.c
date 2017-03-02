@@ -76,10 +76,13 @@ bool init_solomon_device(uint8_t deviceID)
 {
 	/// 20 MHz crystal on xtal-in/xtal-io
 	Solomon_t *sol = solomon_get_channel(deviceID);
+
+	/// Reset the solomon.
 	solomon_start_reset(sol);
 	svr_yield_ms(10);
 	solomon_end_reset(sol);
 	svr_yield_ms(10);
+
 	bool ok = solomon_detect_lrr_behavior(sol);
 	if (!ok)
 	{
@@ -88,21 +91,26 @@ bool init_solomon_device(uint8_t deviceID)
 	}
 	Solomon_Dump_All_Config_Debug("init_solomon_device - before");
 
+	/// Select this device to communicate with.
 	solomon_select(sol);
+
 #ifndef H546DLT01
 	solomon_write_reg_word(sol, 0xBA, 0xC030);  // lane speed=960Mbps
 #else
 	solomon_write_reg_word(sol, 0xBA, 0xC02D);  // lane speed=900Mbps
 #endif
 	solomon_write_reg_word(sol, 0xBB, 0x0008);  // LP clock
-	WriteLn("Trying to enable PLL");
+
+	Write("Trying to enable PLL...");
+	solomon_pll_enable(sol);
 	solomon_write_reg_word(sol, 0xB9, 0x0001);  // enable PLL
-	while (!BITUTILS_CHECKBIT(solomon_read_reg_2byte(sol, 0xc6), BITUTILS_BIT(7)))
+	while (!solomon_pll_is_locked(sol))
 	{
+		Write(".");
 		// no pll lock
 		svr_yield_ms(1);
 	}
-	WriteLn("PLL locked");
+	WriteLn(" PLL locked");
 
 #ifndef H546DLT01
 	solomon_write_reg_word(sol, 0xB1, 0x0216);  // VSA=2, HSA=22

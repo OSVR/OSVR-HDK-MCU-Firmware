@@ -3,3 +3,10 @@
 /gitdefines.h.tmp
 release-*/
 snapshot-*/
+
+# For those who have put the flashing tools in this directory
+/hdktool
+/dfu-programmer
+/hdktool.log
+/just-install-hexfile.cmd
+/upgrade.ps1

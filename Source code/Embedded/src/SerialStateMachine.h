@@ -72,6 +72,10 @@ static inline void statusBufConsumeByte(BufWithStatus_t *b)
 	statusBufConsumeByte_Unchecked(b);
 }
 
+/// Consume 1 byte (if available) from the buf with status, parse it as hex, and return the uint8 to which it
+/// corresponds
+uint8_t statusBufConsumeHexDigit1_8(BufWithStatus_t *b);
+
 /// Consume 2 bytes (if available) from the buf with status, parse them as hex, and return the uint8 to which they
 /// correspond
 uint8_t statusBufConsumeHexDigits2_8(BufWithStatus_t *b);

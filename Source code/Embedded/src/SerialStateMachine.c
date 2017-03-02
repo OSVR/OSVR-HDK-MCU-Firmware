@@ -357,6 +357,19 @@ uint16_t ParseHexDigits4_16(const char *buf)
 	return ret;
 }
 
+uint8_t statusBufConsumeHexDigit1_8(BufWithStatus_t *b)
+{
+	uint8_t ret = 0;
+	char c = statusBufPeekFront(b);
+	if ('\0' == c)
+	{
+		return ret;
+	}
+	ret = ParseHexDigitDirectly(c);
+	// advance buffer.
+	statusBufConsumeByte_Unchecked(b);
+	return ret;
+}
 uint8_t statusBufConsumeHexDigits2_8(BufWithStatus_t *b)
 {
 	uint8_t ret = 0;

@@ -71,10 +71,14 @@ void raise_sdc(uint8_t channel) SOLOMON_DEPRECATED("Use solomon_write/solomon_re
 void lower_sdc(uint8_t channel) SOLOMON_DEPRECATED("Use solomon_write/solomon_read abstractions instead");
 void Solomon_Reset(uint8_t SolomonNum);
 
-/// Writes out the config register to the console.
-void Solomon_Dump_All_Config_Debug(const char* loc);
 /// Writes out the config register to the console for just one device.
+///
+/// @note Calls solomon_select and solomon_deselect on this device
 void Solomon_Dump_Config_Debug(uint8_t deviceId, const char* loc);
+
+/// Writes out the config register to the console for just one device.
+/// @pre must call solomon_select on this device
+void Solomon_Dump_Config_Debug_New(uint8_t deviceId, Solomon_t const* sol, const char* loc);
 
 // read the solomon ID
 uint16_t read_Solomon_ID(uint8_t channel);

@@ -51,25 +51,51 @@ bool init_solomon_spi(uint8_t deviceID)
 	return true;
 }
 
-void Solomon_Dump_All_Config_Debug(const char *loc)
+void Solomon_Dump_Config_Debug_New(uint8_t deviceId, Solomon_t const *sol, const char *loc)
+{
+	uint16_t config = solomon_read_reg_2byte(sol, SOLOMON_REG_CFGR);
+	{
+		char msg[50];
+		sprintf(msg, "Config %d: 0x%04x - ", deviceId, config);
+		Write(msg);
+	}
+	{
+		char confStr[] = BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(config);
+		Write(confStr);
+	}
+	Write(" [");
+	Write(loc);
+	WriteLn("]");
+}
+void Solomon_Dump_Config_Debug(uint8_t deviceId, const char *loc)
+{
+	Solomon_t *sol = solomon_get_channel(deviceId);
+	solomon_select(sol);
+	Solomon_Dump_Config_Debug_New(deviceId, sol, loc);
+	solomon_deselect(sol);
+}
+static inline void Solomon_Dump_Config_Debug_Bare(Solomon_t const *sol, const char *loc)
+{
+	uint16_t config = solomon_read_reg_2byte(sol, SOLOMON_REG_CFGR);
+	{
+		char msg[50];
+		sprintf(msg, "Config  : 0x%04x - ", config);
+		Write(msg);
+	}
+	{
+		char confStr[] = BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(config);
+		Write(confStr);
+	}
+	Write(" [");
+	Write(loc);
+	WriteLn("]");
+}
+static inline void Solomon_Dump_All_Config_Debug(const char *loc)
 {
 	for (uint8_t deviceId = 0; deviceId < SVR_HAVE_SOLOMON; ++deviceId)
 	{
 		Solomon_Dump_Config_Debug(deviceId, loc);
 	}
-}
-void Solomon_Dump_Config_Debug(uint8_t deviceId, const char *loc)
-{
-	char msg[20];
-	uint16_t config = read_solomon(deviceId, SOLOMON_REG_CFGR);
-	char confStr[] = BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(config);
-	sprintf(msg, "Config %d: ", deviceId);
-	Write(msg);
-
-	Write(confStr);
-	Write(" [");
-	Write(loc);
-	WriteLn("]");
 }
 
 bool init_solomon_device(uint8_t deviceID)

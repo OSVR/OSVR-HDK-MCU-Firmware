@@ -9,6 +9,8 @@
 #include "GlobalOptions.h"
 
 #ifdef SVR_HAVE_SOLOMON
+/// To get internal deprecation warnings.
+#define SOLOMON_IMPL
 
 #include "Solomon.h"
 #include "board.h"
@@ -40,9 +42,9 @@ static bool SolomonInitialized = false;
 
 // uint16_t Solomon_CSN[2]; todo: can we remove?
 
-SOLOMON_DEPRECATED static bool init_solomon_spi(uint8_t deviceID);
-SOLOMON_DEPRECATED static void select_solomon(uint8_t channel);
-SOLOMON_DEPRECATED static void deselect_solomon(void);
+static bool init_solomon_spi(uint8_t deviceID) SOLOMON_DEPRECATED("No longer needed");
+static void select_solomon(uint8_t channel) SOLOMON_DEPRECATED("use solomon_select instead of this and spi_select");
+static void deselect_solomon(void) SOLOMON_DEPRECATED("use solomon_deselect instead of this and spi_deselect");
 static void solomon_wait_for_spi_rx_full(uint8_t channel);
 
 bool init_solomon_spi(uint8_t deviceID)

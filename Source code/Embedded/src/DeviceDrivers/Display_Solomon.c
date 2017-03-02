@@ -30,13 +30,13 @@ void Display_On(uint8_t deviceID)
 	svr_yield_ms(20);
 
 	// initial setting
-	write_solomon(deviceID, 0xBC, 0x0002);  // no of byte send
+	write_solomon(deviceID, SOLOMON_REG_PSCR1, 0x0002);  // no of byte send
 
-	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0011);  // sleep out
 	svr_yield_ms(33);
-	write_solomon(deviceID, 0xB7, 0x0329);  // video signal on
-	svr_yield_ms(166);                      //>10 frame
-	write_solomon(deviceID, 0xBF, 0x0029);  // display on
+	write_solomon(deviceID, SOLOMON_REG_CFGR, 0x0329);  // video signal on
+	svr_yield_ms(166);                                  //>10 frame
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0029);   // display on
 
 #endif
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - after");
@@ -49,12 +49,12 @@ void Display_Off(uint8_t deviceID)
 
 	WriteLn("Turning display off");
 
-	write_solomon(deviceID, 0xB7, 0x0321);  // video mode off
+	write_solomon(deviceID, SOLOMON_REG_CFGR, 0x0321);  // video mode off
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x0028);  // display off
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);  // display off
 	svr_yield_ms(16);
-	write_solomon(deviceID, 0xBF, 0x0010);  // sleep in
-	svr_yield_ms(20);                       // delay > 1 frames
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0010);  // sleep in
+	svr_yield_ms(20);                                  // delay > 1 frames
 
 #endif
 	Solomon_Dump_Config_Debug(deviceID, "Display_Off - after");
@@ -63,15 +63,15 @@ void Display_Reset(uint8_t deviceID) { Solomon_Reset(deviceID); }
 // power cycles display connected to the specific device
 void Display_Powercycle(uint8_t deviceID)
 {
-	write_solomon(deviceID, 0xBF, 0x0028);  // display on
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);  // display on
 	svr_yield_ms(120);
-	write_solomon(deviceID, 0xBF, 0x0010);  // sleep out
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0010);  // sleep out
 
 	svr_yield_ms(1000);
 
-	write_solomon(deviceID, 0xBF, 0x0029);  // display on
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0029);  // display on
 	svr_yield_ms(120);
-	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0011);  // sleep out
 }
 
 void Display_Handle_Gain_Video()
@@ -94,85 +94,85 @@ void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 	SetConfigValue(PersistencePercentOffset, Display_Strobing_Percent);
 
 	// added commands to address strobing
-	write_solomon(deviceID, 0xBF, 0x08fe);
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x08fe);
 
 	if (refresh == 60)
 	{
-		write_solomon(deviceID, 0xBF, 0x9889);
+		write_solomon(deviceID, SOLOMON_REG_PDR, 0x9889);
 		switch (percentage)
 		{
 		case 0:
-			write_solomon(deviceID, 0xBF, 0x078a);
-			write_solomon(deviceID, 0xBF, 0x708b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x078a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x708b);
 			break;
 		case 10:
-			write_solomon(deviceID, 0xBF, 0xbd8a);
-			write_solomon(deviceID, 0xBF, 0x708b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0xbd8a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x708b);
 			break;
 		case 20:
-			write_solomon(deviceID, 0xBF, 0x808a);
-			write_solomon(deviceID, 0xBF, 0x718b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x808a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x718b);
 			break;
 		case 30:
-			write_solomon(deviceID, 0xBF, 0x438a);
-			write_solomon(deviceID, 0xBF, 0x728b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x438a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x728b);
 			break;
 		case 40:
-			write_solomon(deviceID, 0xBF, 0x068a);
-			write_solomon(deviceID, 0xBF, 0x738b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x068a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x738b);
 			break;
 		case 50:
-			write_solomon(deviceID, 0xBF, 0xcc8a);
-			write_solomon(deviceID, 0xBF, 0x738b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0xcc8a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x738b);
 			break;
 		case 60:
-			write_solomon(deviceID, 0xBF, 0x8c8a);
-			write_solomon(deviceID, 0xBF, 0x748b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x8c8a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x748b);
 			break;
 		case 70:
-			write_solomon(deviceID, 0xBF, 0x8b8a);
-			write_solomon(deviceID, 0xBF, 0x758b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x8b8a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x758b);
 			break;
 		case 80:
-			write_solomon(deviceID, 0xBF, 0x128a);
-			write_solomon(deviceID, 0xBF, 0x768b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x128a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x768b);
 			break;
 		case 82:
-			write_solomon(deviceID, 0xBF, 0x3a8a);
-			write_solomon(deviceID, 0xBF, 0x768b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x3a8a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x768b);
 			break;
 		case 90:
-			write_solomon(deviceID, 0xBF, 0xd58a);
-			write_solomon(deviceID, 0xBF, 0x768b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0xd58a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x768b);
 			break;
 		default:
-			write_solomon(deviceID, 0xBF, 0xCC8a);
-			write_solomon(deviceID, 0xBF, 0x738b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0xCC8a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x738b);
 			break;
 		}
 	}
 
 	else  // refresh is 240
 	{
-		write_solomon(deviceID, 0xBF, 0xe689);
+		write_solomon(deviceID, SOLOMON_REG_PDR, 0xe689);
 		switch (percentage)
 		{
 		case 50:
-			write_solomon(deviceID, 0xBF, 0xf38a);
-			write_solomon(deviceID, 0xBF, 0x108b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0xf38a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x108b);
 			break;
 		case 82:
-			write_solomon(deviceID, 0xBF, 0x8e8a);
-			write_solomon(deviceID, 0xBF, 0x118b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x8e8a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x118b);
 			break;
 		default:
-			write_solomon(deviceID, 0xBF, 0x8e8a);
-			write_solomon(deviceID, 0xBF, 0x118b);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x8e8a);
+			write_solomon(deviceID, SOLOMON_REG_PDR, 0x118b);
 			break;
 		}
 	}
 
-	write_solomon(deviceID, 0xBF, 0x00fe);
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x00fe);
 }
 
 #endif

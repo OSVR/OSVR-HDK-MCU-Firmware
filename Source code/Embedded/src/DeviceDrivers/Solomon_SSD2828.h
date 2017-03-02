@@ -115,5 +115,7 @@ static const uint16_t SOLOMON_PCR_PEN_bm = (UINT16_C(0x01));
 /// Packet drop register
 #define SOLOMON_REG_PDR UINT8_C(0xBF)
 
+/// Interrupt Status Register
+#define SOLOMON_REG_ISR UINT8_C(0xC6)
 
 #endif /* SOLOMON_SSD2828_H_ */

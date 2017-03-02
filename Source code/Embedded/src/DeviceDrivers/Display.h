@@ -37,4 +37,10 @@ void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 extern uint8_t Display_Strobing_Rate;
 extern uint8_t Display_Strobing_Percent;
 
+// Handle gaining video signal on either/all channels.
+void Display_Handle_Gain_Video(void);
+
+// Handle losing video signal on either/all channels.
+void Display_Handle_Lose_Video(void);
+
 #endif /* DISPLAY_H_ */

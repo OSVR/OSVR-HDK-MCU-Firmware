@@ -260,4 +260,14 @@ void Display_Powercycle(uint8_t deviceID)
 	}
 }
 
+void Display_Handle_Gain_Video()
+{
+	// Nothing - everything handled in per-display Display_On.
+}
+
+void Display_Handle_Lose_Video()
+{
+	// Nothing - everything handled in per-display Display_Off.
+}
+
 #endif

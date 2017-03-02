@@ -260,6 +260,7 @@ void HandleHDMI()
 	if (videoDetected)
 	{
 		WriteLn("New video detected");
+		Display_Handle_Gain_Video();
 #ifdef SVR_HAVE_DISPLAY1
 		local_display_on(Display1);
 #endif
@@ -270,6 +271,7 @@ void HandleHDMI()
 	if (videoLost)
 	{
 		WriteLn("Video lost");
+		Display_Handle_Lose_Video();
 #ifdef SVR_HAVE_DISPLAY1
 		local_display_off(Display1);
 #endif

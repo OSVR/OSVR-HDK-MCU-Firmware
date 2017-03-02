@@ -74,6 +74,16 @@ void Display_Powercycle(uint8_t deviceID)
 	write_solomon(deviceID, 0xBF, 0x0011);  // sleep out
 }
 
+void Display_Handle_Gain_Video()
+{
+	// Nothing - everything handled in per-display Display_On.
+}
+
+void Display_Handle_Lose_Video()
+{
+	// Nothing - everything handled in per-display Display_Off.
+}
+
 void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 {
 	/// @todo Do we need #ifdef H546DLT01 here to limit this to the low-persistence AUO OLED panel?

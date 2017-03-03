@@ -192,13 +192,13 @@ void TMDS442_Init(void)
 		twi_master_setup(TWI_TMDS442_PORT, &opt_TMDS442);
 		TWI_TMDS442_PORT_initialized = true;
 	}
-	#if 0
+#if 0
 	TMDS442_WriteReg(TMDS442_SRC_PLUG_REG, TMDS442_SRC_PLUG_REG_value);
-	#else
+#else
 	uint8_t plugReg = 0;
 	TMDS442_ReadReg(TMDS442_SRC_PLUG_REG, &plugReg);
 	TMDS442_WriteReg(TMDS442_SRC_PLUG_REG, plugReg & ~(TMDS442_SRC_PLUG_5V_EN_bm));
-	#endif
+#endif
 	TMDS442_ProgramHDMISwitch();
 }
 

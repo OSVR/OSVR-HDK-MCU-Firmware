@@ -17,7 +17,7 @@
 #include "SvrYield.h"
 
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
-#define SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
+//#define SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
 #endif  // defined(SVR_HAVE_SHARP_LCD)
 
 #ifdef SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT

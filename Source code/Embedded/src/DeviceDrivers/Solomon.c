@@ -27,7 +27,7 @@
 
 #include "BitUtilsC.h"
 
-#define SOLOMON_MAX_PLL_ATTEMPTS 50
+#define SOLOMON_MAX_PLL_ATTEMPTS 40
 
 Solomon_t g_solomons[SVR_HAVE_SOLOMON] = {Solomon1_Struct
 #ifdef SVR_HAVE_SOLOMON2

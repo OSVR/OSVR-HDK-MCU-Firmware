@@ -14,15 +14,25 @@
 #include "Solomon.h"
 #include "Console.h"
 #include "my_hardware.h"
-
 #include "SvrYield.h"
 
 void Display_System_Init() { init_solomon(); }
 void Display_Init(uint8_t id) { init_solomon_device(id); }
+void Display_Init(uint8_t id)
+{
+	WriteLn("Display_Init");
+	init_solomon_device(id);
+}
+
 void Display_On(uint8_t deviceID)
 {
+#if defined(LS050T1SX01) || defined(LS055T1SX01)  // sharp 5" or 5.5"
+	WriteLn("Re-initializing...");
+	init_solomon_device(deviceID);
+#endif  // defined(LS050T1SX01) || defined(LS055T1SX01)
 	WriteLn("Turning display on");
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - before");
+
 #ifdef H546DLT01  // AUO 5.46" OLED
 	// svr_yield_ms(500);
 
@@ -69,6 +79,7 @@ void Display_Powercycle(uint8_t deviceID)
 	/// @todo set SOLOMON_REG_CFGR?
 	write_solomon(deviceID, SOLOMON_REG_PSCR1, 0x0001);  // 1 byte commands
 	write_solomon(deviceID, SOLOMON_REG_VCR, 0x0000);    // VC
+
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);    // display on
 	svr_yield_ms(120);
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0010);  // sleep out
@@ -186,4 +197,4 @@ void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 #endif  // H546DLT01
 }
 
-#endif
+#endif // defined(SVR_HAVE_SOLOMON)

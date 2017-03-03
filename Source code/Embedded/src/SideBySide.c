@@ -4,15 +4,17 @@
  *  Author: Sensics
  */
 
-#include "SideBySide.h"
 #include "GlobalOptions.h"
 
 #ifdef SVR_HAVE_SIDEBYSIDE
 
+#include "SideBySide.h"
+
 #include "my_hardware.h"
+#include "Console.h"
 #include <ioport.h>
 
-#if defined(DSIGHT)
+#if defined(SVR_IS_DSIGHT)
 // dSight defaults to enabled.
 #define SXS_STARTUP_VALUE true
 
@@ -30,27 +32,27 @@ static void SxS_Save_Config(void);
 
 static void SxS_Set(bool state)
 {
-	if (state)
-	{
 #ifdef Side_by_side_A
-		ioport_set_pin_high(Side_by_side_A);
-#endif
+	ioport_set_pin_level(Side_by_side_A, state);
+#endif  // Side_by_side_A
 #ifdef Side_by_side_B
-		ioport_set_pin_high(Side_by_side_B);
+	ioport_set_pin_level(Side_by_side_B, state);
 #endif
+}
+
+static inline void SxS_Apply(void)
+{
+	Write("SxS_Apply: sxs_enabled is ");
+	if (sxs_enabled)
+	{
+		WriteLn("true");
 	}
 	else
 	{
-#ifdef Side_by_side_A
-		ioport_set_pin_low(Side_by_side_A);
-#endif
-#ifdef Side_by_side_B
-		ioport_set_pin_low(Side_by_side_B);
-#endif
+		WriteLn("false");
 	}
+	SxS_Set(sxs_enabled);
 }
-
-static inline void SxS_Apply(void) { SxS_Set(sxs_enabled); }
 static inline void SxS_Save_Config()
 {
 #ifdef SVR_HAVE_SIDEBYSIDE_CONFIG

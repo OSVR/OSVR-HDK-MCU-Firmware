@@ -98,28 +98,8 @@ static inline void Solomon_Dump_All_Config_Debug(const char *loc)
 	}
 }
 
-bool init_solomon_device(uint8_t deviceID)
+bool solomon_attempt_pll_lock(Solomon_t const *sol)
 {
-	/// 20 MHz crystal on xtal-in/xtal-io
-	Solomon_t *sol = solomon_get_channel(deviceID);
-	bool ok = solomon_detect_lrr_behavior(sol);
-	if (!ok)
-	{
-		WriteLn("Failed to get correct readback operation for one of the solomons!");
-		return false;
-	}
-	Solomon_Dump_All_Config_Debug("init_solomon_device - before");
-
-	/// Select this device to communicate with.
-	solomon_select(sol);
-
-#ifndef H546DLT01
-	solomon_write_reg_word(sol, 0xBA, 0xC030);  // lane speed=960Mbps
-#else
-	solomon_write_reg_word(sol, 0xBA, 0xC02D);  // lane speed=900Mbps
-#endif
-	solomon_write_reg_word(sol, 0xBB, 0x0008);  // LP clock
-
 	Write("Trying to enable PLL...");
 	solomon_pll_enable(sol);
 	for (uint8_t i = 0; i < SOLOMON_MAX_PLL_ATTEMPTS && !solomon_pll_is_locked(sol); ++i)
@@ -134,30 +114,146 @@ bool init_solomon_device(uint8_t deviceID)
 		return false;
 	}
 	WriteLn(" PLL locked");
+	return true;
+}
 
-#ifndef H546DLT01
-	solomon_write_reg_word(sol, 0xB1, 0x0216);  // VSA=2, HSA=22
-	solomon_write_reg_word(sol, 0xB2, 0x0630);  // VBP=4, HBP=26
-	solomon_write_reg_word(sol, 0xB3, 0x288C);  // VFP=40, HFP=140
-#else
-	solomon_write_reg_word(sol, 0xB1, 0x0505);  // VSA=2, HSA=22
-	solomon_write_reg_word(sol, 0xB2, 0x0760);  // VBP=7, HBP=11
-	solomon_write_reg_word(sol, 0xB3, 0x0C20);  // VFP=24, HFP=32
+typedef struct Timings_Struct
+{
+	uint8_t vsa;
+	uint8_t hsa;
+	uint8_t vbp;
+	uint8_t hbp;
+	uint8_t vfp;
+	uint8_t hfp;
+	uint16_t hact;
+	uint16_t vact;
+} Timings_t;
+static const Timings_t sharp50_from_code = {
+    .vsa = 0x02, .hsa = 0x16, .vbp = 0x06, .hbp = 0x30, .vfp = 0x28, .hfp = 0x8c, .hact = 1080, .vact = 1920};
+static const Timings_t sharp55datasheet = {
+    .vsa = 2, .hsa = 10, .vbp = 4 + 2, .hbp = 50 + 10, .vfp = 4, .hfp = 100, .hact = 1080, .vact = 1920};
+static const Timings_t auo_from_code = {
+    .vsa = 0x05, .hsa = 0x05, .vbp = 0x07, .hbp = 0x60, .vfp = 0x0c, .hfp = 0x20, .hact = 1080, .vact = 1920};
+
+typedef struct PLLConfig_Struct
+{
+	union {
+		struct
+		{
+			/// multiplier
+			uint16_t ns : 8;
+			/// divider
+			uint16_t ms : 5;
+			/// reserved bit
+			uint16_t reserved : 1;
+			/// frequency range
+			uint16_t fr : 2;
+		} sData;
+		uint16_t u16Data;
+	};
+} PLLConfig_t;
+
+typedef struct ClockConfig_Struct
+{
+	PLLConfig_t pllConfig;
+	uint16_t lpClockDivider;
+} ClockConfig_t;
+
+// lane speed=960Mbps
+static const ClockConfig_t sharpClock = {.pllConfig = {.u16Data = 0xC030}, .lpClockDivider = 0x0008};
+
+// lane speed=960Mbps
+/*
+{'FR': 3, 'MS': 1, 'NS': 48, 'fIn': 20, 'fOut': 960.0, 'fPre': 20.0}
+1100000000110000
+0xc030
+LP divisor: 12dec aka 0x0c
+computeDerivedFrequencies: fIn = 20.000000 MHz, sanitized divider = 1, fPre = 20.000000 MHz, fOut = 960.000000 MHz
+*/
+static const ClockConfig_t sharpClockComputed = {.pllConfig = {.u16Data = 0xC030}, .lpClockDivider = 0x000c};
+
+// lane speed=900Mbps
+static const ClockConfig_t auoClock = {.pllConfig = {.u16Data = 0xC02d}, .lpClockDivider = 0x0008};
+
+// lane speed=900Mbps
+/*
+{'FR': 3, 'MS': 1, 'NS': 45, 'fIn': 20, 'fOut': 900.0, 'fPre': 20.0}
+1100000000101101
+0xc02d
+LP divisor: 12dec aka 0x0c
+computeDerivedFrequencies: fIn = 20.000000 MHz, sanitized divider = 1, fPre = 20.000000 MHz, fOut = 900.000000 MHz
+*/
+static const ClockConfig_t auoClockComputed = {.pllConfig = {.u16Data = 0xC02d}, .lpClockDivider = 0x0008};
+
+typedef struct MIPIConfig_Struct
+{
+	uint8_t lanes;
+	uint8_t packetsInBlanking;
+	bool autoBTA;
+} MIPIConfig_t;
+
+static const MIPIConfig_t sharpMipi = {.lanes = 4, .packetsInBlanking = 4, .autoBTA = true};
+static const MIPIConfig_t auoMipi = {.lanes = 4, .packetsInBlanking = 4, .autoBTA = false};
+bool init_solomon_device(uint8_t deviceID)
+{
+	/// 20 MHz crystal on xtal-in/xtal-io
+	Solomon_t *sol = solomon_get_channel(deviceID);
+
+	bool ok = solomon_detect_lrr_behavior(sol);
+	if (!ok)
+	{
+		WriteLn("Failed to get correct readback operation for one of the solomons!");
+		return false;
+	}
+	Solomon_Dump_Config_Debug(deviceID, "init_solomon_device - before");
+
+	/// Select this device to communicate with.
+	solomon_select(sol);
+
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, SOLOMON_CFGR_EOT_bm | SOLOMON_CFGR_ECD_bm | SOLOMON_CFGR_HS_bm);
+
+#if defined(SVR_HAVE_SHARP_LCD)
+	const Timings_t *t = &sharp50_from_code;
+	const ClockConfig_t *c = &sharpClock;
+	const MIPIConfig_t *mipi = &sharpMipi;
+#elif defined(H546DLT01)
+	const Timings_t *t = &auo_from_code;
+	const ClockConfig_t *c = &auoClock;
+	const MIPIConfig_t *mipi = &auoMipi;
 #endif
+	solomon_write_reg_2byte(sol, 0xB1, t->hsa, t->vsa);
+	solomon_write_reg_2byte(sol, 0xB2, t->hbp, t->vbp);
+	solomon_write_reg_2byte(sol, 0xB3, t->hfp, t->vfp);
+	solomon_write_reg_word(sol, 0xB4, t->hact);
+	solomon_write_reg_word(sol, 0xB5, t->vact);
 
-	solomon_write_reg_word(sol, 0xB4, 0x0438);  // HACT=1080
-	solomon_write_reg_word(sol, 0xB5, 0x0780);  // VACT=1920
-
+	// 0010.0000.0000.0111
+	// vsync/hsync active low, ssd2828 latch data at falling edge,
+	// blanking packet, non-video at any ok time, non-video using HS (bit 6),
+	// blanking packet sent during BLLP, 01 = non burst w/ sync events
+	// 24bpp
 	solomon_write_reg_word(sol, 0xB6, 0x2007);  // non burst with sync events, 24bpp
 
-	solomon_write_reg_word(sol, 0xC9, 0x140A);  // HS prepare delay
-	solomon_write_reg_word(sol, 0xDE, 0x0003);  // no of lane
-	solomon_write_reg_word(sol, 0xD6, 0x0004);  // packet number in blanking period
-#ifndef H546DLT01
-	solomon_write_reg_word(sol, 0xC4, 0x0001);  // auto BTA
-#endif
+	/// Put data lanes in LP mode, leave clock in HS mode, and send DCS packets.
+	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_CKE_bm | SOLOMON_CFGR_DCS_bm, SOLOMON_CFGR_HS_bm);
+
+	solomon_write_reg_word(sol, 0xBA, c->pllConfig.u16Data);
+	solomon_write_reg_word(sol, 0xBB, (uint16_t)(c->lpClockDivider));  // LP clock
+
+	solomon_write_reg_word(sol, 0xC9, 0x140A);                   // HS prepare delay
+	solomon_write_reg_word(sol, 0xDE, mipi->lanes - 1);          // no of lane
+	solomon_write_reg_word(sol, 0xD6, mipi->packetsInBlanking);  // packet number in blanking period
+	if (mipi->autoBTA)
+	{
+		solomon_write_reg_word(sol, 0xC4, 0x0001);  // auto BTA
+	}
 
 	svr_yield_ms(50);
+	if (!solomon_attempt_pll_lock(sol))
+	{
+		Solomon_Dump_Config_Debug(deviceID, "init_solomon_device - after PLL failure");
+		return false;
+	}
 
 	// module panel initialization
 	/// This line sets EOT, ECD, and CKE.
@@ -306,8 +402,8 @@ bool init_solomon_device(uint8_t deviceID)
 	svr_yield_ms(100);
 #endif
 
-	Solomon_Dump_All_Config_Debug("init_solomon_device - after");
 	solomon_deselect(sol);
+	Solomon_Dump_Config_Debug(deviceID, "init_solomon_device - after");
 	return true;
 }
 

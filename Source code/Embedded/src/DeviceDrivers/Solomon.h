@@ -97,6 +97,11 @@ void Solomon_Dump_Config_Debug(uint8_t deviceId, const char* loc);
 /// @pre must call solomon_select on this device
 void Solomon_Dump_Config_Debug_New(uint8_t deviceId, Solomon_t const* sol, const char* loc);
 
+/// Attempts to lock the PLL.
+/// @returns true on success
+/// @pre must call solomon_select on this device
+bool solomon_attempt_pll_lock(Solomon_t const* sol);
+
 /// read the solomon ID - should be 0x2828
 ///
 /// @note Calls solomon_select and solomon_deselect on this device

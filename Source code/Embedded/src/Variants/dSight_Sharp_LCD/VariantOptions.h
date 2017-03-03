@@ -43,6 +43,8 @@
 
 #define SVR_VARIANT_STRING "dSight_Sharp_LCD"
 
+#define SVR_PRODUCT_NAME_STRING "Sensics dSight 1080"
+
 #define Solomon_SPI_MOSI IOPORT_CREATE_PIN(PORTC, 5)
 #define Solomon_SPI_MISO IOPORT_CREATE_PIN(PORTC, 6)
 #define Solomon_SPI_SCK IOPORT_CREATE_PIN(PORTC, 7)

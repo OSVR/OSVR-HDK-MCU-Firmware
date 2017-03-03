@@ -39,6 +39,10 @@
 #endif  // DOXYGEN
 /// @}
 
+#ifndef SVR_PRODUCT_NAME_STRING
+#define SVR_PRODUCT_NAME_STRING "Sensics HMD"
+#endif
+
 #ifndef SVR_DISABLE_VIDEO_INPUT
 /// Automatically-defined opposite of SVR_DISABLE_VIDEO_INPUT (and the
 /// deprecated DISABLE_NXP)

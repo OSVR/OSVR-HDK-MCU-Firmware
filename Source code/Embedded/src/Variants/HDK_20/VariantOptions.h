@@ -46,6 +46,7 @@
 #define SVR_VIDEO_INPUT_POLL_INTERVAL 10000
 
 #define SVR_VARIANT_STRING "HDK_20"
+#define SVR_PRODUCT_NAME_STRING "OSVR HDK 2 family HMD"
 
 #define SVR_HAVE_EDID_INFO_STRING
 extern const char svrEdidInfoString[];

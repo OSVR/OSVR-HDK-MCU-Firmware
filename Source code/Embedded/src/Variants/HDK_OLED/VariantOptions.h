@@ -37,5 +37,6 @@
 #endif
 
 #define SVR_VARIANT_STRING "HDK_OLED"
+#define SVR_PRODUCT_NAME_STRING "OSVR HDK 1.x (OLED) family HMD"
 
 #endif /* VARIANTOPTIONS_H_ */

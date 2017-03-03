@@ -164,7 +164,10 @@ int main(void)
 
 	// to assist in debug
 	delay_s(1);
-	WriteLn("Start");
+	WriteEndl();
+	WriteEndl();
+	WriteLn(SVR_PRODUCT_NAME_STRING " Startup");
+	WriteEndl();
 
 	// Sets up video display part of data path: MIPI bridge (Solomon) or other output device
 	Display_System_Full_Init();

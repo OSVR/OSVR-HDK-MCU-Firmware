@@ -180,9 +180,12 @@ bool init_solomon_device(uint8_t deviceID)
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);    // cmd=53, data=04 LEDPWM ON
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0055);    // cmd=55, data=00 CABC OFF
-
+#if 1
+	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, 0x0);  // Set DCS bit.
+#else
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);  // LP DCS write // TX2
-	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);   // VC
+#endif
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);  // VC
 
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  //
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0029);    // display on
@@ -196,7 +199,11 @@ bool init_solomon_device(uint8_t deviceID)
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04B0);    // cmd=B0, data=04
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x01D6);    // cmd=D6, data=01
 
-	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);   // LP DCS write // TX3
+#if 1
+	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, 0x0);  // Set DCS bit.
+#else
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0342);  // LP DCS write // TX3
+#endif
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of bytes to send
 
@@ -219,8 +226,15 @@ bool init_solomon_device(uint8_t deviceID)
 #ifdef H546DLT01  // AUO 5.46" OLED
 	// from LS050T1SX01 data sheet
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
-	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0321);   // LP DCS write // TX4
-	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
+#if 1
+	/// @todo also sets CSS!
+	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm | SOLOMON_CFGR_HS_bm,
+	                            SOLOMON_CFGR_CKE_bm);  // Set DCS, HS, clear CKE bit.
+#else
+	/// @todo not actually LP - setting HS flag!
+	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0321);  // LP DCS write // TX4
+#endif
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);  // VC
 
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // number of bytes to write
 	svr_yield_ms(100);

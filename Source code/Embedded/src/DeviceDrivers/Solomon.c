@@ -102,13 +102,6 @@ bool init_solomon_device(uint8_t deviceID)
 {
 	/// 20 MHz crystal on xtal-in/xtal-io
 	Solomon_t *sol = solomon_get_channel(deviceID);
-
-	/// Reset the solomon.
-	solomon_start_reset(sol);
-	svr_yield_ms(10);
-	solomon_end_reset(sol);
-	svr_yield_ms(10);
-
 	bool ok = solomon_detect_lrr_behavior(sol);
 	if (!ok)
 	{

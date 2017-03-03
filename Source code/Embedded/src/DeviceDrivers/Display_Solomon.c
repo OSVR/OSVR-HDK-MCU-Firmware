@@ -32,6 +32,14 @@ void Display_Init(uint8_t deviceID)
 	/// Single digit sprintf substitute.
 	const char displayNum[] = {deviceID + '1', '\0'};
 	WriteLn(displayNum);
+
+	Solomon_t *sol = solomon_get_channel(deviceID);
+
+	/// Reset the solomon.
+	solomon_start_reset(sol);
+	svr_yield_ms(10);
+	solomon_end_reset(sol);
+	svr_yield_ms(100);
 	init_solomon_device(deviceID);
 #ifdef SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
 	if (!VideoInput_Get_Status())
@@ -45,7 +53,8 @@ void Display_On(uint8_t deviceID)
 {
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
 	WriteLn("Re-initializing...");
-	if (!init_solomon_device(deviceID)) {
+	if (!init_solomon_device(deviceID))
+	{
 		// failed to re-init!
 		return;
 	}

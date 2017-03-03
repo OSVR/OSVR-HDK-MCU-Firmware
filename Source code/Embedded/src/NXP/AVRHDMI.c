@@ -590,6 +590,7 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     gDlHdmiRxSetupInfo0.hdcpEnable = true;
     gDlHdmiRxSetupInfo0.hdcpMode = TMDL_HDMIRX_HDCPMODE_AUTO;
     gDlHdmiRxSetupInfo0.hdcpRepeaterEnable = False;
+    /// @todo Should this and related be disabled on dSight where EDID is supplied by external EEPROM?
     gDlHdmiRxSetupInfo0.internalEdid = true;
 
 

@@ -33,18 +33,10 @@ void VideoInput_Poll_Status(void)
 		// check status of HDMI switch
 		TMDS442_Task();
 	}
-	else
-	{
-		WriteLn("TMDS442 task disabled");
-	}
 	if (HDMI_task)
 	{
 		/// @todo Do we need to poll the NXP every time through the mainloop, or can we depend on the interrupts?
 		NXP_HDMI_Task();
-	}
-	else
-	{
-		WriteLn("HDMI task disabled");
 	}
 }
 void VideoInput_Report_Status(void) { NXP_Report_HDMI_status(); }

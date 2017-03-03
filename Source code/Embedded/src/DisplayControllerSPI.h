@@ -30,6 +30,7 @@
 #include <status_codes.h>
 #include <ioport.h>
 #include <spi_master.h>
+#include <delay.h>
 
 /** Configuration defines:
 
@@ -51,7 +52,15 @@
 #ifndef DCSPI_MUX_OE_DISABLE_ON_DESELECT
 #define DCSPI_MUX_OE_DISABLE_ON_DESELECT 0
 #endif
-
+#ifndef DCSPI_SELECT_DELAY_US
+#define DCSPI_SELECT_DELAY_US 2
+#endif
+#ifndef DCSPI_START_ADDR_DELAY_US
+#define DCSPI_START_ADDR_DELAY_US 2
+#endif
+#ifndef DCSPI_START_DATA_DELAY_US
+#define DCSPI_START_DATA_DELAY_US 2
+#endif
 /// Configuration struct for a DCSPI channel.
 typedef struct DisplayControlSPI_struct
 {
@@ -124,6 +133,7 @@ __always_inline static void dcspi_select_device(SPI_t *spi, DisplayControlSPI_t 
 #endif  // DCSPI_MUX_SUPPORT
 	// const_cast to remove constness - consumer doesn't actually use mutability, but isn't const-safe.
 	spi_select_device(spi, (struct spi_device *)&(dcDev->spiDevice));
+	delay_us(DCSPI_SELECT_DELAY_US);
 }
 
 /// Includes call to spi_deselect_device
@@ -148,16 +158,19 @@ __always_inline static void dcspi_deselect_device(SPI_t *spi, DisplayControlSPI_
 	}
 #endif
 #endif  // DCSPI_MUX_SUPPORT
+	delay_us(DCSPI_SELECT_DELAY_US);
 }
 
 __always_inline static void dcspi_start_addr(DisplayControlSPI_t const *dcSPI)
 {
 	ioport_set_pin_level(dcSPI->addrData, dcSPI->addrLevel);
+	delay_us(DCSPI_START_ADDR_DELAY_US);
 }
 
 __always_inline static void dcspi_start_data(DisplayControlSPI_t const *dcSPI)
 {
 	ioport_set_pin_level(dcSPI->addrData, !(dcSPI->addrLevel));
+	delay_us(DCSPI_START_DATA_DELAY_US);
 }
 
 __always_inline static void dcspi_wait(SPI_t *spi)

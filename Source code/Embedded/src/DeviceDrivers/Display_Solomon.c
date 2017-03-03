@@ -16,12 +16,29 @@
 #include "my_hardware.h"
 #include "SvrYield.h"
 
+#if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
+#define SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
+#endif  // defined(SVR_HAVE_SHARP_LCD)
+
+#ifdef SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
+#include "VideoInput.h"
+#endif  // SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
+
 void Display_System_Init() { init_solomon(); }
-void Display_Init(uint8_t id) { init_solomon_device(id); }
-void Display_Init(uint8_t id)
+
+void Display_Init(uint8_t deviceID)
 {
-	WriteLn("Display_Init");
-	init_solomon_device(id);
+	WriteLn("Init for display ");
+	/// Single digit sprintf substitute.
+	const char displayNum[] = {deviceID + '1', '\0'};
+	WriteLn(displayNum);
+	init_solomon_device(deviceID);
+#ifdef SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
+	if (!VideoInput_Get_Status())
+	{
+		Display_Off(deviceID);
+	}
+#endif  // SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
 }
 
 void Display_On(uint8_t deviceID)

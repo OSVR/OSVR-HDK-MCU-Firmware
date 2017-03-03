@@ -28,7 +28,7 @@ void Display_System_Init() { init_solomon(); }
 
 void Display_Init(uint8_t deviceID)
 {
-	WriteLn("Init for display ");
+	Write("Init for display ");
 	/// Single digit sprintf substitute.
 	const char displayNum[] = {deviceID + '1', '\0'};
 	WriteLn(displayNum);

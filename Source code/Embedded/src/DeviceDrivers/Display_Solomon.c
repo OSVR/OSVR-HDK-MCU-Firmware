@@ -43,13 +43,25 @@ void Display_Init(uint8_t deviceID)
 
 void Display_On(uint8_t deviceID)
 {
-#if defined(LS050T1SX01) || defined(LS055T1SX01)  // sharp 5" or 5.5"
+#if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
 	WriteLn("Re-initializing...");
-	init_solomon_device(deviceID);
-#endif  // defined(LS050T1SX01) || defined(LS055T1SX01)
-	WriteLn("Turning display on");
+	if (!init_solomon_device(deviceID)) {
+		// failed to re-init!
+		return;
+	}
+#endif  // defined(SVR_HAVE_SHARP_LCD)
+	Write("Turning display ");
+	/// Single digit sprintf substitute.
+	const char displayNum[] = {deviceID + '1', '\0'};
+	Write(displayNum);
+	WriteLn(" on");
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - before");
-
+#ifdef SVR_HAVE_SHARP_LCD
+	Solomon_t *sol = solomon_get_channel(deviceID);
+	solomon_select(sol);
+	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm, 0x0);  // Set VEN and HS bits.
+	solomon_deselect(sol);
+#endif
 #ifdef H546DLT01  // AUO 5.46" OLED
 	// svr_yield_ms(500);
 
@@ -72,8 +84,18 @@ void Display_On(uint8_t deviceID)
 
 void Display_Off(uint8_t deviceID)
 {
-	WriteLn("Turning display off");
+	Write("Turning display ");
+	/// Single digit sprintf substitute.
+	const char displayNum[] = {deviceID + '1', '\0'};
+	Write(displayNum);
+	WriteLn(" off");
 	Solomon_Dump_Config_Debug(deviceID, "Display_Off - before");
+#ifdef SVR_HAVE_SHARP_LCD
+	Solomon_t *sol = solomon_get_channel(deviceID);
+	solomon_select(sol);
+	solomon_cfgr_set_clear_bits(sol, 0x0, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set VEN and HS bits.
+	solomon_deselect(sol);
+#endif
 #ifdef H546DLT01  // AUO 5.46" OLED
 
 	write_solomon(deviceID, SOLOMON_REG_CFGR, 0x0321);  // video mode off // TX7
@@ -97,7 +119,7 @@ void Display_Powercycle(uint8_t deviceID)
 	write_solomon(deviceID, SOLOMON_REG_PSCR1, 0x0001);  // 1 byte commands
 	write_solomon(deviceID, SOLOMON_REG_VCR, 0x0000);    // VC
 
-	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);    // display on
+	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0028);  // display on
 	svr_yield_ms(120);
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0010);  // sleep out
 
@@ -214,4 +236,4 @@ void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)
 #endif  // H546DLT01
 }
 
-#endif // defined(SVR_HAVE_SOLOMON)
+#endif  // defined(SVR_HAVE_SOLOMON)

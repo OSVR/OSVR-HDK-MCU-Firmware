@@ -48,6 +48,12 @@ void Solomon_Dump_Config_Debug_New(uint8_t deviceId, Solomon_t const *sol, const
 		char confStr[] = BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(config);
 		Write(confStr);
 	}
+	{
+		uint16_t status = solomon_read_reg_2byte(sol, SOLOMON_REG_ISR);
+		char msg[50];
+		sprintf(msg, " (ISR: 0x%04x)", status);
+		Write(msg);
+	}
 	Write(" [");
 	Write(loc);
 	WriteLn("]");
@@ -72,6 +78,12 @@ static inline void Solomon_Dump_Config_Debug_Bare(Solomon_t const *sol, const ch
 	{
 		char confStr[] = BITUTILS_CSTR_INIT_FROM_U16_TO_BIN(config);
 		Write(confStr);
+	}
+	{
+		uint16_t status = solomon_read_reg_2byte(sol, SOLOMON_REG_ISR);
+		char msg[50];
+		sprintf(msg, " (ISR: 0x%04x)", status);
+		Write(msg);
 	}
 	Write(" [");
 	Write(loc);

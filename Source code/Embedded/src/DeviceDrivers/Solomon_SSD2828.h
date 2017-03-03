@@ -21,6 +21,10 @@
 static const uint16_t SOLOMON_CFGR_TXD_bm = (UINT16_C(0x01) << 11);
 /// Long packet enable - whether the solomon should use long packets even when short will do.
 static const uint16_t SOLOMON_CFGR_LPE_bm = (UINT16_C(0x01) << 10);
+/// EOT packet enable
+static const uint16_t SOLOMON_CFGR_EOT_bm = (UINT16_C(0x01) << 9);
+/// ECC check disable
+static const uint16_t SOLOMON_CFGR_ECD_bm = (UINT16_C(0x01) << 8);
 /// Read enable - next operation is a read op.
 static const uint16_t SOLOMON_CFGR_REN_bm = (UINT16_C(0x01) << 7);
 /// DCS enable - next packet is a DCS packet (vs. a generic packet)

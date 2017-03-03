@@ -77,9 +77,9 @@ void SxS_Init()
 	if (GetValidConfigValueOrWriteDefault(SideBySideOffset, 0, &sideBySideConfig))
 	{
 		sxs_enabled = (sideBySideConfig != 0);
-		SxS_Apply();
 	}
 #endif
+	SxS_Apply();
 }
 
 void SxS_Toggle()

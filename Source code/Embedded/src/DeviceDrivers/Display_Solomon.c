@@ -37,10 +37,26 @@ void Display_Init(uint8_t deviceID)
 
 	/// Reset the solomon.
 	solomon_start_reset(sol);
-	svr_yield_ms(10);
+	svr_yield_ms(100);
 	solomon_end_reset(sol);
+	solomon_end_video_shutdown(sol);
 	svr_yield_ms(100);
 	init_solomon_device(deviceID);
+#ifdef SVR_HAVE_SHARP_LCD
+
+	solomon_select(sol);
+	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, 0);  // Set DCS bit.
+
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);     // no of bytes to send
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);       // VC
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x28, 0x00);  // display off
+	svr_yield_ms(20);
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x10, 0x00);  // sleep in
+	svr_yield_ms(80);
+	// Clear VEN and HS bits.
+	solomon_cfgr_set_clear_bits(sol, 0x0, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set VEN and HS bits.
+	solomon_deselect(sol);
+#endif
 #ifdef SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
 	if (!VideoInput_Get_Status())
 	{
@@ -68,6 +84,16 @@ void Display_On(uint8_t deviceID)
 #ifdef SVR_HAVE_SHARP_LCD
 	Solomon_t *sol = solomon_get_channel(deviceID);
 	solomon_select(sol);
+
+	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set DCS bit.
+
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);     // no of bytes to send
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);       // VC
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x29, 0x00);  // display on
+	svr_yield_ms(120);
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x11, 0x00);  // sleep out
+	svr_yield_ms(250);
+
 	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm, 0x0);  // Set VEN and HS bits.
 	solomon_deselect(sol);
 #endif
@@ -102,6 +128,15 @@ void Display_Off(uint8_t deviceID)
 #ifdef SVR_HAVE_SHARP_LCD
 	Solomon_t *sol = solomon_get_channel(deviceID);
 	solomon_select(sol);
+	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, 0);  // Set DCS bit.
+
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);     // no of bytes to send
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);       // VC
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x28, 0x00);  // display off
+	svr_yield_ms(20);
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x10, 0x00);  // sleep in
+	svr_yield_ms(80);
+	// Clear VEN and HS bits.
 	solomon_cfgr_set_clear_bits(sol, 0x0, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set VEN and HS bits.
 	solomon_deselect(sol);
 #endif
@@ -141,12 +176,20 @@ void Display_Powercycle(uint8_t deviceID)
 
 void Display_Handle_Gain_Video()
 {
-	// Nothing - everything handled in per-display Display_On.
+	for (uint8_t deviceId = 0; deviceId < SVR_HAVE_SOLOMON; ++deviceId)
+	{
+		Solomon_t *sol = solomon_get_channel(deviceId);
+		solomon_end_video_shutdown(sol);
+	}
 }
 
 void Display_Handle_Lose_Video()
 {
-	// Nothing - everything handled in per-display Display_Off.
+	for (uint8_t deviceId = 0; deviceId < SVR_HAVE_SOLOMON; ++deviceId)
+	{
+		Solomon_t *sol = solomon_get_channel(deviceId);
+		solomon_start_video_shutdown(sol);
+	}
 }
 
 void Display_Set_Strobing(uint8_t deviceID, uint8_t refresh, uint8_t percentage)

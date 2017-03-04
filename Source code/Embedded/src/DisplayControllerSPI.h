@@ -53,13 +53,13 @@
 #define DCSPI_MUX_OE_DISABLE_ON_DESELECT 0
 #endif
 #ifndef DCSPI_SELECT_DELAY_US
-#define DCSPI_SELECT_DELAY_US 2
+#define DCSPI_SELECT_DELAY_US 100
 #endif
 #ifndef DCSPI_START_ADDR_DELAY_US
-#define DCSPI_START_ADDR_DELAY_US 2
+#define DCSPI_START_ADDR_DELAY_US 100
 #endif
 #ifndef DCSPI_START_DATA_DELAY_US
-#define DCSPI_START_DATA_DELAY_US 2
+#define DCSPI_START_DATA_DELAY_US 100
 #endif
 /// Configuration struct for a DCSPI channel.
 typedef struct DisplayControlSPI_struct

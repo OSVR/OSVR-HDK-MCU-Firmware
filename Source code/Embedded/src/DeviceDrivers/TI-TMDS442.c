@@ -85,7 +85,7 @@ static const uint8_t SINK_PORT_SOURCESEL_Source_4 = UINT8_C(0x03);
 /// A base value for SINK_PORT_REG values
 #define TMDS442_SINK_PORT_VAL_BASE (UINT8_C(0))  // (SINK_PORT_I2CEN_bm)
 /// Value assigned to SINK_PORT_REGs when they are shut down.
-#define TMDS442_SINK_PORT_VAL_SHUTDOWN (TMDS442_SINK_PORT_VAL_BASE)  // | SINK_PORT_nOE_bm)
+#define TMDS442_SINK_PORT_VAL_SHUTDOWN (TMDS442_SINK_PORT_VAL_BASE | SINK_PORT_nOE_bm)
 /// Starting point for computing the value assigned to SINK_PORT_REGs when they are enabled.
 #define TMDS442_SINK_PORT_VAL_ACTIVE_BASE (TMDS442_SINK_PORT_VAL_BASE)
 
@@ -197,7 +197,7 @@ void TMDS442_Init(void)
 		twi_master_setup(TWI_TMDS442_PORT, &opt_TMDS442);
 		TWI_TMDS442_PORT_initialized = true;
 	}
-#if 0
+#if 1
 	TMDS442_WriteReg(TMDS442_SRC_PLUG_REG, TMDS442_SRC_PLUG_REG_value);
 #else
 	uint8_t plugReg = 0;

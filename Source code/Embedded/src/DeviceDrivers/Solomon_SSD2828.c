@@ -10,6 +10,8 @@
 
 #include "BitUtilsC.h"
 
+#include "Console.h"
+
 #include <spi_master.h>
 #include <delay.h>
 
@@ -39,10 +41,11 @@ bool solomon_init(Solomon_t* sol)
 	const ioport_pin_t cs = sol->dcSpiDevice.spiDevice.id;
 #if 0
 	ioport_configure_pin(cs, IOPORT_PULL_UP | IOPORT_DIR_INPUT);
-#else
 	ioport_set_pin_level(cs, true);
 	ioport_set_pin_dir(cs, IOPORT_DIR_OUTPUT);
 	ioport_enable_pin(cs);
+#else
+	ioport_configure_pin(cs, IOPORT_INIT_HIGH | IOPORT_DIR_OUTPUT);
 #endif
 
 	ioport_enable_pin(sol->reset);
@@ -59,19 +62,42 @@ bool solomon_init(Solomon_t* sol)
 
 bool solomon_detect_lrr_behavior(Solomon_t* sol)
 {
+	Write("LRR detect: ");
 	solomon_select(sol);
+#if 0
 	sol->lrrBehavior = SOLOMON_LRR_USE_ADDRESS;
 	uint16_t id = solomon_read_reg_2byte(sol, SOLOMON_REG_DIR);
-	if (id != SOLOMON_EXPECTED_DEVID)
+	if (id == SOLOMON_EXPECTED_DEVID)
 	{
-		sol->lrrBehavior = SOLOMON_LRR_USE_CONSTANT;
+		WriteLn("Succeeded in address mode!");
+		solomon_deselect(sol);
+		return true;
 	}
+
+	Write("Failed address mode; Trying constant mode: ");
+	sol->lrrBehavior = SOLOMON_LRR_USE_CONSTANT;
+#else
+	sol->lrrBehavior = SOLOMON_LRR_USE_CONSTANT;
+	uint16_t id = solomon_read_reg_2byte(sol, SOLOMON_REG_DIR);
+	if (id == SOLOMON_EXPECTED_DEVID)
+	{
+		WriteLn("Succeeded in constant mode!");
+		solomon_deselect(sol);
+		return true;
+	}
+
+	Write("Failed constant mode; Trying address mode: ");
+	sol->lrrBehavior = SOLOMON_LRR_USE_ADDRESS;
+#endif
 	id = solomon_read_reg_2byte(sol, SOLOMON_REG_DIR);
-	solomon_deselect(sol);
 	if (id != SOLOMON_EXPECTED_DEVID)
 	{
+		WriteLn("Failed overall!");
+		solomon_deselect(sol);
 		return false;
 	}
+	WriteLn("Succeeded!");
+	solomon_deselect(sol);
 	return true;
 }
 

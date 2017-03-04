@@ -130,6 +130,8 @@ typedef struct Timings_Struct
 } Timings_t;
 static const Timings_t sharp50_from_code = {
     .vsa = 0x02, .hsa = 0x16, .vbp = 0x06, .hbp = 0x30, .vfp = 0x28, .hfp = 0x8c, .hact = 1080, .vact = 1920};
+static const Timings_t sharp50_from_edid = {
+    .vsa = 2, .hsa = 4, .vbp = 20 - 4, .hbp = 82 - 10, .vfp = 4, .hfp = 10, .hact = 1080, .vact = 1920};
 static const Timings_t sharp55datasheet = {
     .vsa = 2, .hsa = 10, .vbp = 4 + 2, .hbp = 50 + 10, .vfp = 4, .hfp = 100, .hact = 1080, .vact = 1920};
 static const Timings_t auo_from_code = {
@@ -189,11 +191,12 @@ typedef struct MIPIConfig_Struct
 {
 	uint8_t lanes;
 	uint8_t packetsInBlanking;
+	bool hsSetup;
 	bool autoBTA;
 } MIPIConfig_t;
 
-static const MIPIConfig_t sharpMipi = {.lanes = 4, .packetsInBlanking = 4, .autoBTA = true};
-static const MIPIConfig_t auoMipi = {.lanes = 4, .packetsInBlanking = 4, .autoBTA = false};
+static const MIPIConfig_t sharpMipi = {.lanes = 4, .packetsInBlanking = 4, .hsSetup = false, .autoBTA = true};
+static const MIPIConfig_t auoMipi = {.lanes = 4, .packetsInBlanking = 4, .hsSetup = true, .autoBTA = false};
 bool init_solomon_device(uint8_t deviceID)
 {
 	/// 20 MHz crystal on xtal-in/xtal-io
@@ -207,20 +210,43 @@ bool init_solomon_device(uint8_t deviceID)
 	}
 	Solomon_Dump_Config_Debug(deviceID, "init_solomon_device - before");
 
-	/// Select this device to communicate with.
-	solomon_select(sol);
-
-	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, SOLOMON_CFGR_EOT_bm | SOLOMON_CFGR_ECD_bm | SOLOMON_CFGR_HS_bm);
-
 #if defined(SVR_HAVE_SHARP_LCD)
+#if 1
 	const Timings_t *t = &sharp50_from_code;
+	const ClockConfig_t *c = &sharpClockComputed;
+#else
+	/// These timings are a little "flickery" looking
+	const Timings_t *t = &sharp50_from_edid;
 	const ClockConfig_t *c = &sharpClock;
+#endif
 	const MIPIConfig_t *mipi = &sharpMipi;
 #elif defined(H546DLT01)
 	const Timings_t *t = &auo_from_code;
 	const ClockConfig_t *c = &auoClock;
 	const MIPIConfig_t *mipi = &auoMipi;
 #endif
+	/// Select this device to communicate with.
+	solomon_select(sol);
+	/// turn off pull-ups/pull-downs
+	solomon_write_reg_word(sol, 0xE1, 0x0000);
+	solomon_write_reg_word(sol, 0xE2, 0x0000);
+#if 0
+	solomon_detect_lrr_behavior(sol);
+#endif
+	solomon_select(sol);
+	svr_yield_ms(10);
+	/// Choose initial config.
+	{
+		uint16_t cfgrInit = SOLOMON_CFGR_EOT_bm | SOLOMON_CFGR_ECD_bm;
+		if (mipi->hsSetup)
+		{
+			cfgrInit |= SOLOMON_CFGR_HS_bm;
+		}
+		solomon_write_reg_word(sol, SOLOMON_REG_CFGR, cfgrInit);
+	}
+	svr_yield_ms(10);
+	Solomon_Dump_Config_Debug_New(deviceID, sol, "init_solomon_device - after cfg");
+
 	solomon_write_reg_2byte(sol, 0xB1, t->hsa, t->vsa);
 	solomon_write_reg_2byte(sol, 0xB2, t->hbp, t->vbp);
 	solomon_write_reg_2byte(sol, 0xB3, t->hfp, t->vfp);
@@ -247,18 +273,29 @@ bool init_solomon_device(uint8_t deviceID)
 	{
 		solomon_write_reg_word(sol, 0xC4, 0x0001);  // auto BTA
 	}
+	/// PLL Lock (timeout) Register
+	/// double the default value, since ref clock is 20MHz instead of 10?
+	/// @todo clarify if this is the right math.
+	solomon_write_reg_word(sol, 0xD5, 0x28A0);
 
+	Solomon_Dump_Config_Debug_New(deviceID, sol, "init_solomon_device - before PLL");
 	svr_yield_ms(50);
 	if (!solomon_attempt_pll_lock(sol))
 	{
 		Solomon_Dump_Config_Debug(deviceID, "init_solomon_device - after PLL failure");
 		return false;
 	}
+	Solomon_Dump_Config_Debug_New(deviceID, sol, "init_solomon_device - after PLL");
 
-	// module panel initialization
+// module panel initialization
+
+#if 0
 	/// This line sets EOT, ECD, and CKE.
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0302);  // LP generic write // TX1
-	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);   // VC
+#else
+	solomon_cfgr_set_clear_bits(sol, 0x0, SOLOMON_CFGR_DCS_bm);
+#endif
+	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);  // VC
 
 #ifdef LS055T1SX01                                           // sharp 5.5"
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of bytes to send
@@ -304,10 +341,12 @@ bool init_solomon_device(uint8_t deviceID)
 	// solomon_write_reg_word(sol,0xBB,0x0008); // LP clock BC 0002
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);  // cmd=53, data=04
 
+#ifdef SVR_TURN_ON_DISPLAY_DURING_INIT
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  // 1 byte
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0029);    // display on
 	svr_yield_ms(120);
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0011);  // sleep out
+#endif                                                     // SVR_TURN_ON_DISPLAY_DURING_INIT
 
 // end of LS050T1SX01 data sheet
 #endif
@@ -394,12 +433,15 @@ bool init_solomon_device(uint8_t deviceID)
 #endif  // 0
 #endif
 
-#ifndef H546DLT01                                          // AUO 5.46" OLED
+#ifdef SVR_HAVE_SHARP_LCD
+
+#ifdef SVR_TURN_ON_DISPLAY_DURING_INIT
 	                                                       // video mode on
 	svr_yield_ms(250);
 
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x034B);  // video mode on // TX5
 	svr_yield_ms(100);
+#endif  // SVR_TURN_ON_DISPLAY_DURING_INIT
 #endif
 
 	solomon_deselect(sol);

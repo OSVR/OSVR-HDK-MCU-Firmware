@@ -127,7 +127,7 @@ __always_inline static void dcspi_select_device(SPI_t *spi, DisplayControlSPI_t 
 	}
 	if (dcSPI->muxPin != 0)
 	{
-		DCSPI_VERBOSE_PRINTF("Setting mux level %d \r\n", dcDev->muxPinLevel ? 1 : 0);
+		DCSPI_VERBOSE_PRINTF("Setting mux level %d \r\n", ((dcDev->muxPinLevel) ? 1 : 0));
 		ioport_set_pin_level(dcSPI->muxPin, dcDev->muxPinLevel);
 	}
 #endif  // DCSPI_MUX_SUPPORT
@@ -161,14 +161,18 @@ __always_inline static void dcspi_deselect_device(SPI_t *spi, DisplayControlSPI_
 	delay_us(DCSPI_SELECT_DELAY_US);
 }
 
-__always_inline static void dcspi_start_addr(DisplayControlSPI_t const *dcSPI)
+__always_inline static void dcspi_start_addr(SPI_t *spi, DisplayControlSPI_t const *dcSPI)
 {
+	DCSPI_VERBOSE_PRINTF("Start addr\r\n");
+	delay_us(DCSPI_START_ADDR_DELAY_US);
 	ioport_set_pin_level(dcSPI->addrData, dcSPI->addrLevel);
 	delay_us(DCSPI_START_ADDR_DELAY_US);
 }
 
-__always_inline static void dcspi_start_data(DisplayControlSPI_t const *dcSPI)
+__always_inline static void dcspi_start_data(SPI_t *spi, DisplayControlSPI_t const *dcSPI)
 {
+	DCSPI_VERBOSE_PRINTF("Start data\r\n");
+	delay_us(DCSPI_START_DATA_DELAY_US);
 	ioport_set_pin_level(dcSPI->addrData, !(dcSPI->addrLevel));
 	delay_us(DCSPI_START_DATA_DELAY_US);
 }
@@ -181,6 +185,7 @@ __always_inline static void dcspi_wait(SPI_t *spi)
 	}
 }
 
+/// must be followed by a `while (!spi_is_rx_full(spi))` loop!
 __always_inline static void dcspi_internal_write_single(SPI_t *spi, uint8_t data)
 {
 	DCSPI_VERBOSE_PRINTF("[w:%02x]", data);
@@ -197,7 +202,8 @@ __always_inline static status_code_t dcspi_internal_write_packet(SPI_t *spi, con
 		while (!spi_is_rx_full(spi))
 		{
 		}
-		DCSPI_VERBOSE_PRINTF("[r:%02x]", spi_get(spi));
+		uint8_t tmp = spi_get(spi);
+		DCSPI_VERBOSE_PRINTF("[r:%02x]", tmp);
 	}
 	DCSPI_VERBOSE_PRINTF("\r\n");
 
@@ -212,7 +218,27 @@ __always_inline static status_code_t dcspi_internal_blocking_write_byte(SPI_t *s
 	while (!spi_is_rx_full(spi))
 	{
 	}
-	DCSPI_VERBOSE_PRINTF("[r:%02x]\r\n", spi_get(spi));
+	uint8_t tmp = spi_get(spi);
+	DCSPI_VERBOSE_PRINTF("[r:%02x]\r\n", tmp);
+	return STATUS_OK;
+}
+
+__always_inline static status_code_t dcspi_internal_read_packet(SPI_t *spi, uint8_t *data, size_t len)
+{
+	DCSPI_VERBOSE_PRINTF("Read packet: ");
+	while (len--)
+	{
+		dcspi_internal_write_single(spi, CONFIG_SPI_MASTER_DUMMY);  // Dummy write
+
+		while (!spi_is_rx_full(spi))
+		{
+		}
+
+		spi_read_single(spi, data);
+		DCSPI_VERBOSE_PRINTF("[r:%02x]", *data);
+		data++;
+	}
+	DCSPI_VERBOSE_PRINTF("\r\n");
 
 	return STATUS_OK;
 }
@@ -224,13 +250,13 @@ __always_inline static status_code_t dcspi_write_packet(SPI_t *spi, DisplayContr
                                                         size_t len)
 {
 	DCSPI_VERBOSE_PRINTF("dcspi_write_packet\r\n");
-	dcspi_start_addr(dcSPI);
+	dcspi_start_addr(spi, dcSPI);
 	status_code_t ret = dcspi_internal_write_packet(spi, addr, addrLen);
 	if (ret != STATUS_OK)
 	{
 		return ret;
 	}
-	dcspi_start_data(dcSPI);
+	dcspi_start_data(spi, dcSPI);
 	return dcspi_internal_write_packet(spi, data, len);
 }
 
@@ -240,9 +266,9 @@ __always_inline static status_code_t dcspi_write_packet_byteaddr(SPI_t *spi, Dis
                                                                  uint8_t addr, const uint8_t *data, size_t len)
 {
 	DCSPI_VERBOSE_PRINTF("dcspi_write_packet_byteaddr\r\n");
-	dcspi_start_addr(dcSPI);
+	dcspi_start_addr(spi, dcSPI);
 	dcspi_internal_blocking_write_byte(spi, addr);
-	dcspi_start_data(dcSPI);
+	dcspi_start_data(spi, dcSPI);
 	return dcspi_internal_write_packet(spi, data, len);
 }
 
@@ -253,10 +279,10 @@ __always_inline static status_code_t dcspi_write_packet_twobyteaddr(SPI_t *spi, 
                                                                     const uint8_t *data, size_t len)
 {
 	DCSPI_VERBOSE_PRINTF("dcspi_write_packet_twobyteaddr\r\n");
-	dcspi_start_addr(dcSPI);
+	dcspi_start_addr(spi, dcSPI);
 	dcspi_internal_blocking_write_byte(spi, addrFirst);
 	dcspi_internal_blocking_write_byte(spi, addrSecond);
-	dcspi_start_data(dcSPI);
+	dcspi_start_data(spi, dcSPI);
 	return dcspi_internal_write_packet(spi, data, len);
 }
 
@@ -266,10 +292,10 @@ __always_inline static status_code_t dcspi_read_packet_byteaddr(SPI_t *spi, Disp
                                                                 uint8_t addr, uint8_t *data, size_t len)
 {
 	DCSPI_VERBOSE_PRINTF("dcspi_read_packet_byteaddr\r\n");
-	dcspi_start_addr(dcSPI);
+	dcspi_start_addr(spi, dcSPI);
 	dcspi_internal_blocking_write_byte(spi, addr);
-	dcspi_start_data(dcSPI);
-	return spi_read_packet(spi, data, len);
+	dcspi_start_data(spi, dcSPI);
+	return dcspi_internal_read_packet(spi, data, len);
 }
 
 /// @brief Sends 16 bit address, then reads arbitrary length data packet.
@@ -279,10 +305,10 @@ __always_inline static status_code_t dcspi_read_packet_2byteaddr(SPI_t *spi, Dis
                                                                  size_t len)
 {
 	DCSPI_VERBOSE_PRINTF("dcspi_read_packet_2byteaddr\r\n");
-	dcspi_start_addr(dcSPI);
+	dcspi_start_addr(spi, dcSPI);
 	dcspi_internal_blocking_write_byte(spi, addrFirst);
 	dcspi_internal_blocking_write_byte(spi, addrSecond);
-	dcspi_start_data(dcSPI);
-	return spi_read_packet(spi, data, len);
+	dcspi_start_data(spi, dcSPI);
+	return dcspi_internal_read_packet(spi, data, len);
 }
 #endif /* DISPLAYCONTROLLERSPI_H_ */

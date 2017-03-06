@@ -15,16 +15,20 @@
 
 #ifdef DCSPI_VERBOSE
 #include <stdio.h>
+#ifndef DCSPI_VERBOSE_PRINTF
 #define DCSPI_VERBOSE_PRINTF(...) \
 	do                            \
 	{                             \
 		printf(__VA_ARGS__);      \
 	} while (0)
+#endif  // !DCSPI_VERBOSE_PRINTF
 #else
+#ifndef DCSPI_VERBOSE_PRINTF
 #define DCSPI_VERBOSE_PRINTF(...) \
 	do                            \
 	{                             \
 	} while (0)
+#endif  // !DCSPI_VERBOSE_PRINTF
 #endif  // DCSPI_VERBOSE
 
 #include <status_codes.h>

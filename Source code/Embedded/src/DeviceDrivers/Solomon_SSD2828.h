@@ -136,7 +136,7 @@ __always_inline static void solomon_end_video_shutdown(Solomon_t const* sol)
 /// @brief Call before any of the read or write operations.
 __always_inline static void solomon_select(Solomon_t const* sol)
 {
-	dcspi_start_data(&(sol->dcSpi));
+	dcspi_start_data(sol->spi, &(sol->dcSpi));
 	dcspi_select_device(sol->spi, &(sol->dcSpi), &(sol->dcSpiDevice));
 }
 

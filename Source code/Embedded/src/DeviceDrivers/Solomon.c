@@ -227,13 +227,7 @@ bool init_solomon_device(uint8_t deviceID)
 #endif
 	/// Select this device to communicate with.
 	solomon_select(sol);
-	/// turn off pull-ups/pull-downs
-	solomon_write_reg_word(sol, 0xE1, 0x0000);
-	solomon_write_reg_word(sol, 0xE2, 0x0000);
-#if 0
-	solomon_detect_lrr_behavior(sol);
-#endif
-	solomon_select(sol);
+
 	svr_yield_ms(10);
 	/// Choose initial config.
 	{

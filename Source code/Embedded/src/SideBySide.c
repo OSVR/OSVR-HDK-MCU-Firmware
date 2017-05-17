@@ -6,9 +6,10 @@
 
 #include "GlobalOptions.h"
 
-#ifdef SVR_HAVE_SIDEBYSIDE
-
+// needs to be above conditional since we provide dummy implementations if not defined
 #include "SideBySide.h"
+
+#ifdef SVR_HAVE_SIDEBYSIDE
 
 #include "my_hardware.h"
 #include "Console.h"

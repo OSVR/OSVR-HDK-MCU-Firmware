@@ -7,7 +7,6 @@
 /// performs initialization tasks for NXP
 void NXP_Init_HDMI(void);
 
-
 /// periodically called to address HDMI task
 void NXP_HDMI_Task(void);
 

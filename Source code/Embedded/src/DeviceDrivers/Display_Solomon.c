@@ -210,18 +210,18 @@ void Display_Powercycle(uint8_t deviceID)
 
 void Display_Handle_Gain_Video()
 {
-	for (uint8_t deviceId = 0; deviceId < SVR_HAVE_SOLOMON; ++deviceId)
+	for (uint8_t deviceID = 0; deviceID < SVR_HAVE_SOLOMON; ++deviceID)
 	{
-		Solomon_t *sol = solomon_get_channel(deviceId);
+		Solomon_t *sol = solomon_get_channel(deviceID);
 		solomon_end_video_shutdown(sol);
 	}
 }
 
 void Display_Handle_Lose_Video()
 {
-	for (uint8_t deviceId = 0; deviceId < SVR_HAVE_SOLOMON; ++deviceId)
+	for (uint8_t deviceID = 0; deviceID < SVR_HAVE_SOLOMON; ++deviceID)
 	{
-		Solomon_t *sol = solomon_get_channel(deviceId);
+		Solomon_t *sol = solomon_get_channel(deviceID);
 		solomon_start_video_shutdown(sol);
 	}
 }

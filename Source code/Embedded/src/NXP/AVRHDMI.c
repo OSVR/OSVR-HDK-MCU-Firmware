@@ -1811,4 +1811,14 @@ void NXP_Update_Resolution_Detection()
 	HDMIStatus=Get_HDMI_Status();
 }
 
+void NXP_Test_Pattern(bool enabled) {
+	if (enabled) {
+		NXP_Private_PRINTIF(tmdlHdmiRxSelectInput(gDlHdmiRxInstance0, TMDL_HDMIRX_INPUT_TEST_480P), __LINE__);
+
+	}else {
+
+	NXP_Private_PRINTIF(tmdlHdmiRxSelectInput(gDlHdmiRxInstance0, TMDL_HDMIRX_INPUT_HDMI_A), __LINE__);
+	}
+}
+
 #endif // SVR_HAVE_NXP

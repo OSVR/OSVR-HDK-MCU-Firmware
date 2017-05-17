@@ -30,6 +30,6 @@ void NXP_Program_MTP0(void);
 void NXP_Program_MTP1(void);
 
 void NXP_Update_Resolution_Detection(void);
-
+void NXP_Test_Pattern(bool enabled);
 
 #endif

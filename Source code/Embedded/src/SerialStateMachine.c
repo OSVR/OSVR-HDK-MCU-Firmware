@@ -58,6 +58,7 @@
 
 #ifdef SVR_HAVE_SOLOMON
 #include "DeviceDrivers/Solomon.h"
+#include "SolomonExport.h"
 #endif
 
 #ifdef SVR_HAVE_FPGA
@@ -1026,6 +1027,30 @@ void ProcessSPICommand(void)
 		break;
 	}
 #ifdef SVR_HAVE_SOLOMON
+	case 'e':  // export registers as hex
+	case 'E':
+	{
+		uint8_t index = HexDigitToDecimal(2);
+		char msg[20];
+		sprintf(msg, "Export Solomon registers %d", index);
+		WriteLn(msg);
+		if (CommandToExecute[2] == '1')
+		{
+			solomon_export(Solomon1);
+		}
+#ifdef SVR_HAVE_SOLOMON2
+		else if (CommandToExecute[2] == '2')
+		{
+			solomon_export(Solomon2);
+		}
+#endif  // SVR_HAVE_SOLOMON2
+		else
+		{
+			WriteLn("Wrong Solomon ID");
+		}
+		WriteEndl();
+		break;
+	}
 	case 'w':  // Write Solomon register
 	case 'W':
 	{
@@ -1511,7 +1536,7 @@ void ProcessTMDSCommand(void)
 	{
 		if (TMDS442_ReadReg(HexDigitToDecimal(2), &Temp))
 		{
-			sprintf(Msg, "Read:%x", Temp);
+			sprintf(Msg, "Read: %02x", Temp);
 			WriteLn(Msg);
 		}
 		else

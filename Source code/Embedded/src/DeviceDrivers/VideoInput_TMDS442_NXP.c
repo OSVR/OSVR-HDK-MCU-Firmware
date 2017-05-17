@@ -22,7 +22,14 @@ void VideoInput_Init()
 	NXP_Init_HDMI();
 }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
-void VideoInput_Task(void) {}
+void VideoInput_Task(void)
+{
+	if (HDMI_task)
+	{
+		/// @todo Do we need to poll the NXP every time through the mainloop, or can we depend on the interrupts?
+		NXP_HDMI_Task();
+	}
+}
 void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
 void VideoInput_Suspend(void) { NXP_Suspend(); }
 void VideoInput_Resume(void) { NXP_Resume(); }

@@ -1249,14 +1249,16 @@ tmbslTDA1997XInit
 #endif
 
     /* WA enable power switch  - SRAM content is always valid (in case E-MTP is not or bad programmed)*/
-    //errCode =  tmbslTDA1997XReadI2C(unit, (UInt16)CONTROL, 1, &regValue);
-    //regValue |= 0x20;
-    //errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)CONTROL, 1, &regValue);
+#if 0
+    errCode =  tmbslTDA1997XReadI2C(unit, (UInt16)CONTROL, 1, &regValue);
+    regValue |= 0x20;
+    errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)CONTROL, 1, &regValue);
+#endif
     /* wait during 50 ms */
-
-    //errCode = RxHdmiConfig[unit].sysFuncTimer(50);
-    //RETIF(errCode != TM_OK, errCode)
-//x
+#if 0
+    errCode = RxHdmiConfig[unit].sysFuncTimer(50);
+    RETIF(errCode != TM_OK, errCode)
+#endif
     /* Read the chip version */
     WriteLn("bef");
     sprintf(Msg,"unit %d",unit);
@@ -1584,11 +1586,15 @@ tmbslTDA1997XHandleInterrupt
         /* Read interrupt flags top*/
         errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_TOP, 1, &interrupt_flags_top);
         RETIF(errCode != TM_OK,errCode)
-        //sprintf(Msg,"Int top %x",interrupt_flags_top);
-        //WriteLn(Msg);
+#ifdef HDMI_VERBOSE
+        sprintf(Msg,"Int top %x",interrupt_flags_top);
+        WriteLn(Msg);
+#endif
         /* if no interrupt to handle, exit*/
-        //if (interrupt_flags_top == 0)
-        //WriteLn("No activity");
+#ifdef HDMI_VERBOSE
+        if (interrupt_flags_top == 0)
+            WriteLn("No activity");
+#endif
         RETIF(interrupt_flags_top == 0, TM_OK)
 
 
@@ -2459,6 +2465,7 @@ tmbslTDA1997XSetClockPulseDelay
     UInt8           regValue;
 
 #ifdef HDMI_DEBUG
+    // SENSICS_ADDITION
     sprintf(Msg,"PD %d Val %d",clockPulseDelay,delayValue);
     WriteLn(Msg);
 #endif
@@ -2634,41 +2641,51 @@ tmbslTDA1997XGetSyncTimings
     errCode =  tmbslTDA1997XReadI2C(unit, (UInt16)V_PER_MSB, 7, pTabRegValue);
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_READ)
 
-
-
-
-    //sprintf(Msg,"T2 %x %x %x",pTabRegValue[0] & MASK_VPER_MSB,pTabRegValue[1],pTabRegValue[2]);
-    //WriteLn(Msg);
+#ifdef SVR_DEBUG_TIMING_MEASUREMENT
+    // SENSICS_ADDITION
+    sprintf(Msg,"T2 %x %x %x",pTabRegValue[0] & MASK_VPER_MSB,pTabRegValue[1],pTabRegValue[2]);
+    WriteLn(Msg);
+#endif // SVR_DEBUG_TIMING_MEASUREMENT
 
     *pVerticalPeriod      = ( ((UInt32)(pTabRegValue[0] & MASK_VPER_MSB) << 16 ) |
                               ((UInt32)(pTabRegValue[1]) <<  8 ) |
                               ((UInt32)(pTabRegValue[2]) ) );
 
-
-    //sprintf(Msg,"T3 %x %x",pTabRegValue[3] & MASK_HPER_MSB,pTabRegValue[4]);
-    //WriteLn(Msg);
+#ifdef SVR_DEBUG_TIMING_MEASUREMENT
+    // SENSICS_ADDITION
+    sprintf(Msg,"T3 %x %x",pTabRegValue[3] & MASK_HPER_MSB,pTabRegValue[4]);
+    WriteLn(Msg);
+#endif // SVR_DEBUG_TIMING_MEASUREMENT
 
     *pHorizontalPeriod    = ( ( (UInt16)(pTabRegValue[3] & MASK_HPER_MSB) <<  8 ) |
                               ( (UInt16)(pTabRegValue[4]) ) );
 
-
-    //sprintf(Msg,"T4 %x %x",pTabRegValue[5] & MASK_HSWIDTH_MSB,pTabRegValue[6]);
-    //WriteLn(Msg);
+#ifdef SVR_DEBUG_TIMING_MEASUREMENT
+    // SENSICS_ADDITION
+    sprintf(Msg,"T4 %x %x",pTabRegValue[5] & MASK_HSWIDTH_MSB,pTabRegValue[6]);
+    WriteLn(Msg);
+#endif // SVR_DEBUG_TIMING_MEASUREMENT
 
     *pHorizontalSyncWidth = ( ( (UInt16)(pTabRegValue[5] & MASK_HSWIDTH_MSB) <<  8 ) |
                               ( (UInt16)(pTabRegValue[6]) ) );
 
-    //sprintf(Msg,"V %lx %x HS %x",*pVerticalPeriod,*pHorizontalPeriod,*pHorizontalSyncWidth);
-    //WriteLn(Msg	);
+#ifdef SVR_DEBUG_TIMING_MEASUREMENT
+    // SENSICS_ADDITION
+    sprintf(Msg,"V %lx %x HS %x",*pVerticalPeriod,*pHorizontalPeriod,*pHorizontalSyncWidth);
+    WriteLn(Msg	);
+#endif // SVR_DEBUG_TIMING_MEASUREMENT
 
     pFormatMeasurements->vsPolarity  = (tmbslHdmiRxFmtMeasVSPol_t)(pTabRegValue[0] & 0x80);
     pFormatMeasurements->hsPolarity  = (tmbslHdmiRxFmtMeasHSPol_t)(pTabRegValue[3] & 0x80);
     pFormatMeasurements->videoFormat = (tmbslHdmiRxFmtMeasInterlaced_t)(pTabRegValue[5] & 0x80);
 
 
-    //sprintf(Msg,"Vp %x Hp %x Fmt %x",pFormatMeasurements->vsPolarity,
-    //	pFormatMeasurements->hsPolarity,pFormatMeasurements->videoFormat);
-    //WriteLn(Msg);
+#ifdef SVR_DEBUG_TIMING_MEASUREMENT
+    // SENSICS_ADDITION
+    sprintf(Msg,"Vp %x Hp %x Fmt %x",pFormatMeasurements->vsPolarity,
+        pFormatMeasurements->hsPolarity,pFormatMeasurements->videoFormat);
+    WriteLn(Msg);
+#endif // SVR_DEBUG_TIMING_MEASUREMENT
 
     /* Read the FMT registers */
     errCode = tmbslTDA1997XReadI2C(unit, (UInt16)FMT_H_TOT_MSB, 20, pData);
@@ -3193,6 +3210,7 @@ tmbslTDA1997XGetFrameMeasurements
 
     *pPixels = (UInt16)(((UInt16)(pTabRegValue[2] & MASK_NB_PIX) <<  8 ) | pTabRegValue[3]);
 
+    /// SENSICS_ADDITION
 	PortraitMode=(*pLines > * pPixels);
     return TM_OK;
 }

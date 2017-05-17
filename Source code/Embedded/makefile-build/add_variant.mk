@@ -51,14 +51,14 @@ C_OBJS := $(addprefix $(BUILD_DIR)/,$(ALL_C_SRCS:%.c=%.o))
 # Build .c -> .o
 $(BUILD_DIR)/%.o: $(REL_ROOT)/%.c
 	$(CANNED_RECIPE_BEGINNING_SHOW_IN_AND_OUT)
-	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP -MF "$(@:o=d)" -MT"$(@:o=d)" -MT"$(@:o=o)" -MT"$(@:o=i)"  -o "$@" "$<"
+	$(QUIETRULE)$(CC) $(PACK_FLAGS) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -O$(strip $(OPTIMIZATION)) -MD -MP -MF "$(@:o=d)" -MT"$(@:o=d)" -MT"$(@:o=o)" -MT"$(@:o=i)"  -o "$@" "$<"
 
 S_OBJS := $(addprefix $(BUILD_DIR)/,$(PREPROCESSING_SRCS:s=o))
 
 # Pattern for building object files from .s
 $(BUILD_DIR)/%.o: $(REL_ROOT)/%.s
 	$(CANNED_RECIPE_BEGINNING_SHOW_IN_AND_OUT)
-	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_ASFLAGS) -MD -MP -MF "$(@:o=d)" -MT"$(@:o=d)" -MT"$(@:o=o)" -Wa,-g -o "$@" "$<"
+	$(QUIETRULE)$(CC) $(PACK_FLAGS) $(call make_include_dirs,$(VARIANT)) $(PACK_FLAGS) $(ALL_ASFLAGS) -MD -MP -MF "$(@:o=d)" -MT"$(@:o=d)" -MT"$(@:o=o)" -Wa,-g -o "$@" "$<"
 
 CURRENT_OBJS := $(C_OBJS) $(S_OBJS)
 
@@ -66,7 +66,7 @@ CURRENT_OBJS := $(C_OBJS) $(S_OBJS)
 # Additional flags are to disable warnings, turn on preprocessor-only output, -dDI to show define directives and results of preprocessing as well as include directives, -C to include comments
 $(BUILD_DIR)/%.i: $(REL_ROOT)/%.c
 	$(CANNED_RECIPE_BEGINNING_SHOW_IN_AND_OUT)
-	$(QUIETRULE)$(CC) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -w -E -dDI -C -o "$@" "$<"
+	$(QUIETRULE)$(CC) $(PACK_FLAGS) $(call make_include_dirs,$(VARIANT)) $(ALL_CFLAGS) -w -E -dDI -C -o "$@" "$<"
 
 
 # For all non-ASF files, make a shortcut phony target that's just $(BUILD_DIR)/basename.i to keep the typing shorter.
@@ -85,7 +85,7 @@ NON_OBJECT_DEPS := Makefile add_variant.mk
 # Makes the elf file
 $(BUILD_DIR)/$(OUTPUT_FILE_PATH): $(CURRENT_OBJS) $(LIBS) $(LIBS_$(VARIANT)) $(NON_OBJECT_DEPS)
 	$(CANNED_RECIPE_BEGINNING_SHOW_OUT)
-	$(QUIETRULE)$(CC) $(ALL_LDFLAGS) -o"$@" $(filter-out makefile $(NON_OBJECT_DEPS),$^) -lm -Wl,-Map="$(BUILD_DIR)/$(OUTPUT_MAP)"
+	$(QUIETRULE)$(CC) $(PACK_FLAGS) $(ALL_LDFLAGS) -o"$@" $(filter-out makefile $(NON_OBJECT_DEPS),$^) -lm -Wl,-Map="$(BUILD_DIR)/$(OUTPUT_MAP)"
 	-$(QUIETRULE)$(AVRSIZE) --mcu=$(MCU) --format=avr "$@"
 %.elf: DISPLAY_OP := Linking
 

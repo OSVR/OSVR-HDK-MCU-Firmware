@@ -26,6 +26,12 @@ EXTRA_ASFLAGS :=
 # TOOLCHAIN_ROOT
 # VERBOSE (any value is true and causes the commands to not be hidden)
 
+# Atmel "device pack" name - override to empty if you don't want to use packs.
+PACK_NAME := XMEGAA_DFP
+# Acceptable "device pack" versions
+PACK_VERS := 1.0.39
+#PACK_VERS := 1.1.68 1.0.39
+
 # If the user passed additional DEFINES on the command line, we'll combine those
 # in a hopefully-safe way for display and for appending to the output filename.
 # Of course, if you change the value of DEFINES, you must rebuild the whole thing.

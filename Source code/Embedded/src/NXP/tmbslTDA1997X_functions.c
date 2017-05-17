@@ -835,7 +835,7 @@ tmbslTDA1997XWriteI2C
 
  ******************************************************************************/
 tmErrorCode_t
-tmbslTDA1997XReadI2C
+bslTDA1997XReadI2C
 (
     tmUnitSelect_t          unit,
     UInt16                  firstRegister,
@@ -850,36 +850,21 @@ tmbslTDA1997XReadI2C
     UInt8                   regValue;
 
 
-    if (I2CGuard)
-    {
-        RETIF(I2CGuard, TMBSL_ERR_BSLHDMIRX_BAD_UNIT_NUMBER)
-    }
-    else
-    {
-        I2CGuard = True;
-    }
-
     /* Test pBuffer <> NULL */
     if (pBuffer == Null)
     {
-        I2CGuard = False;
         return (TMBSL_ERR_BSLHDMIRX_INCONSISTENT_PARAMS);
     }
 
     /* test the unit number */
     if (unit >= MAX_UNIT)
     {
-        I2CGuard = False;
         return (TMBSL_ERR_BSLHDMIRX_BAD_UNIT_NUMBER);
     }
 
     if ((firstRegister >> 8) != E_PAGE_CEC) /* HDMI I2C register */
     {
         requestedPage = (tmbslTDA1997XPage_t)(firstRegister >> 8);
-
-
-        //sprintf(Msg,"Page: %d",requestedPage);
-        //WriteLn(Msg);
 
         if (requestedPage != RxHdmiConfig[unit].currentPage) // comment out if you want to write page value every time
         {
@@ -937,7 +922,6 @@ tmbslTDA1997XReadI2C
             if (errCode != TM_OK)
             {
                 WriteLn("Page err");
-                I2CGuard = False;
                 return (errCode);
             }
 
@@ -953,9 +937,6 @@ tmbslTDA1997XReadI2C
 
         if (errCode != TM_OK)
         {
-            I2CGuard = False;
-            //sprintf(Msg,"IrErr: %x",errCode);
-            //WriteLn(Msg);
             return (TMBSL_ERR_BSLHDMIRX_I2C_READ);
         }
 
@@ -973,7 +954,6 @@ tmbslTDA1997XReadI2C
 
         if (errCode != TM_OK)
         {
-            I2CGuard = False;
             sprintf(Msg,"CEErr: %" TM_ERROR_CODE_FORMAT, errCode);
             WriteLn(Msg);
             return (TMBSL_ERR_BSLHDMIRX_I2C_READ);
@@ -981,14 +961,38 @@ tmbslTDA1997XReadI2C
 
     }
 
-    I2CGuard = False;
-    //if ((pBuffer[0])!=0)
-    {
-
-        //sprintf(Msg,"I2 %x %x",firstRegister,(pBuffer[0]));
-        //WriteLn(Msg);
-    }
     return TM_OK;
+}
+
+tmErrorCode_t
+tmbslTDA1997XReadI2C
+(
+    tmUnitSelect_t          unit,
+    UInt16                  firstRegister,
+    UInt8                   lengthData,
+    UInt8                   *pBuffer
+)
+{
+    tmErrorCode_t          errCode = TM_OK;
+
+    if (I2CGuard)
+    {
+        RETIF(I2CGuard, TMBSL_ERR_BSLHDMIRX_BUSY)
+    }
+    else
+    {
+        I2CGuard = True;
+    }
+
+    errCode |= bslTDA1997XReadI2C(unit, firstRegister, lengthData, pBuffer);
+
+    I2CGuard = False;
+    if (errCode != TM_OK)
+    {
+        sprintf(Msg,"CEErr: %" TM_ERROR_CODE_FORMAT, errCode);
+        WriteLn(Msg);
+    }
+    return errCode;
 }
 
 

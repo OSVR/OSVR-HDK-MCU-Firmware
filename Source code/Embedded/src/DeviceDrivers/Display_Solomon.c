@@ -26,6 +26,28 @@
 
 void Display_System_Init() { init_solomon(); }
 
+/// Pulls panel reset line appropriately to start panel reset, if possible.
+/// @param deviceID 0-indexed panel ID
+static void Display_Internal_Reset_Begin(uint8_t deviceID);
+/// Pulls panel reset line appropriately to end panel reset, if possible.
+/// @param deviceID 0-indexed panel ID
+static void Display_Internal_Reset_End(uint8_t deviceID);
+
+#ifdef SVR_PANEL_RESET_PINS
+static port_pin_t s_resetPins[] = SVR_PANEL_RESET_PINS;
+inline void Display_Internal_Reset_Begin(uint8_t deviceID)
+{
+	ioport_set_pin_level(s_resetPins[deviceID], SVR_PANEL_RESET_VALUE);
+}
+inline void Display_Internal_Reset_End(uint8_t deviceID)
+{
+	ioport_set_pin_level(s_resetPins[deviceID], SVR_PANEL_RESET_VALUE);
+}
+#else
+inline Display_Internal_Reset_Begin(uint8_t deviceID) { /* no-op - access to reset line not provided */ }
+inline Display_Internal_Reset_End(uint8_t deviceID) { /* no-op - access to reset line not provided */ }
+#endif  // SVR_PANEL_RESET_PINS
+
 void Display_Init(uint8_t deviceID)
 {
 	Write("Init for display ");
@@ -35,11 +57,15 @@ void Display_Init(uint8_t deviceID)
 
 	Solomon_t *sol = solomon_get_channel(deviceID);
 
-	/// Reset the solomon.
+	/// Reset the solomon and the panel.
 	solomon_start_reset(sol);
+	Display_Internal_Reset_Begin(deviceID);
+
 	svr_yield_ms(100);
 	solomon_end_reset(sol);
 	solomon_end_video_shutdown(sol);
+	Display_Internal_Reset_End(deviceID);
+
 	svr_yield_ms(100);
 	init_solomon_device(deviceID);
 #ifdef SVR_HAVE_SHARP_LCD
@@ -80,6 +106,8 @@ void Display_On(uint8_t deviceID)
 	const char displayNum[] = {deviceID + '1', '\0'};
 	Write(displayNum);
 	WriteLn(" on");
+
+	Display_Internal_Reset_End(deviceID);
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - before");
 #ifdef SVR_HAVE_SHARP_LCD
 	Solomon_t *sol = solomon_get_channel(deviceID);
@@ -154,8 +182,14 @@ void Display_Off(uint8_t deviceID)
 
 #endif
 	Solomon_Dump_Config_Debug(deviceID, "Display_Off - after");
+	Display_Internal_Reset_Begin(deviceID);
 }
-void Display_Reset(uint8_t deviceID) { Solomon_Reset(deviceID); }
+void Display_Reset(uint8_t deviceID)
+{
+	Display_Internal_Reset_Begin(deviceID);
+	Solomon_Reset(deviceID);
+	Display_Internal_Reset_End(deviceID);
+}
 // power cycles display connected to the specific device
 void Display_Powercycle(uint8_t deviceID)
 {

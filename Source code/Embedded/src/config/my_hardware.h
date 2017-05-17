@@ -19,16 +19,6 @@
 
 #define Debug_LED IOPORT_CREATE_PIN(PORTF, 0)
 
-#ifdef SVR_HAVE_NXP1
-#define NXP1_Reset_Pin IOPORT_CREATE_PIN(PORTD, 5)
-#define Int_HDMI_A IOPORT_CREATE_PIN(PORTD, 2)
-#endif  // SVR_HAVE_NXP1
-
-#ifdef SVR_HAVE_NXP2
-#define NXP2_Reset_Pin IOPORT_CREATE_PIN(PORTD, 4)
-#define Int_HDMI_B IOPORT_CREATE_PIN(PORTD, 3)
-#endif  // SVR_HAVE_NXP1
-
 #ifdef SVR_HAVE_SIDEBYSIDE
 #ifdef DSIGHT
 #define Side_by_side_A IOPORT_CREATE_PIN(PORTE, 2)  // low: regular; high: side by side

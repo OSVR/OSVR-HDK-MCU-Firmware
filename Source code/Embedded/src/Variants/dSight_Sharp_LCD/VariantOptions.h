@@ -82,4 +82,38 @@
 		.dcSpiDevice = {.spiDevice = {Solomon2_CSN}, .muxPinLevel = true}, .voutShutdown = Solomon2_VOUT_Shutdown,   \
 		.reset = Solomon2_Reset                                                                                      \
 	}
+
+// NXP and Panel control lines
+
+#define NXP1_Reset_Pin IOPORT_CREATE_PIN(PORTD, 5)
+#define Int_HDMI_A IOPORT_CREATE_PIN(PORTD, 2)
+
+#define NXP2_Reset_Pin IOPORT_CREATE_PIN(PORTD, 4)
+#define Int_HDMI_B IOPORT_CREATE_PIN(PORTD, 3)
+
+/// Active low, only controllable when SVR_PANEL1_LEVELSHIFT_OE_PIN is high
+/// connects to CH1_LCD1_X_RESET through the FPGA
+/// f.k.a. USARTF0_XCK0
+#define SVR_PANEL1_RESET_PIN IOPORT_CREATE_PIN(PORTF, 1)
+/// Active low, only controllable when SVR_PANEL2_LEVELSHIFT_OE_PIN is high
+/// connects to CH2_LCD1_X_RESET through the FPGA
+/// f.k.a. GPIO_E_X1_CH-2
+#define SVR_PANEL2_RESET_PIN IOPORT_CREATE_PIN(PORTE, 2)
+
+/// That is, these are reset-low.
+#define SVR_PANEL_RESET_VALUE false
+
+#define SVR_PANEL_RESET_PINS                       \
+	{                                              \
+		SVR_PANEL1_RESET_PIN, SVR_PANEL2_RESET_PIN \
+	}
+
+/// Activates level shifter for panel reset lines, etc - active high, tristate low.
+/// Connects to CH1_TXS0104_OE via the FPGA
+/// f.k.a. USARTF0_RXD0
+#define SVR_PANEL1_LEVELSHIFT_OE_PIN IOPORT_CREATE_PIN(PORTF, 2)
+/// Activates level shifter for panel reset lines, etc - active high, tristate low.
+/// Connects to CH2_TXS0104_OE via the FPGA
+/// f.k.a. GPIO_E_X2_CH-2
+#define SVR_PANEL2_LEVELSHIFT_OE_PIN IOPORT_CREATE_PIN(PORTE, 3)
 #endif /* VARIANTOPTIONS_H_ */

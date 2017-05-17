@@ -55,4 +55,9 @@
 		.dcSpiDevice = {.spiDevice = {Solomon1_CSN}}, .voutShutdown = Solomon1_VOUT_Shutdown, .reset = Solomon1_Reset \
 	}
 
+// NXP and Panel control lines
+
+#define NXP1_Reset_Pin IOPORT_CREATE_PIN(PORTD, 5)
+#define Int_HDMI_A IOPORT_CREATE_PIN(PORTD, 2)
+
 #endif /* SINGLEDISPLAYNXPSOLOMONFPGA_H_ */

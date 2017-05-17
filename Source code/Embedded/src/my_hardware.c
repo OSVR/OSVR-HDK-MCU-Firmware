@@ -139,6 +139,15 @@ void custom_board_init(void)
 	ioport_set_pin_sense_mode(TC358870_ADDR_SEL_INT, IOPORT_SENSE_RISING);
 
 #endif
+#ifdef SVR_IS_DSIGHT
+	/// start with panel resets pulled down (active)
+	ioport_configure_pin(SVR_PANEL1_RESET_PIN, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
+	ioport_configure_pin(SVR_PANEL2_RESET_PIN, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
+
+	/// enable levelshifter
+	ioport_configure_pin(SVR_PANEL1_LEVELSHIFT_OE_PIN, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+	ioport_configure_pin(SVR_PANEL2_LEVELSHIFT_OE_PIN, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+#endif
 
 #ifdef SVR_HAVE_NXP1
 	ioport_configure_pin(NXP1_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);

@@ -22,6 +22,9 @@ void TMDS442_Init(void);
 /// Run the periodic task that checks the input status.
 void TMDS442_Task(void);
 
+/// Force polling of the input status (with console logging)
+void TMDS442_ForcePoll(void);
+
 /// @name Internal functions exposed for debugging
 /// @{
 bool TMDS442_ReadReg(uint8_t regNum, uint8_t *NewStatus);

@@ -39,8 +39,6 @@
 // Quite a few, because polling this is fairly expensive.
 #define SVR_VIDEO_INPUT_POLL_INTERVAL 10000
 
-#define SVR_HAVE_PWM_OUTPUTS
-
 #define SVR_VARIANT_STRING "dSight_Sharp_LCD"
 
 #define SVR_PRODUCT_NAME_STRING "Sensics dSight 1080"

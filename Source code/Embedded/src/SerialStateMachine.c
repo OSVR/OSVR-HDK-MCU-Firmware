@@ -1562,6 +1562,7 @@ void ProcessTMDSCommand(void)
 		HDMISwitch_task = true;
 		break;
 	}
+#ifdef SVR_ENABLE_DISPLAY_PWM
 	case 'p':
 	case 'P':
 	{
@@ -1570,6 +1571,7 @@ void ProcessTMDSCommand(void)
 		ioport_toggle_pin_level(PWM_B);
 		break;
 	}
+#endif  // SVR_ENABLE_DISPLAY_PWM
 	case 'i':
 	case 'I':
 	{

@@ -198,13 +198,9 @@ void custom_board_init(void)
 	ioport_configure_pin(FPGA_unlocked, IOPORT_DIR_INPUT | IOPORT_MODE_PULLUP);
 #endif
 
-#ifdef SVR_HAVE_PWM_OUTPUTS
-	ioport_configure_pin(PWM_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-	ioport_configure_pin(PWM_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-#endif
-
-#if 0
-	ioport_configure_pin(Backlight,IOPORT_DIR_OUTPUT |  IOPORT_INIT_HIGH);
+#ifdef Backlight
+	/// @todo investigate this Backlight pin
+	ioport_configure_pin(Backlight, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 #endif
 
 #ifdef SVR_HAVE_FPGA
@@ -223,6 +219,8 @@ void custom_board_init(void)
 // init PWM for display brightness and strobing
 
 #ifdef SVR_ENABLE_DISPLAY_PWM
+	ioport_configure_pin(PWM_A, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+	ioport_configure_pin(PWM_B, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 	pwm_init(&pwm_cfg[0], PWM_TCE0, PWM_CH_D, 11000);  // PWM_A: PE3
 	pwm_init(&pwm_cfg[1], PWM_TCF0, PWM_CH_C, 11000);  // PWM_B: PF2
 

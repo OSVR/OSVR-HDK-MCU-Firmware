@@ -19,5 +19,8 @@ void SxS_Enable(void);
 // Enable side-by-side, writing updated preferences.
 void SxS_Disable(void);
 
+// (re-)Assert the desired levels on the pins controlling side-by-side.
+void SxS_Apply(void);
+
 // Get current side-by-side state.
 bool SxS_IsEnabled(void);

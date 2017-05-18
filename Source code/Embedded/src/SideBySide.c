@@ -30,7 +30,6 @@ static bool sxs_enabled = SXS_STARTUP_VALUE;
 static bool s_sxs_initialized = false;
 
 static void SxS_Set(bool state);
-static void SxS_Apply(void);
 static void SxS_Save_Config(void);
 static void SxS_Ensure_Init(void);
 
@@ -44,19 +43,6 @@ static void SxS_Set(bool state)
 #endif
 }
 
-static inline void SxS_Apply(void)
-{
-	Write("SxS_Apply: sxs_enabled is ");
-	if (sxs_enabled)
-	{
-		WriteLn("true");
-	}
-	else
-	{
-		WriteLn("false");
-	}
-	SxS_Set(sxs_enabled);
-}
 static inline void SxS_Save_Config()
 {
 #ifdef SVR_HAVE_SIDEBYSIDE_CONFIG
@@ -120,6 +106,19 @@ void SxS_Disable()
 	SxS_Save_Config();
 }
 
+void SxS_Apply()
+{
+	Write("SxS_Apply: sxs_enabled is ");
+	if (sxs_enabled)
+	{
+		WriteLn("true");
+	}
+	else
+	{
+		WriteLn("false");
+	}
+	SxS_Set(sxs_enabled);
+}
 
 bool SxS_IsEnabled()
 {
@@ -131,6 +130,7 @@ void SxS_Init() {}
 void SxS_Toggle() {}
 void SxS_Enable() {}
 void SxS_Disable() {}
+void SxS_Apply() {}
 bool SxS_IsEnabled() { return false; }
 
 #endif  // SVR_HAVE_SIDEBYSIDE

@@ -87,7 +87,7 @@ static const uint8_t SINK_PORT_SOURCESEL_Source_4 = UINT8_C(0x03);
 /// Value assigned to SINK_PORT_REGs when they are shut down.
 #define TMDS442_SINK_PORT_VAL_SHUTDOWN (TMDS442_SINK_PORT_VAL_BASE | SINK_PORT_nOE_bm)
 /// Starting point for computing the value assigned to SINK_PORT_REGs when they are enabled.
-#define TMDS442_SINK_PORT_VAL_ACTIVE_BASE (TMDS442_SINK_PORT_VAL_BASE)
+#define TMDS442_SINK_PORT_VAL_ACTIVE_BASE (TMDS442_SINK_PORT_VAL_BASE | SINK_PORT_I2CEN_bm)
 
 void TMDS442_ProgramHDMISwitch(void);
 

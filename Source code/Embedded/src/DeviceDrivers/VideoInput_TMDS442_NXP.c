@@ -37,8 +37,13 @@ void VideoInput_Poll_Status(void)
 	}
 	if (HDMI_task)
 	{
+		bool prevInputStatus = VideoInput_Get_Status();
 		/// @todo Do we need to poll the NXP every time through the mainloop, or can we depend on the interrupts?
 		NXP_HDMI_Task();
+		if (VideoInput_Get_Status() != prevInputStatus)
+		{
+			TMDS442_ForcePoll();
+		}
 	}
 }
 void VideoInput_Report_Status(void) { NXP_Report_HDMI_status(); }

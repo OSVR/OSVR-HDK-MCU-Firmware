@@ -246,9 +246,23 @@ void HandleHDMI()
 	VideoInput_Events.videoLost = false;
 	bool videoDetected = VideoInput_Events.videoDetected;
 	VideoInput_Events.videoDetected = false;
-	if (videoDetected)
+	bool firstVideo = VideoInput_Events.firstVideoDetected;
+	VideoInput_Events.firstVideoDetected = false;
+	bool videoStatus = VideoInput_Get_Status();
+	if (videoDetected || videoLost)
 	{
-		WriteLn("New video detected");
+		if (VideoInput_Get_Status())
+		{
+			WriteLn("MAIN: VideoInput claims status is true");
+		}
+		else
+		{
+			WriteLn("MAIN: VideoInput claims status is false");
+		}
+	}
+	if (videoDetected || firstVideo)
+	{
+		WriteLn("MAIN: New video detected");
 		Display_Handle_Gain_Video();
 #ifdef SVR_HAVE_DISPLAY1
 		local_display_on(Display1);
@@ -259,7 +273,7 @@ void HandleHDMI()
 	}
 	if (videoLost)
 	{
-		WriteLn("Video lost");
+		WriteLn("MAIN: Video lost");
 		Display_Handle_Lose_Video();
 #ifdef SVR_HAVE_DISPLAY1
 		local_display_off(Display1);

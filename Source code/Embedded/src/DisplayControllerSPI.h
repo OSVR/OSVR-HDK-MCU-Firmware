@@ -22,6 +22,14 @@
 		printf(__VA_ARGS__);      \
 	} while (0)
 #endif  // !DCSPI_VERBOSE_PRINTF
+
+#ifndef DCSPI_VAR_ONLY_USED_IN_VERBOSE
+#define DCSPI_VAR_ONLY_USED_IN_VERBOSE(X) \
+	do                                    \
+	{                                     \
+	} while (0)
+#endif  // !DCSPI_VAR_ONLY_USED_IN_VERBOSE
+
 #else
 #ifndef DCSPI_VERBOSE_PRINTF
 #define DCSPI_VERBOSE_PRINTF(...) \
@@ -29,6 +37,13 @@
 	{                             \
 	} while (0)
 #endif  // !DCSPI_VERBOSE_PRINTF
+#ifndef DCSPI_VAR_ONLY_USED_IN_VERBOSE
+#define DCSPI_VAR_ONLY_USED_IN_VERBOSE(X) \
+	do                                    \
+	{                                     \
+		(void)X;                          \
+	} while (0)
+#endif  // !DCSPI_VAR_ONLY_USED_IN_VERBOSE
 #endif  // DCSPI_VERBOSE
 
 #include <status_codes.h>
@@ -207,6 +222,7 @@ __always_inline static status_code_t dcspi_internal_write_packet(SPI_t *spi, con
 		{
 		}
 		uint8_t tmp = spi_get(spi);
+		DCSPI_VAR_ONLY_USED_IN_VERBOSE(tmp);
 		DCSPI_VERBOSE_PRINTF("[r:%02x]", tmp);
 	}
 	DCSPI_VERBOSE_PRINTF("\r\n");
@@ -223,6 +239,7 @@ __always_inline static status_code_t dcspi_internal_blocking_write_byte(SPI_t *s
 	{
 	}
 	uint8_t tmp = spi_get(spi);
+	DCSPI_VAR_ONLY_USED_IN_VERBOSE(tmp);
 	DCSPI_VERBOSE_PRINTF("[r:%02x]\r\n", tmp);
 	return STATUS_OK;
 }

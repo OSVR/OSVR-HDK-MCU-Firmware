@@ -145,9 +145,11 @@ void TMDS442_ProgramHDMISwitch(void)
 		WriteLn("TMDS442_ProgramHDMISwitch: No inputs");
 		TMDS442_WriteReg(SINK1_PORT_REG, TMDS442_SINK_PORT_VAL_SHUTDOWN);
 		TMDS442_WriteReg(SINK2_PORT_REG, TMDS442_SINK_PORT_VAL_SHUTDOWN);
+#ifdef SVR_TMDS_REPORT_STATUS
 #ifndef SVR_TMDS442_ALWAYS_UPDATE_STATUS
 		VideoInput_Protected_Report_No_Signal();
 #endif  // !SVR_TMDS442_ALWAYS_UPDATE_STATUS
+#endif // SVR_TMDS_REPORT_STATUS
 		break;
 	}
 	case 1:  // just input A

@@ -44,8 +44,8 @@ inline void Display_Internal_Reset_End(uint8_t deviceID)
 	ioport_set_pin_level(s_resetPins[deviceID], SVR_PANEL_RESET_VALUE);
 }
 #else
-inline Display_Internal_Reset_Begin(uint8_t deviceID) { /* no-op - access to reset line not provided */ }
-inline Display_Internal_Reset_End(uint8_t deviceID) { /* no-op - access to reset line not provided */ }
+inline Display_Internal_Reset_Begin(uint8_t deviceID) { /* no-op - access to reset line not provided */}
+inline Display_Internal_Reset_End(uint8_t deviceID) { /* no-op - access to reset line not provided */}
 #endif  // SVR_PANEL_RESET_PINS
 
 void Display_Init(uint8_t deviceID)
@@ -210,19 +210,24 @@ void Display_Powercycle(uint8_t deviceID)
 
 void Display_Handle_Gain_Video()
 {
+#if 0
 	for (uint8_t deviceID = 0; deviceID < SVR_HAVE_SOLOMON; ++deviceID)
 	{
 		Solomon_t *sol = solomon_get_channel(deviceID);
 		solomon_end_video_shutdown(sol);
 	}
+#endif
 }
 
 void Display_Handle_Lose_Video()
 {
 	for (uint8_t deviceID = 0; deviceID < SVR_HAVE_SOLOMON; ++deviceID)
 	{
+#if 0
 		Solomon_t *sol = solomon_get_channel(deviceID);
 		solomon_start_video_shutdown(sol);
+#endif
+		Display_Internal_Reset_Begin(deviceID);
 	}
 }
 

@@ -46,18 +46,21 @@ static const uint8_t TMDS442_SRC_PLUG_5V_EN_bm = BITUTILS_BIT(4);
 
 /// So-called "source A": 5V_PWR1 bit in TMDS442_SRC_PLUG_REG.
 /// (Using A and B instead of numbers to avoid indexing confusion.)
-static const uint8_t SRC_A_bm = BITUTILS_BIT(1);
+static const uint8_t TMDS442_SRC_PLUG_SRC_A_bm = BITUTILS_BIT(0);
+#define TMDS442_SRC_PLUG_SRC_A_case BITUTILS_BIT(0)
 
-/// So-called "source A": 5V_PWR2 bit in TMDS442_SRC_PLUG_REG.
+/// So-called "source B": 5V_PWR2 bit in TMDS442_SRC_PLUG_REG.
 /// (Using A and B instead of numbers to avoid indexing confusion.)
-static const uint8_t SRC_B_bm = BITUTILS_BIT(2);
+static const uint8_t TMDS442_SRC_PLUG_SRC_B_bm = BITUTILS_BIT(1);
+#define TMDS442_SRC_PLUG_SRC_B_case BITUTILS_BIT(1)
 
 /// group mask for either source A or B.
-#define SRC_AB_gm (SRC_A_bm | SRC_B_bm)
+#define TMDS442_SRC_PLUG_SRC_AB_gm (TMDS442_SRC_PLUG_SRC_A_bm | TMDS442_SRC_PLUG_SRC_B_bm)
+#define TMDS442_SRC_PLUG_SRC_AB_case (TMDS442_SRC_PLUG_SRC_A_case | TMDS442_SRC_PLUG_SRC_B_case)
 
 #if 0
-#define TMDS442_SRC_PLUG_REG_value (TMDS442_SRC_PLUG_5V_EN_bm | SRC_AB_gm)
-#define TMDS442_SRC_PLUG_REG_value (SRC_AB_gm)
+#define TMDS442_SRC_PLUG_REG_value (TMDS442_SRC_PLUG_5V_EN_bm | TMDS442_SRC_PLUG_SRC_AB_gm)
+#define TMDS442_SRC_PLUG_REG_value (TMDS442_SRC_PLUG_SRC_AB_gm)
 #else
 #define TMDS442_SRC_PLUG_REG_value (0)
 #endif
@@ -130,7 +133,7 @@ bool TMDS442_ReadInputStatus(uint8_t *newStatus)
 	bool ret = TMDS442_ReadReg(TMDS442_SRC_PLUG_REG, &status);
 	if (ret)
 	{
-		*newStatus = status & SRC_AB_gm;
+		*newStatus = status & TMDS442_SRC_PLUG_SRC_AB_gm;
 		return true;
 	}
 	return false;
@@ -160,7 +163,7 @@ void TMDS442_ProgramHDMISwitch(void)
 #endif  // SVR_TMDS_REPORT_STATUS
 		break;
 	}
-	case 1:  // just input A
+	case TMDS442_SRC_PLUG_SRC_A_case:  // just input A
 	{
 		WriteLn("TMDS442_ProgramHDMISwitch: Input A to both");
 		TMDS442_WriteReg(SINK1_PORT_REG, TMDS442_SINK_PORT_VAL_ACTIVE_BASE | SINK_PORT_SOURCESEL_Source_1);
@@ -169,7 +172,7 @@ void TMDS442_ProgramHDMISwitch(void)
 		SxS_Enable();
 		break;
 	}
-	case 2:  // just input B
+	case TMDS442_SRC_PLUG_SRC_B_case:  // just input B
 	{
 		WriteLn("TMDS442_ProgramHDMISwitch: Input B to both");
 		TMDS442_WriteReg(SINK1_PORT_REG, TMDS442_SINK_PORT_VAL_ACTIVE_BASE | SINK_PORT_SOURCESEL_Source_2);
@@ -178,7 +181,7 @@ void TMDS442_ProgramHDMISwitch(void)
 		SxS_Enable();
 		break;
 	}
-	case 3:  // both inputs
+	case TMDS442_SRC_PLUG_SRC_AB_case:  // both inputs
 	{
 		WriteLn("TMDS442_ProgramHDMISwitch: Two inputs");
 		TMDS442_WriteReg(SINK1_PORT_REG, TMDS442_SINK_PORT_VAL_ACTIVE_BASE | SINK_PORT_SOURCESEL_Source_1);
@@ -219,32 +222,32 @@ void TMDS442_Init(void)
 
 void TMDS442_EnableVideoA(void)
 {
-	s_InputStatus |= SRC_A_bm;
+	s_InputStatus |= TMDS442_SRC_PLUG_SRC_A_bm;
 	TMDS442_ProgramHDMISwitch();
 }
 
 void TMDS442_DisableVideoA(void)
 {
-	s_InputStatus &= ~SRC_A_bm;
+	s_InputStatus &= ~TMDS442_SRC_PLUG_SRC_A_bm;
 	TMDS442_ProgramHDMISwitch();
 }
 
 void TMDS442_EnableVideoB(void)
 {
-	s_InputStatus |= SRC_B_bm;
+	s_InputStatus |= TMDS442_SRC_PLUG_SRC_B_bm;
 	TMDS442_ProgramHDMISwitch();
 }
 
 void TMDS442_DisableVideoB(void)
 {
-	s_InputStatus &= ~SRC_B_bm;
+	s_InputStatus &= ~TMDS442_SRC_PLUG_SRC_B_bm;
 	TMDS442_ProgramHDMISwitch();
 }
 
 void TMDS442_SetInputStatus(uint8_t NewStatus)
 {
 	/// Mask new status to keep it in the bounds of the case statements.
-	s_InputStatus = NewStatus & SRC_AB_gm;
+	s_InputStatus = NewStatus & TMDS442_SRC_PLUG_SRC_AB_gm;
 	TMDS442_ProgramHDMISwitch();
 }
 

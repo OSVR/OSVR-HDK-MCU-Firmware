@@ -425,6 +425,7 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void);
 /*============================================================================*/
 /*                   GLOBAL VARIABLES                                  */
 /*============================================================================*/
+
 /* Instance variable of the HdmiRx device library */
 tmInstance_t gDlHdmiRxInstance0 = 0;
 
@@ -1347,16 +1348,19 @@ void NXP_HDMI_Task(void)
 // periodically called to address HDMI task
 
 {
+#if 0
     return; /// @todo this disables the HDMI task. Should be removed after debug
+#endif
 
 	tmErrorCode_t errCode = TM_OK;
 
 	/* Check the status based on the task manager */
 
 	/* Read the interruption status*/
-
+#if 0
 	if (ioport_get_value(Int_HDMI_A) == false)
 	{
+		WriteLn("Int_HDMI_A was false");
 		// determine source of interrupt
 		/*
 
@@ -1395,11 +1399,12 @@ void NXP_HDMI_Task(void)
 #endif
 		}
 	}
+#endif
 
 	{
 		{
-			// errCode = tmdlHdmiRxHandleInterrupt(0);
-			// NXP_Private_PRINTIF(errCode, __LINE__);
+			errCode = tmdlHdmiRxHandleInterrupt(0);
+			NXP_Private_PRINTIF(errCode, __LINE__);
 		}
 	}
 // else

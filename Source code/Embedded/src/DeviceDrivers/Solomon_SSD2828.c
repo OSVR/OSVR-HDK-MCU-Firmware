@@ -60,43 +60,57 @@ bool solomon_init(Solomon_t* sol)
 	return solomon_detect_lrr_behavior(sol);
 }
 
+#ifdef SVR_SOLOMON_VERBOSE
+#define SVR_SOLOMON_VERBOSE_WRITE(X) Write(X)
+#define SVR_SOLOMON_VERBOSE_WRITELN(X) WriteLn(X)
+#else
+#define SVR_SOLOMON_VERBOSE_WRITE(X) \
+	do                               \
+	{                                \
+	} while (0)
+#define SVR_SOLOMON_VERBOSE_WRITELN(X) \
+	do                                 \
+	{                                  \
+	} while (0)
+#endif
 bool solomon_detect_lrr_behavior(Solomon_t* sol)
 {
-	Write("LRR detect: ");
+	SVR_SOLOMON_VERBOSE_WRITE("LRR detect: ");
+
 	solomon_select(sol);
 #if 0
 	sol->lrrBehavior = SOLOMON_LRR_USE_ADDRESS;
 	uint16_t id = solomon_read_reg_2byte(sol, SOLOMON_REG_DIR);
 	if (id == SOLOMON_EXPECTED_DEVID)
 	{
-		WriteLn("Succeeded in address mode!");
+		SVR_SOLOMON_VERBOSE_WRITELN("Succeeded in address mode!");
 		solomon_deselect(sol);
 		return true;
 	}
 
-	Write("Failed address mode; Trying constant mode: ");
+	SVR_SOLOMON_VERBOSE_WRITE("Failed address mode; Trying constant mode: ");
 	sol->lrrBehavior = SOLOMON_LRR_USE_CONSTANT;
 #else
 	sol->lrrBehavior = SOLOMON_LRR_USE_CONSTANT;
 	uint16_t id = solomon_read_reg_2byte(sol, SOLOMON_REG_DIR);
 	if (id == SOLOMON_EXPECTED_DEVID)
 	{
-		WriteLn("Succeeded in constant mode!");
+		SVR_SOLOMON_VERBOSE_WRITELN("Succeeded in constant mode!");
 		solomon_deselect(sol);
 		return true;
 	}
 
-	Write("Failed constant mode; Trying address mode: ");
+	SVR_SOLOMON_VERBOSE_WRITE("Failed constant mode; Trying address mode: ");
 	sol->lrrBehavior = SOLOMON_LRR_USE_ADDRESS;
 #endif
 	id = solomon_read_reg_2byte(sol, SOLOMON_REG_DIR);
 	if (id != SOLOMON_EXPECTED_DEVID)
 	{
-		WriteLn("Failed overall!");
+		SVR_SOLOMON_VERBOSE_WRITELN("Failed overall!");
 		solomon_deselect(sol);
 		return false;
 	}
-	WriteLn("Succeeded!");
+	SVR_SOLOMON_VERBOSE_WRITELN("Succeeded!");
 	solomon_deselect(sol);
 	return true;
 }

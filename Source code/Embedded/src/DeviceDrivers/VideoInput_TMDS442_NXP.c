@@ -17,9 +17,9 @@
 
 void VideoInput_Init()
 {
+	NXP_Init_HDMI();
 	TMDS442_Init();
 	TMDS442_Task();
-	NXP_Init_HDMI();
 }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
 void VideoInput_Task(void)

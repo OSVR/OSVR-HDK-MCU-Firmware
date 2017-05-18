@@ -1609,7 +1609,7 @@ tmbslTDA1997XHandleInterrupt
 #endif // HDMI_VERBOSE
 
         /* if no interrupt to handle, exit*/
-        RETIF(interrupt_flags_top == 0, TM_OK)
+        RETIF_SILENT(interrupt_flags_top == 0, TM_OK)
 
 
         //tmbslTDA1997XReadI2C(unit, (UInt16)ACP_UPDATE,1, &regValue);

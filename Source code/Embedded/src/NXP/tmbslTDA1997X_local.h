@@ -40,6 +40,9 @@
 	return (rslt);\
 	}
 #endif
+#ifndef RETIF_SILENT
+#define RETIF_SILENT(cond, rslt) {if ((cond)){return (rslt);} }
+#endif
 
 #define MAX_UNIT                2
 

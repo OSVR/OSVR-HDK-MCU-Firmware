@@ -36,7 +36,7 @@ static uint8_t s_LastStatusRead = 0;  // shows the last value read from TMDS con
 #define TWI_SPEED 100000  //!< TWI data transfer rate
 
 /// Source plug-in status register
-#define TMDS442_SRC_PLUG_REG UINT8_C(0x03)
+#define TMDS442_SRC_PLUG_REG UINT8_C(0b00000011)
 /// When clear: sink port 1/A is the main display when cloning source to both sinks
 /// When set: sink port 2/B is.
 static const uint8_t TMDS442_SRC_PLUG_SP_bm = BITUTILS_BIT(5);
@@ -65,10 +65,10 @@ static const uint8_t TMDS442_SRC_PLUG_SRC_B_bm = BITUTILS_BIT(1);
 #define TMDS442_SRC_PLUG_REG_value (0)
 #endif
 
-/// Register for sink 1 (A)
-#define SINK1_PORT_REG UINT8_C(0x01)
-/// Register for sink 2 (B)
-#define SINK2_PORT_REG UINT8_C(0x02)
+/// Register for sink 1
+#define SINK1_PORT_REG UINT8_C(0b00000001)
+/// Register for sink 2
+#define SINK2_PORT_REG UINT8_C(0b00000010)
 
 /// Active low output enable. (Low: sink-side TMDS is on, high: sink-side TMDS off/hi-Z)
 static const uint8_t SINK_PORT_nOE_bm = BITUTILS_BIT(2);
@@ -79,11 +79,18 @@ static const uint8_t SINK_PORT_I2CEN_bm = BITUTILS_BIT(3);
 /// 3dB De-emphasis
 static const uint8_t SINK_PORT_PRE_bm = BITUTILS_BIT(4);
 
+/// Group mask for the two bits in SINKX_PORT_REG that define which source to use.
 static const uint8_t SINK_PORT_SOURCESEL_gm = BITUTILS_BIT(0) | BITUTILS_BIT(1);
+/// @name Source selection values for SINKX_PORT_REG
+/// @{
 static const uint8_t SINK_PORT_SOURCESEL_Source_1 = UINT8_C(0x00);
 static const uint8_t SINK_PORT_SOURCESEL_Source_2 = UINT8_C(0x01);
+// We don't use sources 3 or 4.
+#if 0
 static const uint8_t SINK_PORT_SOURCESEL_Source_3 = UINT8_C(0x02);
 static const uint8_t SINK_PORT_SOURCESEL_Source_4 = UINT8_C(0x03);
+#endif
+/// @}
 
 /// A base value for SINK_PORT_REG values
 #define TMDS442_SINK_PORT_VAL_BASE (UINT8_C(0))  // (SINK_PORT_I2CEN_bm)
@@ -257,6 +264,7 @@ void TMDS442_Task(void)
 	uint8_t NewStatus;
 	if (!TMDS442_ReadInputStatus(&NewStatus))  // process only if successful
 	{
+		WriteLn("TMDS442: Read input status failed!");
 		return;
 	}
 

@@ -27,9 +27,12 @@
 
 static bool sxs_enabled = SXS_STARTUP_VALUE;
 
+static bool s_sxs_initialized = false;
+
 static void SxS_Set(bool state);
 static void SxS_Apply(void);
 static void SxS_Save_Config(void);
+static void SxS_Ensure_Init(void);
 
 static void SxS_Set(bool state)
 {
@@ -61,8 +64,18 @@ static inline void SxS_Save_Config()
 #endif
 }
 
+static inline void SxS_Ensure_Init()
+{
+	if (!s_sxs_initialized)
+	{
+		SxS_Init();
+	}
+}
+
 void SxS_Init()
 {
+	WriteLn("SxS Init");
+	s_sxs_initialized = true;
 #ifdef Side_by_side_A
 	// Initialize this pin to FPGA, if defined.
 	ioport_configure_pin(Side_by_side_A, IOPORT_DIR_OUTPUT | SXS_STARTUP_PIN_STATE);
@@ -85,6 +98,7 @@ void SxS_Init()
 
 void SxS_Toggle()
 {
+	SxS_Ensure_Init();
 	sxs_enabled = !sxs_enabled;
 	SxS_Apply();
 	SxS_Save_Config();
@@ -92,6 +106,7 @@ void SxS_Toggle()
 
 void SxS_Enable()
 {
+	SxS_Ensure_Init();
 	sxs_enabled = true;
 	SxS_Apply();
 	SxS_Save_Config();
@@ -99,12 +114,18 @@ void SxS_Enable()
 
 void SxS_Disable()
 {
+	SxS_Ensure_Init();
 	sxs_enabled = false;
 	SxS_Apply();
 	SxS_Save_Config();
 }
 
-bool SxS_IsEnabled() { return sxs_enabled; }
+
+bool SxS_IsEnabled()
+{
+	SxS_Ensure_Init();
+	return sxs_enabled;
+}
 #else
 void SxS_Init() {}
 void SxS_Toggle() {}

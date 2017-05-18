@@ -33,6 +33,11 @@
 // Options header
 #include "GlobalOptions.h"
 
+// SVR_HDMI_VERY_VERBOSE implies HDMI_VERBOSE
+#if defined(SVR_HDMI_VERY_VERBOSE) && (!defined(HDMI_VERBOSE))
+#define HDMI_VERBOSE
+#endif
+
 #ifdef SVR_HAVE_NXP
 // Interface header
 #include "DeviceDrivers/VideoInput.h" // for PortraitMode
@@ -1586,15 +1591,24 @@ tmbslTDA1997XHandleInterrupt
         /* Read interrupt flags top*/
         errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_TOP, 1, &interrupt_flags_top);
         RETIF(errCode != TM_OK,errCode)
-#ifdef HDMI_VERBOSE
-        sprintf(Msg,"Int top %x",interrupt_flags_top);
-        WriteLn(Msg);
+#ifdef SVR_HDMI_VERY_VERBOSE
+        static const bool shouldPrint = true;
+#elif defined(HDMI_VERBOSE)
+        const bool shouldPrint = (interrupt_flags_top != 0);
 #endif
+
+
+#ifdef HDMI_VERBOSE
+        if (shouldPrint)
+        {
+            sprintf(Msg,"Int top %x",interrupt_flags_top);
+            WriteLn(Msg);
+            if (interrupt_flags_top == 0)
+                WriteLn("No activity");
+        }
+#endif // HDMI_VERBOSE
+
         /* if no interrupt to handle, exit*/
-#ifdef HDMI_VERBOSE
-        if (interrupt_flags_top == 0)
-            WriteLn("No activity");
-#endif
         RETIF(interrupt_flags_top == 0, TM_OK)
 
 

@@ -744,7 +744,9 @@ static void digitalActivityCallback0(tmdlHdmiRxEvent_t event, tmdlHdmiRxInput_t 
 		ActivityDetected0 = true;
 		KnownResolution0 = false;
 		ResolutionID0 = -1;
+#if 0
 		VideoInput_Protected_Report_Signal();
+#endif
 		break;
 	case TMDL_HDMIRX_ACTIVITY_LOST: /* New activity has been detected */
 		WriteLn_progmem(cDigitalActivityLost);
@@ -929,8 +931,6 @@ static void eventCallback0(tmdlHdmiRxEvent_t event)
 		// the following lines force the resolution. Uncomment for test if you wish
 		// resolutionID=TMDL_HDMIRX_VIDEORES_1920_1080p_60HZ;
 		// resolutionID=TMDL_HDMIRX_VIDEORES_1080_1920p_60HZ;
-
-		VideoInput_Protected_Report_Signal();  // tell main that it might need to reconfigure Solomon
 		storeResolution0(resolutionID);
 
 		/* Configure the active input to the given resolution */
@@ -945,6 +945,8 @@ static void eventCallback0(tmdlHdmiRxEvent_t event)
 		/* Configure the receiver with the new color space */
 
 		NXP_Private_PRINTIF(tmExAppliConfigureConversion0(), __LINE__);
+
+		VideoInput_Protected_Report_Signal();  // tell main that it might need to reconfigure Solomon
 
 		break;
 

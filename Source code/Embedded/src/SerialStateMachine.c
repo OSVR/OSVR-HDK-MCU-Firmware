@@ -960,6 +960,9 @@ void ProcessSPICommand(void)
 	{
 		WriteLn("Display on");
 		Display_On(Display1);
+#ifdef SVR_HAVE_DISPLAY2
+		Display_On(Display2);
+#endif  // SVR_HAVE_DISPLAY2
 #ifdef SVR_ENABLE_VIDEO_INPUT
 		VideoInput_Update_Resolution_Detection();
 #endif
@@ -994,6 +997,9 @@ void ProcessSPICommand(void)
 	{
 		WriteLn("Display off");
 		Display_Off(Display1);
+#ifdef SVR_HAVE_DISPLAY2
+		Display_Off(Display2);
+#endif  // SVR_HAVE_DISPLAY2
 #ifdef SVR_ENABLE_VIDEO_INPUT
 		VideoInput_Update_Resolution_Detection();
 #endif

@@ -18,16 +18,16 @@
 
 void VideoInput_Init()
 {
+	/// Init TI TMDS442 HDMI input switch.
+	TMDS442_Init();
+	TMDS442_ForcePoll();
+
 	/// Pull NXP chips out of reset.
 	NXP_HDMI_Reset(1);
 	NXP_HDMI_Reset(2);
 
 	/// Init NXP HDMI receivers
 	NXP_Init_HDMI();
-
-	/// Init TI TMDS442 HDMI input switch.
-	TMDS442_Init();
-	TMDS442_ForcePoll();
 }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
 void VideoInput_Task(void) { VideoInput_Poll_Status(); }

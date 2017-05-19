@@ -94,7 +94,7 @@ void Display_Init(uint8_t deviceID)
 void Display_On(uint8_t deviceID)
 {
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
-	WriteLn("Re-initializing...");
+	WriteLn("Solomon re-initializing...");
 	if (!init_solomon_device(deviceID))
 	{
 		// failed to re-init!
@@ -142,7 +142,9 @@ void Display_On(uint8_t deviceID)
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0029);   // display on
 
 #endif
+#if 0
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - after");
+#endif
 }
 
 void Display_Off(uint8_t deviceID)
@@ -152,7 +154,9 @@ void Display_Off(uint8_t deviceID)
 	const char displayNum[] = {deviceID + '1', '\0'};
 	Write(displayNum);
 	WriteLn(" off");
+#if 0
 	Solomon_Dump_Config_Debug(deviceID, "Display_Off - before");
+#endif
 #ifdef SVR_HAVE_SHARP_LCD
 	Solomon_t *sol = solomon_get_channel(deviceID);
 	solomon_select(sol);
@@ -181,7 +185,9 @@ void Display_Off(uint8_t deviceID)
 	svr_yield_ms(20);                                  // delay > 1 frames
 
 #endif
+#if 0
 	Solomon_Dump_Config_Debug(deviceID, "Display_Off - after");
+#endif
 	Display_Internal_Reset_Begin(deviceID);
 }
 void Display_Reset(uint8_t deviceID)

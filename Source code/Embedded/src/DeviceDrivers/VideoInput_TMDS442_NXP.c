@@ -30,9 +30,7 @@ void VideoInput_Init()
 	TMDS442_ForcePoll();
 }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
-void VideoInput_Task(void)
-{
-}
+void VideoInput_Task(void) { VideoInput_Poll_Status(); }
 void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
 void VideoInput_Suspend(void) { NXP_Suspend(); }
 void VideoInput_Resume(void) { NXP_Resume(); }

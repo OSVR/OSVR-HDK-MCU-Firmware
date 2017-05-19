@@ -94,6 +94,12 @@ void Display_Init(uint8_t deviceID)
 void Display_On(uint8_t deviceID)
 {
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
+
+	Display_Internal_Reset_Begin(deviceID);
+	svr_yield_ms(10);  // at least 1
+	Display_Internal_Reset_End(deviceID);
+	svr_yield_ms(10);  // at least 3
+
 	WriteLn("Solomon re-initializing...");
 	if (!init_solomon_device(deviceID))
 	{
@@ -171,6 +177,8 @@ void Display_Off(uint8_t deviceID)
 	// Clear VEN and HS bits.
 	solomon_cfgr_set_clear_bits(sol, 0x0, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set VEN and HS bits.
 	solomon_deselect(sol);
+	svr_yield_ms(20);  // delay > 1 frames
+	Display_Internal_Reset_Begin(deviceID);
 #endif
 #ifdef H546DLT01  // AUO 5.46" OLED
 
@@ -188,7 +196,6 @@ void Display_Off(uint8_t deviceID)
 #if 0
 	Solomon_Dump_Config_Debug(deviceID, "Display_Off - after");
 #endif
-	Display_Internal_Reset_Begin(deviceID);
 }
 void Display_Reset(uint8_t deviceID)
 {

@@ -150,16 +150,18 @@ void custom_board_init(void)
 #endif
 
 #ifdef SVR_HAVE_NXP1
-	ioport_configure_pin(NXP1_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+	// start in reset
+	ioport_configure_pin(NXP1_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 	ioport_configure_pin(Int_HDMI_A, IOPORT_DIR_INPUT);
 #endif
 
-	SxS_Init();
-
 #ifdef SVR_HAVE_NXP2
-	ioport_configure_pin(NXP2_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
+	// start in reset
+	ioport_configure_pin(NXP2_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 	ioport_configure_pin(Int_HDMI_B, IOPORT_DIR_INPUT);
 #endif
+
+	SxS_Init();
 
 #ifdef SVR_IS_DSIGHT
 	ioport_configure_pin(USB_Hub_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);

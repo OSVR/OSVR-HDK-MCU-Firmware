@@ -9,6 +9,7 @@
 #include "FPGA.h"
 #include "my_hardware.h"
 #include "Console.h"
+#include "SvrYield.h"
 
 #ifdef SVR_HAVE_FPGA
 bool SideBySideMode = false;
@@ -29,7 +30,9 @@ void FPGA_end_reset()
 void FPGA_reset(void)
 {
 	FPGA_start_reset();
-	delay_ms(1);
+	// 1ms was too short for anything useful to happen on dSight,
+	// 10ms was intermittently successful, 15ms is pretty reliable.
+	svr_yield_ms(15);
 	FPGA_end_reset();
 }
 #if 0

@@ -49,10 +49,16 @@ static const uint8_t TMDS442_SRC_PLUG_5V_EN_bm = BITUTILS_BIT(4);
 static const uint8_t TMDS442_SRC_PLUG_SRC_A_bm = BITUTILS_BIT(0);
 #define TMDS442_SRC_PLUG_SRC_A_case BITUTILS_BIT(0)
 
+_Static_assert(TMDS442_PLUG_SOURCE_A == TMDS442_SRC_PLUG_SRC_A_case,
+               "Internal and external bit masks for source A must match but do not");
+
 /// So-called "source B": 5V_PWR2 bit in TMDS442_SRC_PLUG_REG.
 /// (Using A and B instead of numbers to avoid indexing confusion.)
 static const uint8_t TMDS442_SRC_PLUG_SRC_B_bm = BITUTILS_BIT(1);
 #define TMDS442_SRC_PLUG_SRC_B_case BITUTILS_BIT(1)
+
+_Static_assert(TMDS442_PLUG_SOURCE_B == TMDS442_SRC_PLUG_SRC_B_case,
+               "Internal and external bit masks for source B must match but do not");
 
 /// group mask for either source A or B.
 #define TMDS442_SRC_PLUG_SRC_AB_gm (TMDS442_SRC_PLUG_SRC_A_bm | TMDS442_SRC_PLUG_SRC_B_bm)
@@ -294,4 +300,6 @@ bool TMDS442_ForcePoll()
 	SxS_Apply();
 	return ret;
 }
+
+uint8_t TMDS442_GetPlugSourceData() { return s_InputStatus; }
 #endif  // SVR_HAVE_TMDS442

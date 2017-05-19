@@ -16,6 +16,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+enum TMDS442_PLUG_SOURCE_BITS
+{
+	TMDS442_PLUG_SOURCE_A = 0x01 << 0,
+	TMDS442_PLUG_SOURCE_B = 0x01 << 1
+};
+
 /// Initialize the driver and TDMS442 HDMI switch.
 void TMDS442_Init(void);
 
@@ -26,6 +32,10 @@ bool TMDS442_Task(void);
 /// Force polling of the input status (with console logging)
 /// @return true if change in input status noticed.
 bool TMDS442_ForcePoll(void);
+
+/// Return a bitfield (with bits defined in TMDS442_PLUG_SOURCE_BITS) indicating which source ports on the switch
+/// currently appear to have something connected to them.
+uint8_t TMDS442_GetPlugSourceData(void);
 
 /// @name Internal functions exposed for debugging
 /// @{

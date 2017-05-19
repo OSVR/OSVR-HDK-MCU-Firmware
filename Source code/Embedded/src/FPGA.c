@@ -15,13 +15,13 @@ bool SideBySideMode = false;
 
 void FPGA_start_reset()
 {
-#if 0
+#ifdef FPGA_Reset_Pin
 	ioport_set_pin_low(FPGA_Reset_Pin);
 #endif
 }
 void FPGA_end_reset()
 {
-#if 0
+#ifdef FPGA_Reset_Pin
 	ioport_set_pin_high(FPGA_Reset_Pin);
 #endif
 }

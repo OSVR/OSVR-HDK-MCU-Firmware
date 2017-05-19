@@ -114,4 +114,8 @@
 /// Connects to CH2_TXS0104_OE via the FPGA
 /// f.k.a. GPIO_E_X2_CH-2
 #define SVR_PANEL2_LEVELSHIFT_OE_PIN IOPORT_CREATE_PIN(PORTE, 3)
+
+/// Pin can pull down GLOBAL_RST net, which actually only resets FPGAs and their memory.
+#define FPGA_Reset_Pin IOPORT_CREATE_PIN(PORTB, 2)
+
 #endif /* VARIANTOPTIONS_H_ */

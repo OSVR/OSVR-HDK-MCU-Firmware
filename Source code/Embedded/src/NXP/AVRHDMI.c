@@ -391,9 +391,6 @@ const UInt8 RT_Config[6] = {Reg_RT_AUTO_CTRL, Reg_EQ_MAN_CTRL0, Reg_EQ_MAN_CTRL1
 
 const UInt8 sPAOffsetEdid = (UInt8) 0x08U;  /* Offset of the first SPA byte inside EDID block 1 */
 
-/* Interrupt line */
-#define IT_LINE_ACTIVE 0
-
 /*============================================================================*/
 /*                   EXTERNAL PROTOTYPE                                       */
 /*============================================================================*/
@@ -1320,12 +1317,9 @@ static tmErrorCode_t tmExAppliConfigureConversion0(void)
 	return TM_OK;
 }
 
+/// performs initialization tasks for NXP
 void NXP_Init_HDMI(void)
-
-// performs initialization tasks for NXP
-
 {
-// return;
 
 #ifdef HDMI_DEBUG
 	WriteLn("HDMI init");
@@ -1334,14 +1328,13 @@ void NXP_Init_HDMI(void)
 
 	Init_i2c();
 
-/* Initialize the HDMI component */
+
 #ifndef No_NXP
+	/* Initialize the HDMI component */
 	errCode = tmdlHdmiRxExampleAppliInit();
 	HDMI_task = true;
 
-// HDMITaskDelay=10;
-
-#endif
+#endif // !No_NXP
 }
 
 void NXP_HDMI_Task(void)

@@ -15,6 +15,7 @@
 #include "NXP/AVRHDMI.h"
 #include "DeviceDrivers/TI-TMDS442.h"
 #include "Console.h"
+#include "SvrYield.h"
 
 void VideoInput_Init()
 {
@@ -29,28 +30,62 @@ void VideoInput_Init()
 	/// Init NXP HDMI receivers
 	NXP_Init_HDMI();
 }
+
+static inline void VideoInput_dSight_do_step(void)
+{
+	static bool gotTmdsChange = false;
+	bool gotTmdsChangeLastTime = gotTmdsChange;
+	gotTmdsChange = false;
+
+	bool switchLostInput = false;
+	if (HDMISwitch_task)
+	{
+		// check status of HDMI switch
+		// If it reports a change, reset NXP, report "no signal!", and exit the handler for now.
+		// This will let plug/switch state changes properly propagate thru.
+		const uint8_t initialPlugSource = TMDS442_GetPlugSourceData();
+		if (TMDS442_Task())
+		{
+			gotTmdsChange = true;
+			svr_yield_ms(100);
+			const uint8_t newPlugSource = TMDS442_GetPlugSourceData();
+			if (initialPlugSource != 0 && newPlugSource != 0)
+			{
+				// OK, so plugs changed without initial gain or complete loss - we will simulate a complete loss.
+				VideoInput_Protected_Report_No_Signal();
+				NXP_HDMI_Reset(1);
+				NXP_HDMI_Reset(2);
+				/// Init NXP HDMI receivers
+				NXP_Init_HDMI();
+				return;
+			}
+			else if (newPlugSource == 0)
+			{
+				// No longer have any input.
+				// Will give NXP a chance to deal with this, but if it doesn't, we'll report it at the end.
+				switchLostInput = true;
+			}
+		}
+	}
+	if (HDMI_task)
+	{
+		NXP_HDMI_Task();
+	}
+	if (switchLostInput && VideoInput_Get_Status())
+	{
+		// if we lost input, and videoinput still says we have video - report that we lost input here.
+		WriteLn("VideoInput: TMDS detected full signal loss, but NXP did not. Reporting anyway.");
+		VideoInput_Protected_Report_No_Signal();
+	}
+}
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
-void VideoInput_Task(void) { VideoInput_Poll_Status(); }
+void VideoInput_Task(void) { VideoInput_dSight_do_step(); }
 void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
 void VideoInput_Suspend(void) { NXP_Suspend(); }
 void VideoInput_Resume(void) { NXP_Resume(); }
 void VideoInput_Poll_Status(void)
 {
-	if (HDMISwitch_task)
-	{
-		// check status of HDMI switch
-		TMDS442_Task();
-	}
-	if (HDMI_task)
-	{
-		bool prevInputStatus = VideoInput_Get_Status();
-		/// @todo Do we need to poll the NXP every time through the mainloop, or can we depend on the interrupts?
-		NXP_HDMI_Task();
-		if (VideoInput_Get_Status() != prevInputStatus)
-		{
-			TMDS442_ForcePoll();
-		}
-	}
+	// All work is done in _Task
 }
 void VideoInput_Report_Status(void) { NXP_Report_HDMI_status(); }
 #if 0

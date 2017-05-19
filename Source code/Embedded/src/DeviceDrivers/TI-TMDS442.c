@@ -258,33 +258,15 @@ void TMDS442_SetInputStatus(uint8_t NewStatus)
 	TMDS442_ProgramHDMISwitch();
 }
 
-// read TMDS status and decide what to do with it
-void TMDS442_Task(void)
+static inline bool TMDS442_Internal_Update(bool verbose)
 {
 	uint8_t NewStatus;
 	if (!TMDS442_ReadInputStatus(&NewStatus))  // process only if successful
 	{
 		WriteLn("TMDS442: Read input status failed!");
-		return;
+		return false;
 	}
-
-	if (NewStatus != s_LastStatusRead)
-	{
-		WriteLn("TMDS442: Detected change in input status.");
-		s_LastStatusRead = NewStatus;
-		TMDS442_SetInputStatus(NewStatus);
-	}
-}
-
-void TMDS442_ForcePoll()
-{
-	WriteLn("TMDS442: Force polling switch inputs.");
-	uint8_t NewStatus;
-	if (!TMDS442_ReadInputStatus(&NewStatus))  // process only if successful
-	{
-		WriteLn("TMDS442: Read input status failed!");
-		return;
-	}
+	if (verbose)
 	{
 		char myMsg[50];
 		sprintf(myMsg, "TMDS442: Last status read: %01" PRIx8 " New status: %01" PRIx8, s_LastStatusRead, NewStatus);
@@ -296,8 +278,20 @@ void TMDS442_ForcePoll()
 		WriteLn("TMDS442: Detected change in input status.");
 		s_LastStatusRead = NewStatus;
 		TMDS442_SetInputStatus(NewStatus);
+		return true;
 	}
+	return false;
+}
+
+// read TMDS status and decide what to do with it
+bool TMDS442_Task() { return TMDS442_Internal_Update(false); }
+
+bool TMDS442_ForcePoll()
+{
+	WriteLn("TMDS442: Force polling switch inputs.");
+	bool ret = TMDS442_Internal_Update(true);
 	WriteLn("TMDS442: Re-applying side-by-side configuration.");
 	SxS_Apply();
+	return ret;
 }
 #endif  // SVR_HAVE_TMDS442

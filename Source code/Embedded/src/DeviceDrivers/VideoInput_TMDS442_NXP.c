@@ -71,6 +71,17 @@ static inline void VideoInput_dSight_do_step(void)
 	{
 		NXP_HDMI_Task();
 	}
+#ifdef SVR_HAVE_SHARP_LCD
+	if (VideoInput_Events.videoDetected)
+	{
+		WriteLn("VideoInput: Video detected event, running task a few more times.");
+		for (uint8_t i = 0; i < 10; ++i)
+		{
+			svr_yield_ms(10);
+			NXP_HDMI_Task();
+		}
+	}
+#endif  // SVR_HAVE_SHARP_LCD
 	if (switchLostInput && VideoInput_Get_Status())
 	{
 		// if we lost input, and videoinput still says we have video - report that we lost input here.

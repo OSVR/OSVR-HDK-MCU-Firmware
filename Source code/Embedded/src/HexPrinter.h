@@ -132,7 +132,7 @@ static inline void hexprinter_output_eof_record(void)
 	static const uint8_t RECORD_TYPE = 0x01;
 	/// little overkill since the record is effectively fixed (address of 0 is conventional) but shares implemenation
 	/// for validation's sake.
-	 //hexprinter_impl_do_output(RECORD_TYPE, 0x0000, 0, NULL);
+	// hexprinter_impl_do_output(RECORD_TYPE, 0x0000, 0, NULL);
 }
 
 #endif  // INCLUDED_HexPrinter_h_GUID_F40A9597_8606_45AE_233E_C4388E207CC9

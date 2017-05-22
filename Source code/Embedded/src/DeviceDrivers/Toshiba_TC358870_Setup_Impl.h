@@ -407,9 +407,9 @@ void Toshiba_TC358870_Configure_Splitter()
 	// TC358870_i2c_Write(0x5012,0x0000, 2); // STX0_DGPX
 	// TC358870_i2c_Write(0x5014,0x0000, 2); // STX0_DBPX
 	TC358870_i2c_Write(0x508A, 0x1C00, 2);  // STX1_DPX
-                                            // TC358870_i2c_Write(0x5090,0x0000, 2); // STX1_DRPX
-                                            // TC358870_i2c_Write(0x5092,0x0000, 2); // STX1_DGPX
-                                            // TC358870_i2c_Write(0x5094,0x0000, 2); // STX1_DBPX
+	                                        // TC358870_i2c_Write(0x5090,0x0000, 2); // STX1_DRPX
+	                                        // TC358870_i2c_Write(0x5092,0x0000, 2); // STX1_DGPX
+	                                        // TC358870_i2c_Write(0x5094,0x0000, 2); // STX1_DBPX
 #endif
 }
 

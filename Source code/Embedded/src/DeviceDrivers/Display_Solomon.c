@@ -135,6 +135,7 @@ void Display_On(uint8_t deviceID)
 	Solomon_t *sol = solomon_get_channel(deviceID);
 	solomon_select(sol);
 
+	/// @todo investigate if turning on VEN here improves reliability, done in some related drivers.
 	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set DCS bit.
 
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);     // no of bytes to send

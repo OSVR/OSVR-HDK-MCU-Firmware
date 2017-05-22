@@ -327,11 +327,20 @@ bool init_solomon_device(uint8_t deviceID)
 #endif
 
 #ifdef LS050T1SX01  // sharp 5"
+#define PAUSE_BETWEEN_COMMANDS() svr_yield_ms(16)
 	// from LS050T1SX01 data sheet
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
+	// unlock mfr command write
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04B0);    // cmd=B0, data=04
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x01D6);    // cmd=D6, data=01
-
+	PAUSE_BETWEEN_COMMANDS();
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  // no of bytes to send
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0000);    // cmd=00
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0000);    // cmd=00
+	PAUSE_BETWEEN_COMMANDS();
+	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
+	// remove NVM reload after sleep out.
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0xD6, 0x01);    // cmd=D6, data=01
+	PAUSE_BETWEEN_COMMANDS();
 #if 1
 	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, 0x0);  // Set DCS bit.
 #else
@@ -340,19 +349,24 @@ bool init_solomon_device(uint8_t deviceID)
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);    // VC
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0003);  // no of bytes to send
 
+	/// set brightness
 	/// @todo can we do this in a single write or should we do it in two?
 	static const uint8_t brightnessStartupCmd[] = {0x51, 0x0f, 0xff, 0x00};
 	solomon_write_reg(sol, SOLOMON_REG_PDR, brightnessStartupCmd, sizeof(brightnessStartupCmd));
+	PAUSE_BETWEEN_COMMANDS();
 
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
 	// solomon_write_reg_word(sol,0xBB,0x0008); // LP clock BC 0002
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0453);  // cmd=53, data=04
+	/// Enable LEDPWM
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x53, 0x04);
+	PAUSE_BETWEEN_COMMANDS();
 
 #ifdef SVR_TURN_ON_DISPLAY_DURING_INIT
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  // 1 byte
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0029);    // display on
 	svr_yield_ms(120);
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0011);  // sleep out
+	svr_yield_ms(120);
 #endif                                                     // SVR_TURN_ON_DISPLAY_DURING_INIT
 
 // end of LS050T1SX01 data sheet

@@ -260,17 +260,6 @@ void HandleHDMI()
 			WriteLn("MAIN: VideoInput claims status is false");
 		}
 	}
-	if (videoDetected || firstVideo)
-	{
-		WriteLn("MAIN: New video detected");
-		Display_Handle_Gain_Video();
-#ifdef SVR_HAVE_DISPLAY1
-		local_display_on(Display1);
-#endif
-#ifdef SVR_HAVE_DISPLAY2
-		local_display_on(Display2);
-#endif
-	}
 	if (videoLost)
 	{
 		WriteLn("MAIN: Video lost");
@@ -280,6 +269,17 @@ void HandleHDMI()
 #endif
 #ifdef SVR_HAVE_DISPLAY2
 		local_display_off(Display2);
+#endif
+	}
+	if (videoDetected || firstVideo)
+	{
+		WriteLn("MAIN: New video detected");
+		Display_Handle_Gain_Video();
+#ifdef SVR_HAVE_DISPLAY1
+		local_display_on(Display1);
+#endif
+#ifdef SVR_HAVE_DISPLAY2
+		local_display_on(Display2);
 #endif
 	}
 #endif  // SVR_ENABLE_VIDEO_INPUT

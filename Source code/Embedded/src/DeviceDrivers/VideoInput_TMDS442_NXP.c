@@ -30,14 +30,43 @@ void VideoInput_Init()
 	/// Init NXP HDMI receivers
 	NXP_Init_HDMI();
 }
-
+static inline void VideoInput_dSight_dump_state(void)
+{
+	const uint8_t initialPlugSource = TMDS442_GetPlugSourceData();
+	Write("VI State: ");
+	switch (initialPlugSource)
+	{
+	case 0:
+		Write("No plugs ");
+		break;
+	case 1:
+		Write("Plug 1   ");
+		break;
+	case 2:
+		Write("Plug 2   ");
+		break;
+	case 3:
+		Write("Plug 1+2 ");
+		break;
+	default:
+		Write("Plug Unk ");
+	}
+	if (VideoInput_Get_Status())
+	{
+		WriteLn("Locked");
+	}
+	else
+	{
+		WriteLn("Not locked");
+	}
+}
 static inline void VideoInput_dSight_do_step(void)
 {
 	static bool gotTmdsChange = false;
 	bool gotTmdsChangeLastTime = gotTmdsChange;
 	gotTmdsChange = false;
-
 	bool switchLostInput = false;
+	VideoInput_dSight_dump_state();
 	if (HDMISwitch_task)
 	{
 		// check status of HDMI switch
@@ -46,6 +75,7 @@ static inline void VideoInput_dSight_do_step(void)
 		const uint8_t initialPlugSource = TMDS442_GetPlugSourceData();
 		if (TMDS442_Task())
 		{
+			VideoInput_dSight_dump_state();
 			gotTmdsChange = true;
 			svr_yield_ms(100);
 			const uint8_t newPlugSource = TMDS442_GetPlugSourceData();
@@ -90,15 +120,20 @@ static inline void VideoInput_dSight_do_step(void)
 	}
 }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
-void VideoInput_Task(void) { VideoInput_dSight_do_step(); }
+void VideoInput_Task(void) {}
 void VideoInput_Reset(uint8_t inputId) { NXP_HDMI_Reset(inputId); }
 void VideoInput_Suspend(void) { NXP_Suspend(); }
 void VideoInput_Resume(void) { NXP_Resume(); }
 void VideoInput_Poll_Status(void)
 {
 	// All work is done in _Task
+	VideoInput_dSight_do_step();
 }
-void VideoInput_Report_Status(void) { NXP_Report_HDMI_status(); }
+void VideoInput_Report_Status(void)
+{
+	NXP_Report_HDMI_status();
+	VideoInput_dSight_dump_state();
+}
 #if 0
 uint8_t VideoInput_Get_Detail_Status(void) { return Get_HDMI_Status(); }
 #endif

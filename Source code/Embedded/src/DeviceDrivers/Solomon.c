@@ -27,6 +27,8 @@
 
 #include "BitUtilsC.h"
 
+#undef SVR_TURN_ON_DISPLAY_DURING_INIT
+
 #define SOLOMON_MAX_PLL_ATTEMPTS 40
 
 Solomon_t g_solomons[SVR_HAVE_SOLOMON] = {Solomon1_Struct
@@ -208,7 +210,10 @@ bool init_solomon_device(uint8_t deviceID)
 		WriteLn("Failed to get correct readback operation for one of the solomons!");
 		return false;
 	}
+
+#ifdef SVR_SOLOMON_VERBOSE
 	Solomon_Dump_Config_Debug(deviceID, "init_solomon_device - before");
+#endif  // SVR_SOLOMON_VERBOSE
 
 #if defined(SVR_HAVE_SHARP_LCD)
 #if 1
@@ -239,7 +244,10 @@ bool init_solomon_device(uint8_t deviceID)
 		solomon_write_reg_word(sol, SOLOMON_REG_CFGR, cfgrInit);
 	}
 	svr_yield_ms(10);
+
+#ifdef SVR_SOLOMON_VERBOSE
 	Solomon_Dump_Config_Debug_New(deviceID, sol, "init_solomon_device - after cfg");
+#endif  // SVR_SOLOMON_VERBOSE
 
 	solomon_write_reg_2byte(sol, 0xB1, t->hsa, t->vsa);
 	solomon_write_reg_2byte(sol, 0xB2, t->hbp, t->vbp);
@@ -272,14 +280,18 @@ bool init_solomon_device(uint8_t deviceID)
 	/// @todo clarify if this is the right math.
 	solomon_write_reg_word(sol, 0xD5, 0x28A0);
 
+#ifdef SVR_SOLOMON_VERBOSE
 	Solomon_Dump_Config_Debug_New(deviceID, sol, "init_solomon_device - before PLL");
+#endif  // SVR_SOLOMON_VERBOSE
 	svr_yield_ms(50);
 	if (!solomon_attempt_pll_lock(sol))
 	{
 		Solomon_Dump_Config_Debug(deviceID, "init_solomon_device - after PLL failure");
 		return false;
 	}
+#ifdef SVR_SOLOMON_VERBOSE
 	Solomon_Dump_Config_Debug_New(deviceID, sol, "init_solomon_device - after PLL");
+#endif  // SVR_SOLOMON_VERBOSE
 
 // module panel initialization
 
@@ -428,7 +440,6 @@ bool init_solomon_device(uint8_t deviceID)
 #endif
 
 #ifdef SVR_HAVE_SHARP_LCD
-
 #ifdef SVR_TURN_ON_DISPLAY_DURING_INIT
 	                                                       // video mode on
 	svr_yield_ms(250);
@@ -436,10 +447,12 @@ bool init_solomon_device(uint8_t deviceID)
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x034B);  // video mode on // TX5
 	svr_yield_ms(100);
 #endif  // SVR_TURN_ON_DISPLAY_DURING_INIT
-#endif
+#endif  // SVR_HAVE_SHARP_LCD
 
 	solomon_deselect(sol);
+#ifdef SVR_SOLOMON_VERBOSE
 	Solomon_Dump_Config_Debug(deviceID, "init_solomon_device - after");
+#endif  // SVR_SOLOMON_VERBOSE
 	return true;
 }
 

@@ -15,6 +15,8 @@
 #include "Console.h"
 #include "my_hardware.h"
 #include "SvrYield.h"
+#include "FPGA.h"
+#include "VideoInput.h"
 
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
 //#define SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
@@ -24,7 +26,18 @@
 #include "VideoInput.h"
 #endif  // SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
 
-void Display_System_Init() { init_solomon(); }
+void Display_System_Init()
+{
+#ifdef SVR_HAVE_SHARP_LCD
+	FPGA_reset();
+	if (!VideoInput_Get_Status())
+	{
+		FPGA_start_reset();
+	}
+#endif  // SVR_HAVE_SHARP_LCD
+
+	init_solomon();
+}
 
 /// Pulls panel reset line appropriately to start panel reset, if possible.
 /// @param deviceID 0-indexed panel ID
@@ -64,6 +77,7 @@ void Display_Init(uint8_t deviceID)
 	svr_yield_ms(100);
 	solomon_end_reset(sol);
 	solomon_end_video_shutdown(sol);
+	svr_yield_ms(100);
 	Display_Internal_Reset_End(deviceID);
 
 	svr_yield_ms(100);
@@ -94,9 +108,10 @@ void Display_Init(uint8_t deviceID)
 void Display_On(uint8_t deviceID)
 {
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
-
 	Display_Internal_Reset_Begin(deviceID);
 	svr_yield_ms(10);  // at least 1
+	FPGA_end_reset();
+	svr_yield_ms(500);
 	Display_Internal_Reset_End(deviceID);
 	svr_yield_ms(10);  // at least 3
 
@@ -114,6 +129,7 @@ void Display_On(uint8_t deviceID)
 	WriteLn(" on");
 
 	Display_Internal_Reset_End(deviceID);
+	svr_yield_ms(100);
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - before");
 #ifdef SVR_HAVE_SHARP_LCD
 	Solomon_t *sol = solomon_get_channel(deviceID);
@@ -148,6 +164,11 @@ void Display_On(uint8_t deviceID)
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0029);   // display on
 
 #endif
+#ifdef SVR_IS_DSIGHT
+	/// @todo This is a bit of a bodge to make sure the second display reliably works.
+	svr_yield_ms(10);
+	FPGA_reset();
+#endif
 #if 0
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - after");
 #endif
@@ -179,6 +200,10 @@ void Display_Off(uint8_t deviceID)
 	solomon_deselect(sol);
 	svr_yield_ms(20);  // delay > 1 frames
 	Display_Internal_Reset_Begin(deviceID);
+	svr_yield_ms(500);  // give that some time to take effect
+	FPGA_start_reset();
+	svr_yield_ms(500);
+// FPGA_end_reset();
 #endif
 #ifdef H546DLT01  // AUO 5.46" OLED
 

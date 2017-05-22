@@ -113,7 +113,7 @@ void Display_On(uint8_t deviceID)
 	FPGA_end_reset();
 	svr_yield_ms(500);
 	Display_Internal_Reset_End(deviceID);
-	svr_yield_ms(10);  // at least 3
+	svr_yield_ms(100);  // at least 3
 
 	WriteLn("Solomon re-initializing...");
 	if (!init_solomon_device(deviceID))

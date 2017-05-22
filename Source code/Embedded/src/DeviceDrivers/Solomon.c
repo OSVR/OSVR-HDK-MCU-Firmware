@@ -293,8 +293,9 @@ bool init_solomon_device(uint8_t deviceID)
 	Solomon_Dump_Config_Debug_New(deviceID, sol, "init_solomon_device - after PLL");
 #endif  // SVR_SOLOMON_VERBOSE
 
-// module panel initialization
+	// module panel initialization
 
+	svr_yield_ms(50);
 #if 0
 	/// This line sets EOT, ECD, and CKE.
 	solomon_write_reg_word(sol, SOLOMON_REG_CFGR, 0x0302);  // LP generic write // TX1

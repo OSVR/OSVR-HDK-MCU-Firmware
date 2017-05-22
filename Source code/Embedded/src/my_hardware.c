@@ -210,10 +210,8 @@ void custom_board_init(void)
 #ifdef OSVRHDK
 	ioport_configure_pin(FPGA_Reset_Pin,
 	                     IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // start FPGA in reset mode until there is video
-#else
-#if 0
-	ioport_configure_pin(FPGA_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
-#endif  // 0
+#elif defined(FPGA_Reset_Pin)
+	ioport_configure_pin(FPGA_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 #endif  // OSVRHDK
 
 #endif  // SVR_HAVE_FPGA

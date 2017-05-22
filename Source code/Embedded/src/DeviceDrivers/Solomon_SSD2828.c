@@ -33,8 +33,12 @@ bool solomon_init(Solomon_t* sol)
 	solomon_start_reset(sol);
 	ioport_set_pin_dir(sol->reset, IOPORT_DIR_OUTPUT);
 
-	/// start with video shut off
+/// start with video shut off
+#ifdef SVR_ENABLE_VOUT_SHUTDOWN
 	solomon_start_video_shutdown(sol);
+#else
+	ioport_set_pin_level(sol->voutShutdown, false);
+#endif
 	ioport_set_pin_dir(sol->voutShutdown, IOPORT_DIR_OUTPUT);
 
 	/// Set chip select off (high)

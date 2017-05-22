@@ -12,6 +12,8 @@
 #include "BitUtilsC.h"
 #include <ioport.h>
 
+#define SVR_ENABLE_VOUT_SHUTDOWN
+
 /// device ID register - should return value of 0x2828
 #define SOLOMON_REG_DIR UINT8_C(0xb0)
 
@@ -126,11 +128,15 @@ __always_inline static void solomon_start_reset(Solomon_t const* sol) { ioport_s
 __always_inline static void solomon_end_reset(Solomon_t const* sol) { ioport_set_pin_level(sol->reset, true); }
 __always_inline static void solomon_start_video_shutdown(Solomon_t const* sol)
 {
+#ifdef SVR_ENABLE_VOUT_SHUTDOWN
 	ioport_set_pin_level(sol->voutShutdown, true);
+#endif  // SVR_ENABLE_VOUT_SHUTDOWN
 }
 __always_inline static void solomon_end_video_shutdown(Solomon_t const* sol)
 {
+#ifdef SVR_ENABLE_VOUT_SHUTDOWN
 	ioport_set_pin_level(sol->voutShutdown, false);
+#endif  // SVR_ENABLE_VOUT_SHUTDOWN
 }
 
 /// @brief Call before any of the read or write operations.

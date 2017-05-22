@@ -1412,6 +1412,20 @@ void ProcessFPGACommand(void)
 #endif  // SVR_HAVE_FPGA_VIDEO_LOCK_PIN
 		break;
 	}
+	case 'n':
+	case 'N':
+	{
+		/// Turn FPGA on (end reset)
+		FPGA_end_reset();
+		break;
+	}
+	case 'f':
+	case 'F':
+	{
+		/// Turn FPGA off (start reset)
+		FPGA_start_reset();
+		break;
+	}
 	}
 }
 #endif  // SVR_HAVE_FPGA

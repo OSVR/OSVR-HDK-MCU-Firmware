@@ -29,10 +29,13 @@
 void Display_System_Init()
 {
 #ifdef SVR_HAVE_SHARP_LCD
-	FPGA_reset();
 	if (!VideoInput_Get_Status())
 	{
 		FPGA_start_reset();
+	}
+	else
+	{
+		FPGA_reset();
 	}
 #endif  // SVR_HAVE_SHARP_LCD
 

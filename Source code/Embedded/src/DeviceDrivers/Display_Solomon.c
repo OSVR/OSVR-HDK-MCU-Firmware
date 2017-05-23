@@ -108,45 +108,70 @@ void Display_Init(uint8_t deviceID)
 	Display_Internal_Reset_Begin(deviceID);
 }
 
+#define DEBUGDELAY(X)
+
+#ifndef DEBUGDELAY
+#define DEBUGDELAY(X)                                     \
+	do                                                    \
+	{                                                     \
+		if (X > 0)                                        \
+		{                                                 \
+			svr_yield_ms(X);                              \
+		}                                                 \
+		char debugmsg[100];                               \
+		sprintf(debugmsg, "- %s:%d", __FILE__, __LINE__); \
+		WriteLn(debugmsg);                                \
+	} while (0)
+#endif
 void Display_On(uint8_t deviceID)
 {
 	Write("Turning display ");
 	WriteDigitPlus1(deviceID);
 	WriteLn(" on");
+	Solomon_t *sol = solomon_get_channel(deviceID);
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
 	Display_Internal_Reset_Begin(deviceID);
 	svr_yield_ms(10);  // at least 1
+	DEBUGDELAY(1);
 	FPGA_end_reset();
-	svr_yield_ms(500);
-	Display_Internal_Reset_End(deviceID);
-	svr_yield_ms(100);  // at least 3
-
-	WriteLn("Solomon re-initializing...");
-	if (!init_solomon_device(deviceID))
+	svr_yield_ms(100);
+	DEBUGDELAY(1);  /// effective delay 125
+#endif              // defined(SVR_HAVE_SHARP_LCD)
+	bool wasInReset = Display_Internal_Reset_End(deviceID);
+	DEBUGDELAY(0);  // effective delay 2
+	if (wasInReset)
 	{
-		// failed to re-init!
-		return;
-	}
-#endif  // defined(SVR_HAVE_SHARP_LCD)
+		svr_yield_ms(100);  // at least 3
 
-	Display_Internal_Reset_End(deviceID);
+		DEBUGDELAY(0);  // effective delay 116
+		WriteLn("Solomon re-initializing...");
+		if (!init_solomon_device(deviceID))
+		{
+			// failed to re-init!
+			return;
+		}
+	}
+	DEBUGDELAY(0);  // 264 since line 166, but that includes delays in the init
 	svr_yield_ms(100);
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - before");
 #ifdef SVR_HAVE_SHARP_LCD
-	Solomon_t *sol = solomon_get_channel(deviceID);
 	solomon_select(sol);
 
 	/// @todo investigate if turning on VEN here improves reliability, done in some related drivers.
 	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set DCS bit.
 
+	DEBUGDELAY(1);                                              // from debug dump 6ms
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);     // no of bytes to send
 	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);       // VC
 	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x29, 0x00);  // display on
 	svr_yield_ms(120);
+	DEBUGDELAY(1);
 	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x11, 0x00);  // sleep out
 	svr_yield_ms(250);
+	DEBUGDELAY(1);  // 445 since line 183
 
 	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm, 0x0);  // Set VEN and HS bits.
+	DEBUGDELAY(1);                                                                    // 3ms
 	solomon_deselect(sol);
 #endif
 #ifdef H546DLT01  // AUO 5.46" OLED
@@ -166,12 +191,15 @@ void Display_On(uint8_t deviceID)
 	write_solomon(deviceID, SOLOMON_REG_PDR, 0x0029);   // display on
 
 #endif
+#if 0
 #ifdef SVR_IS_DSIGHT
 	/// @todo This is a bit of a bodge to make sure the second display reliably works.
 	svr_yield_ms(10);
 	FPGA_reset();
+	DEBUGDELAY();
+#endif  // SVR_IS_DSIGHT
 #endif
-#if 0
+#if 1
 	Solomon_Dump_Config_Debug(deviceID, "Display_On - after");
 #endif
 }

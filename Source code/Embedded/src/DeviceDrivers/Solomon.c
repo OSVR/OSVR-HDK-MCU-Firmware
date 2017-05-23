@@ -331,7 +331,7 @@ bool init_solomon_device(uint8_t deviceID)
 	// from LS050T1SX01 data sheet
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
 	// unlock mfr command write
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04B0);    // cmd=B0, data=04
+	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04B0);  // cmd=B0, data=04
 	PAUSE_BETWEEN_COMMANDS();
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  // no of bytes to send
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0000);    // cmd=00
@@ -339,7 +339,7 @@ bool init_solomon_device(uint8_t deviceID)
 	PAUSE_BETWEEN_COMMANDS();
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
 	// remove NVM reload after sleep out.
-	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0xD6, 0x01);    // cmd=D6, data=01
+	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0xD6, 0x01);  // cmd=D6, data=01
 	PAUSE_BETWEEN_COMMANDS();
 #if 1
 	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, 0x0);  // Set DCS bit.
@@ -367,7 +367,7 @@ bool init_solomon_device(uint8_t deviceID)
 	svr_yield_ms(120);
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0011);  // sleep out
 	svr_yield_ms(120);
-#endif                                                     // SVR_TURN_ON_DISPLAY_DURING_INIT
+#endif  // SVR_TURN_ON_DISPLAY_DURING_INIT
 
 // end of LS050T1SX01 data sheet
 #endif

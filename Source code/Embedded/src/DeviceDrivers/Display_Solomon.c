@@ -91,14 +91,23 @@ inline bool Display_Internal_Reset_End(uint8_t deviceID)
 }
 #endif  // SVR_PANEL_RESET_PINS
 
+static inline void WriteDigitPlus1(uint8_t digit)
+{
+	const char str[] = {(digit > 8 ? '?' : (digit + '1')), '\0'};
+	Write(str);
+}
+
+static inline void WriteDigit(uint8_t digit)
+{
+	const char str[] = {(digit > 9 ? '?' : (digit + '0')), '\0'};
+	Write(str);
+}
+
 void Display_Init(uint8_t deviceID)
 {
 	Write("Init for display ");
-	/// Single digit sprintf substitute.
-	const char displayNum[] = {deviceID + '1', '\0'};
-	WriteLn(displayNum);
-
-	Solomon_t *sol = solomon_get_channel(deviceID);
+	WriteDigitPlus1(deviceID);
+	WriteEndl();
 
 	/// Reset the solomon and the panel.
 	solomon_start_reset(sol);
@@ -137,6 +146,9 @@ void Display_Init(uint8_t deviceID)
 
 void Display_On(uint8_t deviceID)
 {
+	Write("Turning display ");
+	WriteDigitPlus1(deviceID);
+	WriteLn(" on");
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
 	Display_Internal_Reset_Begin(deviceID);
 	svr_yield_ms(10);  // at least 1
@@ -152,11 +164,6 @@ void Display_On(uint8_t deviceID)
 		return;
 	}
 #endif  // defined(SVR_HAVE_SHARP_LCD)
-	Write("Turning display ");
-	/// Single digit sprintf substitute.
-	const char displayNum[] = {deviceID + '1', '\0'};
-	Write(displayNum);
-	WriteLn(" on");
 
 	Display_Internal_Reset_End(deviceID);
 	svr_yield_ms(100);

@@ -102,6 +102,12 @@ void custom_board_init(void)
 
 #endif
 
+#if defined(SVR_HAVE_FPGA) && defined(FPGA_Reset_Pin)
+	// start FPGA in reset mode until there is video
+	// This keeps backlight off on dSight
+	ioport_configure_pin(FPGA_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
+#endif  // defined(SVR_HAVE_FPGA) && defined(FPGA_Reset_Pin)
+
 // Solomon SSD2848 IO Init.
 #ifdef SVR_HAVE_SOLOMON1
 	ioport_configure_pin(Solomon_SPI_SCK, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
@@ -204,17 +210,6 @@ void custom_board_init(void)
 	/// @todo investigate this Backlight pin
 	ioport_configure_pin(Backlight, IOPORT_DIR_OUTPUT | IOPORT_INIT_HIGH);
 #endif
-
-#ifdef SVR_HAVE_FPGA
-
-#ifdef OSVRHDK
-	ioport_configure_pin(FPGA_Reset_Pin,
-	                     IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);  // start FPGA in reset mode until there is video
-#elif defined(FPGA_Reset_Pin)
-	ioport_configure_pin(FPGA_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
-#endif  // OSVRHDK
-
-#endif  // SVR_HAVE_FPGA
 
 // init PWM for display brightness and strobing
 

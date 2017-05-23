@@ -43,25 +43,52 @@ void Display_System_Init()
 }
 
 /// Pulls panel reset line appropriately to start panel reset, if possible.
+/// Also begins reset of corresponding solomon device.
 /// @param deviceID 0-indexed panel ID
 static void Display_Internal_Reset_Begin(uint8_t deviceID);
 /// Pulls panel reset line appropriately to end panel reset, if possible.
+/// Also ends reset of corresponding solomon device.
 /// @param deviceID 0-indexed panel ID
-static void Display_Internal_Reset_End(uint8_t deviceID);
+/// @return true if device was actually in reset.
+static bool Display_Internal_Reset_End(uint8_t deviceID);
 
+static bool s_inReset[SVR_HAVE_SOLOMON] =
+#ifdef SVR_HAVE_DISPLAY2
+    {true, true};
+#else
+    {true};
+#endif
 #ifdef SVR_PANEL_RESET_PINS
 static port_pin_t s_resetPins[] = SVR_PANEL_RESET_PINS;
-inline void Display_Internal_Reset_Begin(uint8_t deviceID)
+
+static inline void Display_Internal_Reset_Begin(uint8_t deviceID)
 {
+	s_inReset[deviceID] = true;
 	ioport_set_pin_level(s_resetPins[deviceID], SVR_PANEL_RESET_VALUE);
+	solomon_start_reset(solomon_get_channel(deviceID));
 }
-inline void Display_Internal_Reset_End(uint8_t deviceID)
+
+static inline bool Display_Internal_Reset_End(uint8_t deviceID)
 {
+	const bool wasInReset = s_inReset[deviceID];
 	ioport_set_pin_level(s_resetPins[deviceID], SVR_PANEL_RESET_VALUE);
+	solomon_end_reset(solomon_get_channel(deviceID));
+	s_inReset[deviceID] = false;
+	return wasInReset;
 }
 #else
-inline Display_Internal_Reset_Begin(uint8_t deviceID) { /* no-op - access to reset line not provided */}
-inline Display_Internal_Reset_End(uint8_t deviceID) { /* no-op - access to reset line not provided */}
+inline void Display_Internal_Reset_Begin(uint8_t deviceID)
+{
+	/* no-op - access to reset line not provided */
+	s_inReset[deviceID] = true;
+}
+inline bool Display_Internal_Reset_End(uint8_t deviceID)
+{
+	/* no-op - access to reset line not provided */
+	const bool wasInReset = s_inReset[deviceID];
+	s_inReset[deviceID] = false;
+	return wasInReset;
+}
 #endif  // SVR_PANEL_RESET_PINS
 
 void Display_Init(uint8_t deviceID)

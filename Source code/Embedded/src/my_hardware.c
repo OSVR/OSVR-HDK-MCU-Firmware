@@ -102,11 +102,30 @@ void custom_board_init(void)
 
 #endif
 
+#ifdef SVR_IS_DSIGHT
+	/// Goes high when all the main rails are up - pwrgd on earlier ones go to the enable pin of later ones.
+	/// 2V5 is the last one in the chain.
+	ioport_configure_pin(PS_PGD_2V5_PIN, IOPORT_DIR_INPUT);
+	do
+	{
+		delay_us(10);
+	} while (!ioport_get_pin_level(PS_PGD_2V5_PIN));
+#endif
+
 #if defined(SVR_HAVE_FPGA) && defined(FPGA_Reset_Pin)
 	// start FPGA in reset mode until there is video
 	// This keeps backlight off on dSight
 	ioport_configure_pin(FPGA_Reset_Pin, IOPORT_DIR_OUTPUT | IOPORT_INIT_LOW);
 #endif  // defined(SVR_HAVE_FPGA) && defined(FPGA_Reset_Pin)
+
+#ifdef SVR_IS_DSIGHT
+	/// Goes high when the DDR termination voltage power supply is operating in spec.
+	ioport_configure_pin(VTT_PGOOD_X_PIN, IOPORT_DIR_INPUT);
+	do
+	{
+		delay_us(10);
+	} while (!ioport_get_pin_level(VTT_PGOOD_X_PIN));
+#endif
 
 // Solomon SSD2848 IO Init.
 #ifdef SVR_HAVE_SOLOMON1

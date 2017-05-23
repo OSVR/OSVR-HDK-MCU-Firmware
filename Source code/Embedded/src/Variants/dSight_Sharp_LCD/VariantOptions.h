@@ -118,4 +118,10 @@
 /// Pin can pull down GLOBAL_RST net, which actually only resets FPGAs and their memory.
 #define FPGA_Reset_Pin IOPORT_CREATE_PIN(PORTB, 2)
 
+/// Goes high when the termination power supply for the FPGA DDR memory is ready and operating.
+#define VTT_PGOOD_X_PIN IOPORT_CREATE_PIN(PORTB, 0)
+
+/// Goes high when the 2.5V power supply is OK (which is the last of the main rails to come up)
+#define PS_PGD_2V5_PIN IOPORT_CREATE_PIN(PORTD, 0)
+
 #endif /* VARIANTOPTIONS_H_ */

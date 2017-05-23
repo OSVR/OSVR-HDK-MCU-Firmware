@@ -16,6 +16,7 @@
 #include "DeviceDrivers/TI-TMDS442.h"
 #include "Console.h"
 #include "SvrYield.h"
+#include "SideBySide.h"
 
 void VideoInput_Init()
 {
@@ -60,11 +61,57 @@ static inline void VideoInput_dSight_dump_state(void)
 		WriteLn("Not locked");
 	}
 }
+static inline bool needSxs(uint8_t plugSource)
+{
+	return (plugSource == TMDS442_PLUG_SOURCE_A) || (plugSource == TMDS442_PLUG_SOURCE_B);
+}
+
+static inline void sxsToggleWorkaround_doActualWorkaround(void)
+{
+	WriteLn("Performing side-by-side mode double toggle to enforce correct behavior.");
+	SxS_Toggle();
+	svr_yield_ms(100);
+	SxS_Toggle();
+}
+
+static bool s_gotSwitchChange = true;
+static void sxsToggleWorkaround_signalSwitchChange(void) { s_gotSwitchChange = true; }
+/// For some reason, esp. with new FPGA code, dSight needs the side-by-side toggled twice when it gets a new display
+/// signal that is single-port only.
+static void sxsToggleWorkaround_task(void)
+{
+	static bool wasVideoDetected = false;
+	bool nowVideoDetected = VideoInput_Events.videoDetected;
+#if 1
+	/// This being true means that the main loop cleared the video detected event, so has presumably turned on displays,
+	/// etc.
+	bool videoDetectionHandled = (wasVideoDetected && !nowVideoDetected);
+	if (videoDetectionHandled)
+	{
+		sxsToggleWorkaround_doActualWorkaround();
+	}
+#else
+	if (nowVideoDetected && s_gotSwitchChange)
+	{
+		sxsToggleWorkaround_doActualWorkaround();
+		s_gotSwitchChange = false;
+	}
+#endif
+
+	wasVideoDetected = nowVideoDetected;
+}
+
 static inline void VideoInput_dSight_do_step(void)
 {
+	static bool gotFirstVideo = false;
+	static bool needsSxSToggleWorkaroundNextTime = false;
+	bool needsSxSToggleWorkaround = needsSxSToggleWorkaroundNextTime;
+	needsSxSToggleWorkaroundNextTime = false;
+
 	static bool gotTmdsChange = false;
 	bool gotTmdsChangeLastTime = gotTmdsChange;
 	gotTmdsChange = false;
+
 	bool switchLostInput = false;
 	VideoInput_dSight_dump_state();
 	if (HDMISwitch_task)
@@ -76,9 +123,11 @@ static inline void VideoInput_dSight_do_step(void)
 		if (TMDS442_Task())
 		{
 			VideoInput_dSight_dump_state();
+			sxsToggleWorkaround_signalSwitchChange();
 			gotTmdsChange = true;
 			svr_yield_ms(100);
 			const uint8_t newPlugSource = TMDS442_GetPlugSourceData();
+			needsSxSToggleWorkaroundNextTime = (needSxs(newPlugSource) != needSxs(initialPlugSource));
 			if (initialPlugSource != 0 && newPlugSource != 0)
 			{
 				// OK, so plugs changed without initial gain or complete loss - we will simulate a complete loss.
@@ -101,6 +150,15 @@ static inline void VideoInput_dSight_do_step(void)
 	{
 		NXP_HDMI_Task();
 	}
+#if 0
+	if (VideoInput_Events.firstVideoDetected && !gotFirstVideo)
+	{
+		/// First time we get video, do the toggle.
+		gotFirstVideo = true;
+		needsSxSToggleWorkaroundNextTime = true;
+	}
+#endif
+
 #ifdef SVR_HAVE_SHARP_LCD
 	if (VideoInput_Events.videoDetected)
 	{
@@ -118,6 +176,7 @@ static inline void VideoInput_dSight_do_step(void)
 		WriteLn("VideoInput: TMDS detected full signal loss, but NXP did not. Reporting anyway.");
 		VideoInput_Protected_Report_No_Signal();
 	}
+	sxsToggleWorkaround_task();
 }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
 void VideoInput_Task(void) {}

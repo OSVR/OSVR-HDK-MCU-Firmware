@@ -110,17 +110,15 @@ void Display_Init(uint8_t deviceID)
 	WriteEndl();
 
 	/// Reset the solomon and the panel.
-	solomon_start_reset(sol);
 	Display_Internal_Reset_Begin(deviceID);
-
-	svr_yield_ms(100);
-	solomon_end_reset(sol);
-	solomon_end_video_shutdown(sol);
 	svr_yield_ms(100);
 	Display_Internal_Reset_End(deviceID);
 
 	svr_yield_ms(100);
 	init_solomon_device(deviceID);
+	svr_yield_ms(100);
+	Solomon_t *sol = solomon_get_channel(deviceID);
+	solomon_end_video_shutdown(sol);
 #ifdef SVR_HAVE_SHARP_LCD
 
 	solomon_select(sol);

@@ -19,12 +19,7 @@
 #include "VideoInput.h"
 
 #if defined(SVR_HAVE_SHARP_LCD)  // sharp 5" or 5.5"
-//#define SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
-#endif  // defined(SVR_HAVE_SHARP_LCD)
-
-#ifdef SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
-#include "VideoInput.h"
-#endif  // SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
+#endif                           // defined(SVR_HAVE_SHARP_LCD)
 
 void Display_System_Init()
 {
@@ -111,35 +106,6 @@ void Display_Init(uint8_t deviceID)
 
 	/// Reset the solomon and the panel.
 	Display_Internal_Reset_Begin(deviceID);
-	svr_yield_ms(100);
-	Display_Internal_Reset_End(deviceID);
-
-	svr_yield_ms(100);
-	init_solomon_device(deviceID);
-	svr_yield_ms(100);
-	Solomon_t *sol = solomon_get_channel(deviceID);
-	solomon_end_video_shutdown(sol);
-#ifdef SVR_HAVE_SHARP_LCD
-
-	solomon_select(sol);
-	solomon_cfgr_set_clear_bits(sol, SOLOMON_CFGR_DCS_bm, 0);  // Set DCS bit.
-
-	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);     // no of bytes to send
-	solomon_write_reg_word(sol, SOLOMON_REG_VCR, 0x0000);       // VC
-	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x28, 0x00);  // display off
-	svr_yield_ms(20);
-	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0x10, 0x00);  // sleep in
-	svr_yield_ms(80);
-	// Clear VEN and HS bits.
-	solomon_cfgr_set_clear_bits(sol, 0x0, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set VEN and HS bits.
-	solomon_deselect(sol);
-#endif
-#ifdef SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
-	if (!VideoInput_Get_Status())
-	{
-		Display_Off(deviceID);
-	}
-#endif  // SVR_DISPLAY_SHOULD_TURN_OFF_AFTER_INIT
 }
 
 void Display_On(uint8_t deviceID)

@@ -93,8 +93,20 @@ bool i2cWriteRegister(uint8_t addr, uint8_t RegNum, uint8_t TxByte)
 		}
 #endif // SVR_HAVE_NXP2
     }
-    //else if (addr==NXP_2_ADDR)
-
+#ifdef SVR_HAVE_NXP2
+    else if (addr==NXP_2_ADDR)
+	{
+		WriteLn("NXP 2 match");
+		packet.chip=actualNXP_2_ADDR;
+		Success = (twi_master_write(TWI_NXP2_PORT, &packet) == TWI_SUCCESS);
+	}
+	else if (addr==CEC_2_ADDR)
+	{
+		WriteLn("CEC 2 match");
+		packet.chip=actualCEC_2_ADDR;
+		Success = (twi_master_write(TWI_NXP2_PORT, &packet) == TWI_SUCCESS);
+	}
+#endif // SVR_HAVE_NXP2
 
     else
         Success = false;
@@ -126,11 +138,11 @@ uint8_t NXPReadRegister(uint8_t addr, uint8_t RegNum)
     return 0;
 #endif
 
-#ifdef HDMI_DEBUG
-    //sprintf(Msg, "r reg %x %x",addr,RegNum);
-    //dWriteLn(Msg,debugI2CReadMask);
+#ifdef HDMI_VERY_VERBOSE
+    sprintf(Msg, "r reg %02x %02x",addr,RegNum);
+    dWriteLn(Msg,debugI2CReadMask);
 #endif
-
+	TWI_t * port = TWI_NXP1_PORT;
     twi_package_t packet_received = {
         .addr[0]      = RegNum,      // TWI slave memory address data MSB
         .addr_length  = sizeof (uint8_t),     // TWI slave memory address data size
@@ -142,20 +154,31 @@ uint8_t NXPReadRegister(uint8_t addr, uint8_t RegNum)
     // Perform a multi-byte read access then check the result.
     if (addr==actualNXP_1_ADDR)
     {
-        Outcome=twi_master_read(TWI_NXP1_PORT, &packet_received);
-        Result= (Outcome == TWI_SUCCESS);
+		// this is the default setting
     }
     else if (addr==actualCEC_1_ADDR)
     {
         packet_received.chip=CEC_1_ADDR;
-        Outcome=twi_master_read(TWI_NXP1_PORT, &packet_received);
-        Result= (Outcome == TWI_SUCCESS);
     }
+#ifdef SVR_HAVE_NXP2
+	else if (addr == NXP_2_ADDR)
+	{
+		port = TWI_NXP2_PORT;
+		packet_received.chip = actualNXP_2_ADDR;
+	}
+	else if (addr == CEC_2_ADDR)
+	{
+		port = TWI_NXP2_PORT;
+		packet_received.chip = actualNXP_2_ADDR;
+	}
+#endif
     else
     {
-        Outcome=0;
-        Result=false;
+		// Unrecognized
+        return 0;
     }
+    Outcome=twi_master_read(port, &packet_received);
+    Result= (Outcome == TWI_SUCCESS);
 
     if (Result)
     {

@@ -71,13 +71,13 @@ bool i2cWriteRegister(uint8_t addr, uint8_t RegNum, uint8_t TxByte)
     if (addr==actualNXP_1_ADDR)
     {
         Success = (twi_master_write(TWI_NXP1_PORT, &packet) == TWI_SUCCESS);
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
         if (NXP_HDMIShadow)
 		{
 			//packet.chip=actualNXP_1_ADDR;
             Success = (twi_master_write(TWI_NXP2_PORT, &packet) == TWI_SUCCESS);
 		}
-#endif
+#endif // SVR_HAVE_NXP2
     }
     //else if (addr==(CEC_1_ADDR+1))
     else if (addr==actualCEC_1_ADDR)
@@ -85,13 +85,13 @@ bool i2cWriteRegister(uint8_t addr, uint8_t RegNum, uint8_t TxByte)
         WriteLn("CEC 1 match");
         packet.chip=actualCEC_1_ADDR;
         Success = (twi_master_write(TWI_NXP1_PORT, &packet) == TWI_SUCCESS);
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
         if (NXP_HDMIShadow)
 		{
 			//packet.chip=actualCEC_1_ADDR;
             Success = (twi_master_write(TWI_NXP2_PORT, &packet) == TWI_SUCCESS);
 		}
-#endif
+#endif // SVR_HAVE_NXP2
     }
     //else if (addr==NXP_2_ADDR)
 
@@ -199,7 +199,7 @@ uint8_t NXPReadMulti(uint8_t addr,uint8_t RegNum,uint8_t len,UInt8 *pdat) // rea
         Result=(twi_master_read(TWI_NXP1_PORT, &packet_received) == TWI_SUCCESS);
     else if (addr==CEC_1_ADDR)
         Result=(twi_master_read(TWI_NXP1_PORT, &packet_received) == TWI_SUCCESS);
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
     else if (addr==NXP_2_ADDR)
     {
         packet_received.chip=NXP_1_ADDR;
@@ -210,7 +210,7 @@ uint8_t NXPReadMulti(uint8_t addr,uint8_t RegNum,uint8_t len,UInt8 *pdat) // rea
         packet_received.chip=CEC_1_ADDR;
         Result=(twi_master_read(TWI_NXP2_PORT, &packet_received) == TWI_SUCCESS);
     }
-#endif
+#endif // SVR_HAVE_NXP2
     else
         Result=false;
 
@@ -289,12 +289,12 @@ tmErrorCode_t  i2cWrite(i2cRegisterType_t type_register,tmbslHdmiSysArgs_t *pSys
 
             i2cWriteRegister(NXP_1_ADDR, first, *pdat);
 
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
             if (NXP_HDMIShadow)
             {
                 //i2cWriteRegister(NXP_2_ADDR, first, *pdat);
             }
-#endif
+#endif // SVR_HAVE_NXP2
             //_delay_ms(5);
             first++;
             pdat++;

@@ -1489,7 +1489,7 @@ void NXP_HDMI_Reset(uint8_t HDMINum)
 		delay_ms(1);
 		ioport_set_pin_high(NXP1_Reset_Pin);
 	}
-#ifndef OSVRHDK
+#ifdef SVR_HAVE_NXP2
 	else if (HDMINum == 2)
 	{
 		WriteLn("reset HDMI2");
@@ -1497,7 +1497,7 @@ void NXP_HDMI_Reset(uint8_t HDMINum)
 		delay_ms(1);
 		ioport_set_pin_high(NXP2_Reset_Pin);
 	}
-#endif
+#endif // SVR_HAVE_NXP2
 	else
 		WriteLn("Wrong HDMI num");
 }

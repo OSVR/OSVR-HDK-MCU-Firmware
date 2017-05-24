@@ -2658,10 +2658,10 @@ tmbslTDA1997XGetSyncTimings
 {
     tmErrorCode_t   errCode = TM_OK;
     /* To store reg values from start addr 0x19 to end addr 0x1F. */
-    UInt8           pTabRegValue[7];
+    UInt8           pTabRegValue[7] = {0};
 
     /* To store reg values from start addr 0x20 to end addr 0x33. */
-    UInt8           pData[20];
+    UInt8           pData[20] = {0};
 
     /* Test pointers <> NULL */
     RETIF(pVerticalPeriod == Null,TMBSL_ERR_BSLHDMIRX_INCONSISTENT_PARAMS)

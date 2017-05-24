@@ -7093,7 +7093,7 @@ static tmErrorCode_t dlHdmiRxCheckResolutionSyncTimings
     /* Structure to be used to get the format parameters for determining the
      * resolution with accuracy.
      */
-    tmbslHdmiRxFormatMeas_t     extendedFormatParam;
+    tmbslHdmiRxFormatMeas_t     extendedFormatParam = {0};
 
     /* by default, no resolution detected yet*/
     *pResolutionID = TMDL_HDMIRX_VIDEORES_UNKNOWN;

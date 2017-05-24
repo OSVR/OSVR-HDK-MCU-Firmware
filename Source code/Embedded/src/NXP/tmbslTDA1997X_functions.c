@@ -2683,8 +2683,8 @@ tmbslTDA1997XGetSyncTimings
     WriteLn(Msg);
 #endif // SVR_DEBUG_TIMING_MEASUREMENT
 
-    *pVerticalPeriod      = ( ((UInt32)(pTabRegValue[0] & MASK_VPER_MSB) << 16 ) |
-                              ((UInt32)(pTabRegValue[1]) <<  8 ) |
+    *pVerticalPeriod      = ( (((UInt32)(pTabRegValue[0] & MASK_VPER_MSB)) << 16 ) |
+                              (((UInt32)(pTabRegValue[1])) <<  8 ) |
                               ((UInt32)(pTabRegValue[2]) ) );
 
 #ifdef SVR_DEBUG_TIMING_MEASUREMENT
@@ -2693,7 +2693,7 @@ tmbslTDA1997XGetSyncTimings
     WriteLn(Msg);
 #endif // SVR_DEBUG_TIMING_MEASUREMENT
 
-    *pHorizontalPeriod    = ( ( (UInt16)(pTabRegValue[3] & MASK_HPER_MSB) <<  8 ) |
+    *pHorizontalPeriod    = ( ( ((UInt16)(pTabRegValue[3] & MASK_HPER_MSB)) <<  8 ) |
                               ( (UInt16)(pTabRegValue[4]) ) );
 
 #ifdef SVR_DEBUG_TIMING_MEASUREMENT
@@ -2702,7 +2702,7 @@ tmbslTDA1997XGetSyncTimings
     WriteLn(Msg);
 #endif // SVR_DEBUG_TIMING_MEASUREMENT
 
-    *pHorizontalSyncWidth = ( ( (UInt16)(pTabRegValue[5] & MASK_HSWIDTH_MSB) <<  8 ) |
+    *pHorizontalSyncWidth = ( ( ((UInt16)(pTabRegValue[5] & MASK_HSWIDTH_MSB)) <<  8 ) |
                               ( (UInt16)(pTabRegValue[6]) ) );
 
 #ifdef SVR_DEBUG_TIMING_MEASUREMENT
@@ -2729,31 +2729,31 @@ tmbslTDA1997XGetSyncTimings
 
     /* Read the FMT_H_TOT_* registers */
     pFormatMeasurements->horizontalTotalPeriod =
-        (UInt16)(pData[0] & 0x3F) << 8 | (UInt16)pData[1];
+        (((UInt16)(pData[0] & 0x3F)) << 8) | ((UInt16)pData[1]);
 
     /* Read the FMT_H_ACT_* registers */
     pFormatMeasurements->horizontalVideoActiveWidth =
-        (UInt16)(pData[2] & 0x3F) << 8 | (UInt16)pData[3];
+        (((UInt16)(pData[2] & 0x3F)) << 8) | ((UInt16)pData[3]);
 
     /* Read the FMT_H_FRONT_* registers */
     pFormatMeasurements->horizontalFrontPorchWidth =
-        (UInt16)(pData[4] & 0x3F) << 8 | (UInt16)pData[5];
+        (((UInt16)(pData[4] & 0x3F)) << 8) | ((UInt16)pData[5]);
 
     /* Read the FMT_H_SYNC_* registers */
     pFormatMeasurements->horizontalSyncWidthPixClk =
-        (UInt16)(pData[6] & 0x3F) << 8 | (UInt16)pData[7];
+        (((UInt16)(pData[6] & 0x3F)) << 8) | ((UInt16)pData[7]);
 
     /* Read the FMT_H_BACK_* registers */
     pFormatMeasurements->horizontalBackPorchWidth =
-        (UInt16)(pData[8] & 0x3F) << 8 | (UInt16)pData[9];
+        (((UInt16)(pData[8] & 0x3F)) << 8) | ((UInt16)pData[9]);
 
     /* Read the FMT_V_TOT_* registers */
     pFormatMeasurements->verticalTotalPeriod =
-        (UInt16)(pData[10] & 0x3F) << 8 | (UInt16)pData[11];
+        (((UInt16)(pData[10] & 0x3F)) << 8) | ((UInt16)pData[11]);
 
     /* Read the FMT_V_ACT_* registers */
     pFormatMeasurements->verticalVideoActiveWidth =
-        (UInt16)(pData[12] & 0x3F) << 8 | (UInt16)pData[13];
+        (((UInt16)(pData[12] & 0x3F)) << 8) | ((UInt16)pData[13]);
 
     /* Read the FMT_V_FRONT_F1 register */
     pFormatMeasurements->verticalFrontPorchWidthF1 = pData[14];

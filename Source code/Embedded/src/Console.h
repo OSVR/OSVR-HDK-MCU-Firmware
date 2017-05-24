@@ -21,6 +21,9 @@ uint8_t GetDebugLevel(void);
 void Write(const char *const Data);
 void dWrite(const char *const Data, uint8_t DebugMask);
 void WriteLn(const char *const Data);
+/// this function prints a string that is stored in program memory to the console.
+void WriteLn_progmem(const char *const Msg);
+
 // Just write an end of line.
 void WriteEndl(void);
 void dWriteLn(const char *const Data, uint8_t DebugMask);

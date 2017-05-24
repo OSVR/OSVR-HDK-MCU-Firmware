@@ -23,9 +23,6 @@
 #include "main.h"
 #include "my_hardware.h"
 
-// avr-libc headers
-#include <avr/pgmspace.h>
-
 // asf headers
 #include <delay.h>
 #include <ioport.h>
@@ -33,27 +30,6 @@
 
 // standard headers
 #include <stdio.h>
-/// this function prints a string that is stored in program memory to the console.
-void WriteLn_progmem(const char *Msg);
-
-/// @todo ensure this is either a: not called during interrupts or b: all config functions disable interrupts during
-/// their operation, or they could result in conflicts/corruption.
-void WriteLn_progmem(const char *Msg)
-{
-	uint8_t i;
-	char Str[40];
-	char c;
-
-	i = 0;
-	do
-	{
-		c = pgm_read_byte(&(Msg[i]));
-		Str[i] = c;
-		i++;
-	} while ((c != 0) && (i < 40));  // prevent overflow
-	Str[39] = 0;                     // make sure the string is terminated
-	WriteLn(Str);
-}
 
 #ifdef HDMI_DEBUG
 #define HDMI_debug_progmem(Message) WriteLn_progmem(Message);

@@ -514,7 +514,11 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     gDlHdmiRxSetupInfo0.hdcpMode = TMDL_HDMIRX_HDCPMODE_AUTO;
     gDlHdmiRxSetupInfo0.hdcpRepeaterEnable = False;
     /// @todo Should this and related be disabled on dSight where EDID is supplied by external EEPROM?
-    gDlHdmiRxSetupInfo0.internalEdid = true;
+#ifdef SVR_EXTERNAL_EDID
+    gDlHdmiRxSetupInfo0.internalEdid = false;
+#else
+	gDlHdmiRxSetupInfo0.internalEdid = true;
+#endif // SVR_EXTERNAL_EDID
 
 
 #ifndef BYPASS_FIRST_NXP
@@ -525,12 +529,22 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
 
 
     /* The internal EDIDs are enabled, so load EDID data into embedded EDID memory */
+#ifndef SVR_EXTERNAL_EDID
+#if defined(OSVRHDK)
+	static UInt8 * const edid = (UInt8 *) edid1080p6050xvYCC;
+	static UInt16 * const paEdid = (UInt16 *) sPAEdid;
+	static const UInt8 paOffsetEdid = sPAOffsetEdid;
+#else
+#error "Please supply EDID data or define SVR_EXTERNAL_EDID for your variant"
+#endif
+#endif // !SVR_EXTERNAL_EDID
+
 #ifdef TMFL_TDA19972_FAMILY
 
-#ifdef OSVRHDK
+#ifndef SVR_EXTERNAL_EDID
     /* The internal EDIDs are enabled, so we can now load EDID data into embedded EDID memory */
-    NXP_Private_PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, (UInt8 *) edid1080p6050xvYCC, (UInt16 *) sPAEdid, Reg_EDID_SPA_SUB), __LINE__);
-#endif
+    NXP_Private_PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, edid, paEdid, Reg_EDID_SPA_SUB), __LINE__);
+#endif // !SVR_EXTERNAL_EDID
 
     /* Load DDC and RT data into embedded memory */ //
 #ifndef BYPASS_FIRST_NXP
@@ -540,10 +554,12 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     /* Set HPD high */
     NXP_Private_PRINTIF(tmdlHdmiRxManualHPD(gDlHdmiRxInstance0, TMDL_HDMIRX_HPD_HIGH), __LINE__);
 #endif
-#else
-    NXP_Private_PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, (UInt8 *) edid1080p6050xvYCC, (UInt16 *) sPAEdid, sPAOffsetEdid), __LINE__);
+#else // TMFL_TDA19972_FAMILY
+#ifndef SVR_EXTERNAL_EDID
+    NXP_Private_PRINTIF(tmdlHdmiRxLoadEdidData(gDlHdmiRxInstance0, edid, paEdid, paOffsetEdid), __LINE__);
+#endif // !SVR_EXTERNAL_EDID
 
-#endif
+#endif // TMFL_TDA19972_FAMILY
 
 
     /*-----------------------------------------------------------------------------*/

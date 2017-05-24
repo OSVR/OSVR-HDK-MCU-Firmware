@@ -124,4 +124,7 @@
 /// Goes high when the 2.5V power supply is OK (which is the last of the main rails to come up)
 #define PS_PGD_2V5_PIN IOPORT_CREATE_PIN(PORTD, 0)
 
+/// EDID is in a separate eeprom, not supplied by the firmware.
+#define SVR_EXTERNAL_EDID
+
 #endif /* VARIANTOPTIONS_H_ */

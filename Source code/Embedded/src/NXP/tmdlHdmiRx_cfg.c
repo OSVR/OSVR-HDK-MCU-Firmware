@@ -166,9 +166,7 @@ const tmdlHdmiRxCfgSeed_t kRxSeedTable[RX_SEED_TABLE_LEN] = {
 //#endif
 //const tmdlHdmiRxCfgResolution_t resolutionInfo[RES_SUPPORTED_NB_0]={
 
-#define RES_SUPPORTED_NB_0 TMDL_HDMIRX_VIDEORES_UNKNOWN
-
-const tmdlHdmiRxCfgResolution_t resolutionInfo[TMDL_HDMIRX_VIDEORES_UNKNOWN]= {
+const tmdlHdmiRxCfgResolution_t resolutionInfo[]= {
     /* Low TV */
 
     /* 60 Hz TV */
@@ -213,6 +211,8 @@ const tmdlHdmiRxCfgResolution_t resolutionInfo[TMDL_HDMIRX_VIDEORES_UNKNOWN]= {
 
 };
 
+#define RES_SUPPORTED_NB_0 (sizeof(resolutionInfo)/sizeof(resolutionInfo[0])
+
 /* Array providing caracteristics of video mode for resolution detection by   */
 /* the driver.                                                                */
 //#ifdef SUPPORT_3D_FP
@@ -222,9 +222,7 @@ const tmdlHdmiRxCfgResolution_t resolutionInfo[TMDL_HDMIRX_VIDEORES_UNKNOWN]= {
 //#endif
 //const tmdlHdmiRxCfgResolutionDetect_t resolutionToBeDetectedList[RES_TO_BE_DETECTED_NB_0]={
 
-#define RES_TO_BE_DETECTED_NB_0 TMDL_HDMIRX_VIDEORES_UNKNOWN
-
-const tmdlHdmiRxCfgResolutionDetect_t resolutionToBeDetectedList[TMDL_HDMIRX_VIDEORES_UNKNOWN]= {
+const tmdlHdmiRxCfgResolutionDetect_t resolutionToBeDetectedList[]= {
     /* Low TV */
     /* 60 Hz TV */
     {TMDL_HDMIRX_VIDEORES_720_480p_60HZ,    446870, 453626,  850,  865,  60, 63},
@@ -264,6 +262,8 @@ const tmdlHdmiRxCfgResolutionDetect_t resolutionToBeDetectedList[TMDL_HDMIRX_VID
 
     {TMDL_HDMIRX_VIDEORES_1080_1920p_60HZ,    440046, 454046, 209, 249, 1, 4} // V 6e5ce e5 HS 2 - was 450046
 };
+
+#define RES_TO_BE_DETECTED_NB_0 (sizeof(resolutionToBeDetectedList)/sizeof(resolutionToBeDetectedList[0]))
 
 /* Array providing timings values of video mode for resolution sync timing    */
 /* configuration.                                                             */
@@ -395,13 +395,11 @@ tmdlHdmiRxCapabilities_t capabilitiesList0 = {
     TMDL_HDMIRX_HDMI_VERSION_1_3a, /* HDMI protocol version supported */
     {   False,                        /* HBR supported */
         False,                        /* DST supported */
-        False
-    },                       /* OBA supported */
+        False},                       /* OBA supported */
     True,                          /* fast re-auth supported */
     False,                         /* analog input supported */
     False,                         /* HDMI 1.1 features supported */
-    True
-};                         /* Internal EDID feature supported */
+    True};                         /* Internal EDID feature supported */
 
 
 
@@ -528,10 +526,6 @@ const tmbslHdmiRxFunctionsList_t bslHdmiRxFunctionsList= {
 
 /* DO NOT MODIFY, this table is used for transmission of the configuration to */
 /* the core driver         */
-
-
-/* DO NOT MODIFY, this table is used for transmission of the configuration to */
-/* the core driver                                                            */
 tmdlHdmiRxDriverConfigTable_t driverConfigTable[MAX_UNITS] = {
     {
         COMMAND_TASK_PRIORITY_0,

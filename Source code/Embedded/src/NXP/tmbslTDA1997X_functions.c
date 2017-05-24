@@ -548,7 +548,7 @@ bslTDA1997XWriteI2C
 
 #ifdef HDMI_DEBUG
                 WriteLn("Address update 1");
-#endif
+#endif // HDMI_DEBUG
 
                 /* update RxHdmiConfig[unit].uHwAddress and RxHdmiConfig[unit].uCECAddres */
                 RxHdmiConfig[unit].uHwAddress -= (oldSlaveAddr & 0x7);
@@ -560,14 +560,25 @@ bslTDA1997XWriteI2C
                 {
                     actualNXP_1_ADDR=RxHdmiConfig[unit].uHwAddress;
                     actualCEC_1_ADDR=RxHdmiConfig[unit].uCECAddress;
+#ifdef HDMI_VERBOSE
+                    char myMsg[50];
+                    sprintf(myMsg, "NXP 1 addresses: %02x %02x", actualNXP_1_ADDR, actualCEC_1_ADDR);
+                    WriteLn(myMsg);
+#endif // HDMI_VERBOSE
                 }
 #ifdef SVR_HAVE_NXP2
                 else if (unit==1)
                 {
                     actualNXP_2_ADDR=RxHdmiConfig[unit].uHwAddress;
                     actualCEC_2_ADDR=RxHdmiConfig[unit].uCECAddress;
+#ifdef HDMI_VERBOSE
+                    char myMsg[50];
+                    sprintf(myMsg, "NXP 2 addresses: %02x %02x", actualNXP_2_ADDR, actualCEC_2_ADDR);
+                    WriteLn(myMsg);
+#endif // HDMI_VERBOSE
                 }
-#endif
+#endif // SVR_HAVE_NXP2
+
                 /* update slaveAddr */
                 pSysArgs->slaveAddr = RxHdmiConfig[unit].uHwAddress;
 
@@ -744,28 +755,28 @@ tmbslTDA1997XWriteI2C
                 /* update RxHdmiConfig[unit].uHwAddress and RxHdmiConfig[unit].uCECAddres */
 #ifdef HDMI_DEBUG
                 WriteLn("Address update");
-#endif
+#endif // HDMI_DEBUG
                 RxHdmiConfig[unit].uHwAddress -= (oldSlaveAddr & 0x7);
                 RxHdmiConfig[unit].uHwAddress += (*(pSysArgs->pData) &  0x7);
                 RxHdmiConfig[unit].uCECAddress -= ((oldSlaveAddr >>4) & 0x3);
                 RxHdmiConfig[unit].uCECAddress += ((*(pSysArgs->pData) >>4) &  0x3);
 #ifdef HDMI_DEBUG
-                sprintf(Msg,"u %d, i %d, c %d",unit,RxHdmiConfig[unit].uHwAddress ,RxHdmiConfig[unit].uCECAddress);
+                sprintf(Msg,"u %d, i 0x%02x, c 0x%02x",unit,RxHdmiConfig[unit].uHwAddress ,RxHdmiConfig[unit].uCECAddress);
                 WriteLn(Msg);
-#endif
+#endif // HDMI_DEBUG
 
                 if (unit==0)
                 {
                     actualNXP_1_ADDR=RxHdmiConfig[unit].uHwAddress;
                     actualCEC_1_ADDR=RxHdmiConfig[unit].uCECAddress;
                 }
-#ifndef	OSVRHDK
+#ifdef SVR_HAVE_NXP2
                 else if (unit==1)
                 {
                     actualNXP_2_ADDR=RxHdmiConfig[unit].uHwAddress;
                     actualCEC_2_ADDR=RxHdmiConfig[unit].uCECAddress;
                 }
-#endif
+#endif // SVR_HAVE_NXP2
 
                 /* update slaveAddr */
                 pSysArgs->slaveAddr = RxHdmiConfig[unit].uHwAddress;
@@ -806,7 +817,7 @@ tmbslTDA1997XWriteI2C
     {
 
 
-        sprintf(Msg,"CEC: %x",RxHdmiConfig[unit].uCECAddress);
+        sprintf(Msg,"CEC: 0x%02x",RxHdmiConfig[unit].uCECAddress);
         WriteLn(Msg);
         pSysArgs->slaveAddr = RxHdmiConfig[unit].uCECAddress;
         /* no page to program*/
@@ -1188,13 +1199,17 @@ tmbslTDA1997XInit
     errCode =  tmbslTDA1997XReadI2C(unit, (UInt16)SLAVE_ADDR, 1, &regValue);
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_READ)
     RxHdmiConfig[unit].uCECAddress += ((regValue >> 4) & 0x3);
-    sprintf(Msg,"U: %d CEC: %d",unit, RxHdmiConfig[unit].uCECAddress);
+    sprintf(Msg,"U: %d CEC: 0x%02x",unit, RxHdmiConfig[unit].uCECAddress);
     if (unit==0)
+    {
         actualCEC_1_ADDR=RxHdmiConfig[unit].uCECAddress;
-#ifndef OSVRHDK
+    }
+#ifdef SVR_HAVE_NXP2
     else if (unit==1)
+    {
         actualCEC_2_ADDR=RxHdmiConfig[unit].uCECAddress;
-#endif
+    }
+#endif // SVR_HAVE_NXP2
     WriteLn(Msg);
     /* CEC I2C address is now uptodate */
 

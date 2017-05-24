@@ -621,7 +621,14 @@ bslTDA1997XWriteI2C
     return TM_OK;
 }
 
-
+static tmErrorCode_t
+bslTDA1997XReadI2C
+(
+	tmUnitSelect_t          unit,
+	UInt16                  firstRegister,
+	UInt8                   lengthData,
+	UInt8                   *pBuffer
+);
 
 tmErrorCode_t
 tmbslTDA1997XWriteI2C
@@ -839,7 +846,7 @@ tmbslTDA1997XWriteI2C
                   inconsistent
 
  ******************************************************************************/
-tmErrorCode_t
+static tmErrorCode_t
 bslTDA1997XReadI2C
 (
     tmUnitSelect_t          unit,

@@ -27,6 +27,11 @@
 
 #include "BitUtilsC.h"
 
+#ifdef SVR_HAVE_SHARP_LCD
+/// we want different timings depending on whether or not we've rotated.
+#include "VideoInput.h"
+#endif
+
 #undef SVR_TURN_ON_DISPLAY_DURING_INIT
 
 #define SOLOMON_MAX_PLL_ATTEMPTS 40
@@ -220,8 +225,15 @@ bool init_solomon_device(uint8_t deviceID)
 	const Timings_t *t = &sharp50_from_code;
 	const ClockConfig_t *c = &sharpClockComputed;
 #else
-	/// These timings are a little "flickery" looking
-	const Timings_t *t = &sharp50_from_edid;
+	/// @todo Reliably re-initialize solomon/panel when orientation changes so we can use these different timings
+	/// accordingly.
+	const Timings_t *t = PortraitMode ?
+	                                  /// These timings are a little "flickery"/noisy looking in landscape mode
+	                                  /// but correct alignment in portrait
+	                         &sharp50_from_edid
+	                                  :
+	                                  /// these timings are slightly misaligned in portrait.
+	                         &sharp50_from_code;
 	const ClockConfig_t *c = &sharpClock;
 #endif
 	const MIPIConfig_t *mipi = &sharpMipi;

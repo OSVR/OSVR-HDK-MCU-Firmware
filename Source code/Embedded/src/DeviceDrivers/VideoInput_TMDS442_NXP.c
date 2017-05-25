@@ -177,10 +177,14 @@ static inline void VideoInput_dSight_do_step(void)
 	}
 	if (VideoInput_Events.videoDetected)
 	{
-		WriteLn("VideoInput: Video detected event, running task a few more times.");
+		// The additional time this gives for stabilization of the signal appears to reduce the incidence of the
+		// line-swapping/"reverse interlace" artifact.
+		// The count of 10 and sleep of 30 is experimentally determined - switching between landscape and portrait
+		// appears to be the quickest way to reproduce the issue. Extending a wait here is rather invisible - it just
+		// takes a little longer for the panels to turn on in response to video.
 		for (uint8_t i = 0; i < 10; ++i)
 		{
-			svr_yield_ms(10);
+			svr_yield_ms(30);
 			NXP_HDMI_Task();
 		}
 	}

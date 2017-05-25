@@ -1446,18 +1446,23 @@ static uint8_t Get_HDMI_Status()
 // returns byte showing HDMI status. This is used for reporting video mode in USB reports
 {
 	uint8_t Result = 0;
+	/// early out with 0 if no video
 #ifdef SVR_HAVE_FPGA_VIDEO_LOCK_PIN
-	if (!ioport_get_pin_level(FPGA_unlocked))
+	if (ioport_get_pin_level(FPGA_unlocked))
 	{
-		Result += 1;
-		if (PortraitMode)
-			Result += 2;
+		return Result;
 	}
 #else
-	/// @todo Why does portrait return 2 here and 3 above (on HDK)?
+	if (!KnownResolution0)
+	{
+		return Result;
+	}
+#endif // SVR_HAVE_FPGA_VIDEO_LOCK_PIN
+	/// 1 for landscape
+	Result += 1;
+	/// 3 for portrait
 	if (PortraitMode)
 		Result += 2;
-#endif
 	return Result;
 }
 

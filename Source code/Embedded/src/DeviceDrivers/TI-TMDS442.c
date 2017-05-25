@@ -230,7 +230,15 @@ void TMDS442_Init(void)
 	TMDS442_ReadReg(TMDS442_SRC_PLUG_REG, &plugReg);
 	TMDS442_WriteReg(TMDS442_SRC_PLUG_REG, plugReg & ~(TMDS442_SRC_PLUG_5V_EN_bm));
 #endif
+#if 0
 	TMDS442_ProgramHDMISwitch();
+#else
+	if (TMDS442_ReadInputStatus(&s_InputStatus))
+	{
+		TMDS442_ProgramHDMISwitch();
+	}
+#endif
+
 }
 
 void TMDS442_EnableVideoA(void)

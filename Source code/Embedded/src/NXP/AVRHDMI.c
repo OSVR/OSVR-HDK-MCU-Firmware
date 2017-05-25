@@ -1442,7 +1442,7 @@ void NXP_Report_HDMI_status()
 #endif
 };
 
-static uint8_t Get_HDMI_Status()
+uint8_t NXP_Get_HDMI_Status()
 // returns byte showing HDMI status. This is used for reporting video mode in USB reports
 {
 	uint8_t Result = 0;
@@ -1672,7 +1672,7 @@ void NXP_Update_Resolution_Detection()
 	tmInstance_t instance = 0;
 
 	errCode = tmbslTDA1997XGetFrameMeasurements(instance, &pInterlaced, &pLineMatch, &pFrameFormat, &pLines, &pPixels);
-	HDMIStatus = Get_HDMI_Status();
+	HDMIStatus = NXP_Get_HDMI_Status();
 }
 
 void NXP_Test_Pattern(bool enabled)

@@ -17,6 +17,7 @@
 #include "Console.h"
 #include "SvrYield.h"
 #include "SideBySide.h"
+#include "FPGA.h"
 
 void VideoInput_Init()
 {
@@ -76,8 +77,15 @@ static inline void sxsToggleWorkaround_doActualWorkaround(void)
 {
 	WriteLn("Performing side-by-side mode double toggle to enforce correct behavior.");
 	SxS_Toggle();
-	svr_yield_ms(100);
+	svr_yield_ms(10);
 	SxS_Toggle();
+	if (NXP_Get_HDMI_Status() == 1)
+	{
+		// Reset FPGA if we're in landscape.
+		FPGA_start_reset();
+		svr_yield_ms(20);
+		FPGA_end_reset();
+	}
 }
 
 static void sxsToggleWorkaround_signalSwitchChange(void) { s_sxsWorkaround.gotSwitchChange = true; }
@@ -85,33 +93,34 @@ static void sxsToggleWorkaround_signalSwitchChange(void) { s_sxsWorkaround.gotSw
 /// signal that is single-port only.
 static void sxsToggleWorkaround_task(void)
 {
+	bool wasVideoDetected = s_sxsWorkaround.wasVideoDetected;
 	bool nowVideoDetected = VideoInput_Events.videoDetected;
-#if 0
+	s_sxsWorkaround.wasVideoDetected = nowVideoDetected;
+
 	/// This being true means that the main loop cleared the video detected event, so has presumably turned on displays,
 	/// etc.
-	bool videoDetectionHandled = (s_sxsWorkaround.wasVideoDetected && !nowVideoDetected);
+	bool videoDetectionHandled = (wasVideoDetected && !nowVideoDetected);
+
 	if (videoDetectionHandled)
 	{
 		sxsToggleWorkaround_doActualWorkaround();
 	}
-#endif
-#if 0
-	if (nowVideoDetected && s_sxsWorkaroundgotSwitchChange)
+	else if (nowVideoDetected && s_sxsWorkaround.gotSwitchChange)
 	{
 		sxsToggleWorkaround_doActualWorkaround();
 		s_sxsWorkaround.gotSwitchChange = false;
 	}
-#endif
 
-	s_sxsWorkaround.wasVideoDetected = nowVideoDetected;
 }
 static void sxsToggleWorkaround_lateTask(void)
 {
 	if (!s_sxsWorkaround.wasVideoDetected && VideoInput_Events.videoDetected)
 	{
+	#if 0
 		// No video at the start of this task, but now we have video.
 		// Do the workaround.
 		sxsToggleWorkaround_doActualWorkaround();
+	#endif
 	}
 }
 

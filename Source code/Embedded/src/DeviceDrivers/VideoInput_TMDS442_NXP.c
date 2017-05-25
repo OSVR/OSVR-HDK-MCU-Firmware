@@ -36,6 +36,7 @@ void VideoInput_Init()
 }
 static inline void VideoInput_dSight_dump_state(void)
 {
+#ifdef HDMI_VERBOSE
 	const uint8_t initialPlugSource = TMDS442_GetPlugSourceData();
 	Write("VI State: ");
 	switch (initialPlugSource)
@@ -63,6 +64,7 @@ static inline void VideoInput_dSight_dump_state(void)
 	{
 		WriteLn("Not locked");
 	}
+#endif  // HDMI_VERBOSE
 }
 static inline bool needSxs(uint8_t plugSource)
 {

@@ -9,6 +9,9 @@
 #include "VideoInput_Protected.h"
 
 #include "main.h"  // for HDMI_task
+#ifdef HDMI_VERBOSE
+#include "Console.h"
+#endif  // HDMI_VERBOSE
 
 void VideoInput_Protected_Init_Succeeded() { HDMI_task = true; }
 bool PortraitMode = false;  // true if incoming video is in portrait mode
@@ -45,7 +48,18 @@ void VideoInput_Protected_Report_Status(bool signalStatus)
 {
 	if (s_lastStatus == signalStatus)
 	{
-		// no change, early exit
+// no change, early exit
+#ifdef HDMI_VERBOSE
+		Write("VideoInput_Protected_Report_Status early out - ");
+		if (signalStatus)
+		{
+			WriteLn("true");
+		}
+		else
+		{
+			WriteLn("false");
+		}
+#endif  // HDMI_VERBOSE
 		return;
 	}
 	// OK, change, what kind is it?
@@ -64,7 +78,10 @@ void VideoInput_Protected_Report_Signal()
 {
 	if (s_lastStatus == true)
 	{
-		// no change, get out early.
+// no change, get out early.
+#ifdef HDMI_VERBOSE
+		WriteLn("VideoInput_Protected_Report_Signal early out");
+#endif  // HDMI_VERBOSE
 		return;
 	}
 
@@ -81,7 +98,10 @@ void VideoInput_Protected_Report_No_Signal()
 {
 	if (s_lastStatus == false)
 	{
-		// no change, get out early.
+// no change, get out early.
+#ifdef HDMI_VERBOSE
+		WriteLn("VideoInput_Protected_Report_No_Signal early out");
+#endif  // HDMI_VERBOSE
 		return;
 	}
 	// OK, we have a change: lost signal.

@@ -19,6 +19,8 @@
 #include "SideBySide.h"
 #include "FPGA.h"
 
+#include <stdio.h>
+
 void VideoInput_Init()
 {
 	/// Init TI TMDS442 HDMI input switch.
@@ -69,26 +71,38 @@ static inline bool needSxs(uint8_t plugSource)
 
 static struct SxSWorkaround_s
 {
-	bool gotSwitchChange;
+	uint8_t gotSwitchChangeCounter;
 	bool wasVideoDetected;
-} s_sxsWorkaround = {true, false};
+} s_sxsWorkaround = {0, false};
 
 static inline void sxsToggleWorkaround_doActualWorkaround(void)
 {
-	WriteLn("Performing side-by-side mode double toggle to enforce correct behavior.");
-	SxS_Toggle();
-	svr_yield_ms(10);
-	SxS_Toggle();
+	// Workaround not needed when we're in dual-input (non-side-by-side) mode.
+	if (needSxs(TMDS442_GetPlugSourceData()))
+	{
+#ifdef HDMI_VERBOSE
+		WriteLn("Performing side-by-side mode double toggle to enforce correct behavior.");
+#endif
+		SxS_Toggle();
+		svr_yield_ms(1);
+		SxS_Toggle();
+	}
+
 	if (NXP_Get_HDMI_Status() == 1)
 	{
 		// Reset FPGA if we're in landscape.
+		// Appears to slightly reduce flickering of un-rotated image in right eye (panel 0)
+		/// @todo test on multiple devices
 		FPGA_start_reset();
-		svr_yield_ms(20);
+		svr_yield_ms(30);
 		FPGA_end_reset();
 	}
+
+	// Cancel counter.
+	s_sxsWorkaround.gotSwitchChangeCounter = 0;
 }
 
-static void sxsToggleWorkaround_signalSwitchChange(void) { s_sxsWorkaround.gotSwitchChange = true; }
+static inline void sxsToggleWorkaround_signalSwitchChange(void) { s_sxsWorkaround.gotSwitchChangeCounter = 2; }
 /// For some reason, esp. with new FPGA code, dSight needs the side-by-side toggled twice when it gets a new display
 /// signal that is single-port only.
 static void sxsToggleWorkaround_task(void)
@@ -105,22 +119,18 @@ static void sxsToggleWorkaround_task(void)
 	{
 		sxsToggleWorkaround_doActualWorkaround();
 	}
-	else if (nowVideoDetected && s_sxsWorkaround.gotSwitchChange)
+	else if (VideoInput_Get_Status() && s_sxsWorkaround.gotSwitchChangeCounter == 1)
 	{
 		sxsToggleWorkaround_doActualWorkaround();
-		s_sxsWorkaround.gotSwitchChange = false;
 	}
-
-}
-static void sxsToggleWorkaround_lateTask(void)
-{
-	if (!s_sxsWorkaround.wasVideoDetected && VideoInput_Events.videoDetected)
+	if (s_sxsWorkaround.gotSwitchChangeCounter != 0)
 	{
-	#if 0
-		// No video at the start of this task, but now we have video.
-		// Do the workaround.
-		sxsToggleWorkaround_doActualWorkaround();
-	#endif
+#ifdef HDMI_VERBOSE
+		char myMsg[40];
+		sprintf(myMsg, "Switch counter now %d", s_sxsWorkaround.gotSwitchChangeCounter);
+		WriteLn(myMsg);
+#endif
+		s_sxsWorkaround.gotSwitchChangeCounter--;
 	}
 }
 
@@ -150,11 +160,12 @@ static inline void VideoInput_dSight_do_step(void)
 			if (initialPlugSource != 0 && newPlugSource != 0)
 			{
 				// OK, so plugs changed without initial gain or complete loss - we will simulate a complete loss.
-#if 0
+
 				VideoInput_Protected_Report_No_Signal();
+#if 0
 				NXP_HDMI_Reset(1);
 				NXP_HDMI_Reset(2);
-				#endif
+#endif
 				/// Init NXP HDMI receivers
 				NXP_Init_HDMI();
 				return;
@@ -171,8 +182,6 @@ static inline void VideoInput_dSight_do_step(void)
 	{
 		NXP_HDMI_Task();
 	}
-
-	sxsToggleWorkaround_lateTask();
 
 	if (VideoInput_Events.videoDetected)
 	{

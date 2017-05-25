@@ -345,10 +345,13 @@ bool init_solomon_device(uint8_t deviceID)
 	// unlock mfr command write
 	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x04B0);  // cmd=B0, data=04
 	PAUSE_BETWEEN_COMMANDS();
+
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0001);  // no of bytes to send
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0000);    // cmd=00
-	solomon_write_reg_word(sol, SOLOMON_REG_PDR, 0x0000);    // cmd=00
+	solomon_write_reg_byte(sol, SOLOMON_REG_PDR, 0x00);      // cmd=00
 	PAUSE_BETWEEN_COMMANDS();
+	solomon_write_reg_byte(sol, SOLOMON_REG_PDR, 0x00);  // cmd=00
+	PAUSE_BETWEEN_COMMANDS();
+
 	solomon_write_reg_word(sol, SOLOMON_REG_PSCR1, 0x0002);  // no of bytes to send
 	// remove NVM reload after sleep out.
 	solomon_write_reg_2byte(sol, SOLOMON_REG_PDR, 0xD6, 0x01);  // cmd=D6, data=01

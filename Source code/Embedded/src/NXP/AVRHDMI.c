@@ -458,6 +458,9 @@ tmErrorCode_t tmdlHdmiRxExampleAppliInit(void)
     /* It recovers the configuration of the device librray and sets the I2C read/write functions */
     /* from the CFG file. */
 
+	ActivityDetected0 = false;
+	KnownResolution0 = false;
+	ResolutionID0 = -1;
 #ifndef BYPASS_FIRST_NXP
     if (InstanceOpened0==false)
     {

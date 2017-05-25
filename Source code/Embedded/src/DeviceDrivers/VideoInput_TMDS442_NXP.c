@@ -140,10 +140,6 @@ static inline void VideoInput_dSight_do_step(void)
 {
 	sxsToggleWorkaround_task();
 
-	static bool gotTmdsChange = false;
-	bool gotTmdsChangeLastTime = gotTmdsChange;
-	gotTmdsChange = false;
-
 	bool switchLostInput = false;
 	VideoInput_dSight_dump_state();
 	if (HDMISwitch_task)
@@ -157,17 +153,12 @@ static inline void VideoInput_dSight_do_step(void)
 			/// If we got in here, the switch changed state.
 			VideoInput_dSight_dump_state();
 			sxsToggleWorkaround_signalSwitchChange();
-			gotTmdsChange = true;
 			const uint8_t newPlugSource = TMDS442_GetPlugSourceData();
 			if (initialPlugSource != 0 && newPlugSource != 0)
 			{
-				// OK, so plugs changed without initial gain or complete loss - we will simulate a complete loss.
-
+				// OK, so plugs changed without initial gain or complete loss - we will simulate a complete loss to
+				// trigger cycling the screens.
 				VideoInput_Protected_Report_No_Signal();
-#if 0
-				NXP_HDMI_Reset(1);
-				NXP_HDMI_Reset(2);
-#endif
 				/// Init NXP HDMI receivers
 				NXP_Init_HDMI();
 				return;
@@ -184,7 +175,6 @@ static inline void VideoInput_dSight_do_step(void)
 	{
 		NXP_HDMI_Task();
 	}
-
 	if (VideoInput_Events.videoDetected)
 	{
 		WriteLn("VideoInput: Video detected event, running task a few more times.");

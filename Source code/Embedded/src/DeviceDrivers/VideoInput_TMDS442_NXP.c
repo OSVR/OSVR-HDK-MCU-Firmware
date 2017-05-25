@@ -104,7 +104,7 @@ static inline void sxsToggleWorkaround_doActualWorkaround(void)
 	s_sxsWorkaround.gotSwitchChangeCounter = 0;
 }
 
-static inline void sxsToggleWorkaround_signalSwitchChange(void) { s_sxsWorkaround.gotSwitchChangeCounter = 2; }
+static inline void sxsToggleWorkaround_signalSwitchChange(void) { s_sxsWorkaround.gotSwitchChangeCounter = 3; }
 /// For some reason, esp. with new FPGA code, dSight needs the side-by-side toggled twice when it gets a new display
 /// signal that is single-port only.
 static void sxsToggleWorkaround_task(void)

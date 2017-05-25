@@ -66,6 +66,12 @@ static inline bool needSxs(uint8_t plugSource)
 	return (plugSource == TMDS442_PLUG_SOURCE_A) || (plugSource == TMDS442_PLUG_SOURCE_B);
 }
 
+static struct SxSWorkaround_s
+{
+	bool gotSwitchChange;
+	bool wasVideoDetected;
+} s_sxsWorkaround = {true, false};
+
 static inline void sxsToggleWorkaround_doActualWorkaround(void)
 {
 	WriteLn("Performing side-by-side mode double toggle to enforce correct behavior.");
@@ -74,39 +80,44 @@ static inline void sxsToggleWorkaround_doActualWorkaround(void)
 	SxS_Toggle();
 }
 
-static bool s_gotSwitchChange = true;
-static void sxsToggleWorkaround_signalSwitchChange(void) { s_gotSwitchChange = true; }
+static void sxsToggleWorkaround_signalSwitchChange(void) { s_sxsWorkaround.gotSwitchChange = true; }
 /// For some reason, esp. with new FPGA code, dSight needs the side-by-side toggled twice when it gets a new display
 /// signal that is single-port only.
 static void sxsToggleWorkaround_task(void)
 {
-	static bool wasVideoDetected = false;
 	bool nowVideoDetected = VideoInput_Events.videoDetected;
-#if 1
+#if 0
 	/// This being true means that the main loop cleared the video detected event, so has presumably turned on displays,
 	/// etc.
-	bool videoDetectionHandled = (wasVideoDetected && !nowVideoDetected);
+	bool videoDetectionHandled = (s_sxsWorkaround.wasVideoDetected && !nowVideoDetected);
 	if (videoDetectionHandled)
 	{
 		sxsToggleWorkaround_doActualWorkaround();
 	}
-#else
-	if (nowVideoDetected && s_gotSwitchChange)
+#endif
+#if 0
+	if (nowVideoDetected && s_sxsWorkaroundgotSwitchChange)
 	{
 		sxsToggleWorkaround_doActualWorkaround();
-		s_gotSwitchChange = false;
+		s_sxsWorkaround.gotSwitchChange = false;
 	}
 #endif
 
-	wasVideoDetected = nowVideoDetected;
+	s_sxsWorkaround.wasVideoDetected = nowVideoDetected;
+}
+static void sxsToggleWorkaround_lateTask(void)
+{
+	if (!s_sxsWorkaround.wasVideoDetected && VideoInput_Events.videoDetected)
+	{
+		// No video at the start of this task, but now we have video.
+		// Do the workaround.
+		sxsToggleWorkaround_doActualWorkaround();
+	}
 }
 
 static inline void VideoInput_dSight_do_step(void)
 {
-	static bool gotFirstVideo = false;
-	static bool needsSxSToggleWorkaroundNextTime = false;
-	bool needsSxSToggleWorkaround = needsSxSToggleWorkaroundNextTime;
-	needsSxSToggleWorkaroundNextTime = false;
+	sxsToggleWorkaround_task();
 
 	static bool gotTmdsChange = false;
 	bool gotTmdsChangeLastTime = gotTmdsChange;
@@ -122,18 +133,19 @@ static inline void VideoInput_dSight_do_step(void)
 		const uint8_t initialPlugSource = TMDS442_GetPlugSourceData();
 		if (TMDS442_Task())
 		{
+			/// If we got in here, the switch changed state.
 			VideoInput_dSight_dump_state();
 			sxsToggleWorkaround_signalSwitchChange();
 			gotTmdsChange = true;
-			svr_yield_ms(100);
 			const uint8_t newPlugSource = TMDS442_GetPlugSourceData();
-			needsSxSToggleWorkaroundNextTime = (needSxs(newPlugSource) != needSxs(initialPlugSource));
 			if (initialPlugSource != 0 && newPlugSource != 0)
 			{
 				// OK, so plugs changed without initial gain or complete loss - we will simulate a complete loss.
+#if 0
 				VideoInput_Protected_Report_No_Signal();
 				NXP_HDMI_Reset(1);
 				NXP_HDMI_Reset(2);
+				#endif
 				/// Init NXP HDMI receivers
 				NXP_Init_HDMI();
 				return;
@@ -150,16 +162,9 @@ static inline void VideoInput_dSight_do_step(void)
 	{
 		NXP_HDMI_Task();
 	}
-#if 0
-	if (VideoInput_Events.firstVideoDetected && !gotFirstVideo)
-	{
-		/// First time we get video, do the toggle.
-		gotFirstVideo = true;
-		needsSxSToggleWorkaroundNextTime = true;
-	}
-#endif
 
-#ifdef SVR_HAVE_SHARP_LCD
+	sxsToggleWorkaround_lateTask();
+
 	if (VideoInput_Events.videoDetected)
 	{
 		WriteLn("VideoInput: Video detected event, running task a few more times.");
@@ -169,14 +174,13 @@ static inline void VideoInput_dSight_do_step(void)
 			NXP_HDMI_Task();
 		}
 	}
-#endif  // SVR_HAVE_SHARP_LCD
+
 	if (switchLostInput && VideoInput_Get_Status())
 	{
 		// if we lost input, and videoinput still says we have video - report that we lost input here.
 		WriteLn("VideoInput: TMDS detected full signal loss, but NXP did not. Reporting anyway.");
 		VideoInput_Protected_Report_No_Signal();
 	}
-	sxsToggleWorkaround_task();
 }
 void VideoInput_Update_Resolution_Detection(void) { NXP_Update_Resolution_Detection(); }
 void VideoInput_Task(void) {}

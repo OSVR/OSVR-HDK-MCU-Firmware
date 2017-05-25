@@ -42,6 +42,7 @@ static uint8_t s_LastStatusRead = 0;  // shows the last value read from TMDS con
 static const uint8_t TMDS442_SRC_PLUG_SP_bm = BITUTILS_BIT(5);
 
 /// When set, TMDS output status is controlled by the corresponding 5V power signal
+/// @note this can make the line-swapping artifact more frequent.
 static const uint8_t TMDS442_SRC_PLUG_5V_EN_bm = BITUTILS_BIT(4);
 
 /// So-called "source A": 5V_PWR1 bit in TMDS442_SRC_PLUG_REG.
@@ -83,6 +84,7 @@ static const uint8_t SINK_PORT_nOE_bm = BITUTILS_BIT(2);
 static const uint8_t SINK_PORT_I2CEN_bm = BITUTILS_BIT(3);
 
 /// 3dB De-emphasis
+/// Possibly makes the line-swapping more frequent
 static const uint8_t SINK_PORT_PRE_bm = BITUTILS_BIT(4);
 
 /// Group mask for the two bits in SINKX_PORT_REG that define which source to use.
@@ -169,11 +171,6 @@ void TMDS442_ProgramHDMISwitch(void)
 		// switch to regular (not side-by-side) mode as there are two inputs
 		SxS_Disable();
 #endif
-#ifdef SVR_TMDS_REPORT_STATUS
-#ifndef SVR_TMDS442_ALWAYS_UPDATE_STATUS
-		VideoInput_Protected_Report_No_Signal();
-#endif  // !SVR_TMDS442_ALWAYS_UPDATE_STATUS
-#endif  // SVR_TMDS_REPORT_STATUS
 		break;
 	}
 	case TMDS442_SRC_PLUG_SRC_A_case:  // just input A
@@ -205,9 +202,6 @@ void TMDS442_ProgramHDMISwitch(void)
 	}
 	}
 	svr_yield_ms(100);  // after programming, a few frames to allow signal to stabilize
-#ifdef SVR_TMDS442_ALWAYS_UPDATE_STATUS
-	VideoInput_Protected_Report_Status(s_InputStatus != 0);
-#endif  // SVR_TMDS442_ALWAYS_UPDATE_STATUS
 }
 
 void TMDS442_Init(void)

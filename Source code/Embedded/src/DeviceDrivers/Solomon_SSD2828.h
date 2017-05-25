@@ -12,6 +12,7 @@
 #include "BitUtilsC.h"
 #include <ioport.h>
 
+/// Seems to make dSight more reliable on startup.
 #define SVR_ENABLE_VOUT_SHUTDOWN
 
 /// device ID register - should return value of 0x2828

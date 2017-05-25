@@ -227,12 +227,14 @@ void Display_Off(uint8_t deviceID)
 	svr_yield_ms(80);
 	// Clear VEN and HS bits.
 	solomon_cfgr_set_clear_bits(sol, 0x0, SOLOMON_CFGR_VEN_bm | SOLOMON_CFGR_HS_bm);  // Set VEN and HS bits.
+	solomon_start_video_shutdown(sol);
 	solomon_deselect(sol);
-	svr_yield_ms(20);  // delay > 1 frames
+	svr_yield_ms(40);  // delay > 1 frames
+
 	Display_Internal_Reset_Begin(deviceID);
 	svr_yield_ms(500);  // give that some time to take effect
 	FPGA_start_reset();
-	svr_yield_ms(500);
+	svr_yield_ms(1500);
 // FPGA_end_reset();
 #endif
 #ifdef H546DLT01  // AUO 5.46" OLED

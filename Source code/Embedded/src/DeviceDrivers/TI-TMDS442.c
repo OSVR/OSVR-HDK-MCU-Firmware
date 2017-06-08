@@ -232,7 +232,6 @@ void TMDS442_Init(void)
 		TMDS442_ProgramHDMISwitch();
 	}
 #endif
-
 }
 
 void TMDS442_EnableVideoA(void)

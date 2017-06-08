@@ -1690,6 +1690,19 @@ static inline uint8_t bodLevelToDecivolts(uint8_t fuse5)
 }
 typedef enum BOD_Status_enum { BOD_Status_Sampled, BOD_Status_Continuous, BOD_Status_Disabled } BOD_Status_t;
 
+#ifdef __has_include
+#if __has_include(<component-version.h>)
+#include "component-version.h"
+#endif  // __has_include(<component-version.h>)
+#endif  // __has_include
+
+#if defined(COMPONENT_VERSION) && (COMPONENT_VERSION > 00010000)
+// They renamed these in packs 1.1.x
+#define BOD_SAMPLED_gc BODPD_SAMPLED_gc
+#define BOD_CONTINUOUS_gc BODPD_CONTINUOUS_gc
+#define BOD_DISABLED_gc BODPD_DISABLED_gc
+#endif  // defined(COMPONENT_VERSION) && (COMPONENT_VERSION > 00010000)
+
 static inline BOD_Status_t getBODStatusInPD(uint8_t fuse2)
 {
 	uint8_t bodpd = fuse2 & NVM_FUSES_BODPD_gm;

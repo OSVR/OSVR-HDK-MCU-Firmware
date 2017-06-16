@@ -48,31 +48,33 @@ static void Display_Internal_Reset_Begin(uint8_t deviceID);
 /// @return true if device was actually in reset.
 static bool Display_Internal_Reset_End(uint8_t deviceID);
 
-static bool s_inReset[SVR_HAVE_SOLOMON] =
-#ifdef SVR_HAVE_DISPLAY2
-    {true, true};
-#else
-    {true};
-#endif
 #ifdef SVR_PANEL_RESET_PINS
 static port_pin_t s_resetPins[] = SVR_PANEL_RESET_PINS;
 
 static inline void Display_Internal_Reset_Begin(uint8_t deviceID)
 {
-	s_inReset[deviceID] = true;
 	ioport_set_pin_level(s_resetPins[deviceID], SVR_PANEL_RESET_VALUE);
 	solomon_start_reset(solomon_get_channel(deviceID));
 }
 
 static inline bool Display_Internal_Reset_End(uint8_t deviceID)
 {
-	const bool wasInReset = s_inReset[deviceID];
+	const port_pin_t pin = s_resetPins[deviceID];
+
+	const bool wasInReset = (ioport_get_pin_level(pin) == SVR_PANEL_RESET_VALUE);
 	ioport_set_pin_level(s_resetPins[deviceID], SVR_PANEL_RESET_VALUE);
 	solomon_end_reset(solomon_get_channel(deviceID));
-	s_inReset[deviceID] = false;
 	return wasInReset;
 }
 #else
+
+static bool s_inReset[SVR_HAVE_SOLOMON] =
+#ifdef SVR_HAVE_DISPLAY2
+    {true, true};
+#else
+    {true};
+#endif
+
 inline void Display_Internal_Reset_Begin(uint8_t deviceID)
 {
 	/* no-op - access to reset line not provided */

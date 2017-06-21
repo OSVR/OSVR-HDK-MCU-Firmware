@@ -477,7 +477,7 @@ bslTDA1997XWriteI2C
 
             if(errCode != TM_OK)
             {
-                
+
                 RxHdmiConfig[unit].writePageErrorFlag = 1;
                 return TMBSL_ERR_BSLHDMIRX_I2C_WRITE;
             }
@@ -516,7 +516,7 @@ bslTDA1997XWriteI2C
                 pSysArgs->firstRegister  = (UInt8)SLAVE_ADDR;
                 pSysArgs->lenData        = 1;
                 pSysArgs->pData          = &oldSlaveAddr;
-                
+
 
 
                 errCode =  (RxHdmiConfig[unit].sysFuncRead) (pSysArgs);
@@ -525,8 +525,8 @@ bslTDA1997XWriteI2C
                 /* write new SLAVE_ADDR */
                 pSysArgs->firstRegister  = (UInt8)SLAVE_ADDR;
                 pSysArgs->lenData        = 1;
-                pSysArgs->pData          = (UInt8 *)((UInt32)pBuffer + (SLAVE_ADDR - firstRegister));
-                
+                pSysArgs->pData          = (UInt8 *)((uintptr_t)pBuffer + (SLAVE_ADDR - firstRegister));
+
 
 
                 errCode =  (RxHdmiConfig[unit].sysFuncWrite) (pSysArgs);
@@ -563,7 +563,7 @@ bslTDA1997XWriteI2C
                     pSysArgs->firstRegister  = (UInt8)(SLAVE_ADDR + 1);
                     pSysArgs->lenData        = (lengthData -(SLAVE_ADDR - firstRegister) -1);
                     pSysArgs->pData          = pBuffer;
-                    
+
 
 
                     errCode =  (RxHdmiConfig[unit].sysFuncWrite) (pSysArgs);
@@ -578,7 +578,7 @@ bslTDA1997XWriteI2C
                 pSysArgs->firstRegister  = (UInt8)firstRegister;
                 pSysArgs->lenData        = lengthData;
                 pSysArgs->pData          = pBuffer;
-                
+
 
 
                 errCode =  (RxHdmiConfig[unit].sysFuncWrite) (pSysArgs);
@@ -590,7 +590,7 @@ bslTDA1997XWriteI2C
     }
     else /* CEC register */
     {
-        
+
         pSysArgs->slaveAddr = RxHdmiConfig[unit].uCECAddress;
         /* no page to program*/
         /* write in registers requested through I2C */
@@ -713,7 +713,7 @@ tmbslTDA1997XWriteI2C
                 /* write new SLAVE_ADDR */
                 pSysArgs->firstRegister  = (UInt8)SLAVE_ADDR;
                 pSysArgs->lenData        = 1;
-                pSysArgs->pData          = (UInt8 *)((UInt32)pBuffer + (SLAVE_ADDR - firstRegister));
+                pSysArgs->pData          = (UInt8 *)((uintptr_t)pBuffer + (SLAVE_ADDR - firstRegister));
 
 
 
@@ -965,7 +965,7 @@ tmbslTDA1997XReadI2C
         if (errCode != TM_OK)
         {
             I2CGuard = False;
-            sprintf(Msg,"CEErr: %x",errCode);
+            sprintf(Msg,"CEErr: %" TM_ERROR_CODE_FORMAT, errCode);
             WriteLn(Msg);
             return (TMBSL_ERR_BSLHDMIRX_I2C_READ);
         }
@@ -1035,7 +1035,7 @@ tmbslTDA1997XInit
     /* test the unit is already initialised*/
     RETIF(RxHdmiConfig[unit].initUnit == True ,TMBSL_ERR_BSLHDMIRX_INIT_FAILED)
 
-    
+
     /* test function I2C write */
     RETIF(sysFuncWrite == Null,TMBSL_ERR_BSLHDMIRX_INCONSISTENT_PARAMS)
 
@@ -1056,14 +1056,14 @@ tmbslTDA1997XInit
 
     /* Initialization of the other parameters */
     RxHdmiConfig[unit].currentPage          = E_PAGE_INVALID;
-    
+
 
 
     /* apply WA to get correct I2C access to Rx HDMI*/
     regValue = (UInt8)E_PAGE_13;
-    
+
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)CURPAGE_ADR_00H, 1, &regValue);
-    
+
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_WRITE)
 
 
@@ -1071,13 +1071,13 @@ tmbslTDA1997XInit
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)0xe8, 1, &regValue);
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_WRITE)
 
-    
+
     /* Read chip version*/
 
     /* Get chip configuration */
     errCode = tmbslTDA1997XReadI2C(unit, (UInt16)CMTP_REG10, 2, pTabRegValue);
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_READ)
-    
+
 
     /* Fill chipConfiguration structure */
     RxHdmiConfig[unit].chipConfiguration.B_Clk = (tmbslHdmiRxBClk_t)((pTabRegValue[0] >> 6) & 0x01);
@@ -1128,12 +1128,12 @@ tmbslTDA1997XInit
         }
         break;
     }
-    
+
 
     RxHdmiConfig[unit].chipConfiguration.videoPort = (tmbslHdmiVP_t)((pTabRegValue[0] >> 2) & 0x03);
     RxHdmiConfig[unit].chipConfiguration.CECEnabled = (tmbslHdmiCECEnabled_t)((pTabRegValue[0] >> 1) & 0x01);
 
-    
+
     /* if N2 version, reset @0xe8 */
     if (RxHdmiConfig[unit].chipConfiguration.revision != 0)
     {
@@ -1142,7 +1142,7 @@ tmbslTDA1997XInit
         RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_WRITE)
     }
 
-    
+
     /* Init the Receiver driver */
     /* init page register to 00 */
     regValue = (UInt8)(E_PAGE_00);
@@ -1156,7 +1156,7 @@ tmbslTDA1997XInit
         RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_WRITE)
     }
 
-    
+
     /* Here, the CEC I2C address is not yet correct. We need to take into account possible config setting in SLAVE_ADDR register.*/
     /* However, the Hw I2C address provided by the devLib (and defined in the cfg file) is assumed to already take into account this setting */
     /* So we need to read this register, extract a0 and a1 address bit values and update CEC address*/
@@ -1172,7 +1172,7 @@ tmbslTDA1997XInit
 #endif
     WriteLn(Msg);
     /* CEC I2C address is now uptodate */
-    
+
     /* update page 20 */
     regValue = (UInt8)0x08;
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)HPD_AUTO_CTRL, 1, &regValue);
@@ -1197,7 +1197,7 @@ tmbslTDA1997XInit
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)RT_MAN_CTRL, 1, &regValue);
     regValue = (UInt8)0xe0;
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)OF_CTRL, 1, &regValue);
-    
+
     /* CEC page */
     /* enable sync measurement timing */
     regValue = (UInt8)0x04;
@@ -1211,7 +1211,7 @@ tmbslTDA1997XInit
     regValue = (UInt8)0x54;
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)TIMER_D, 1, &regValue);
 
-    
+
 #ifndef TMFL_HDMI_OUT
     /* change video port mapping */
     regValue = (UInt8)0xc8;
@@ -1232,7 +1232,7 @@ tmbslTDA1997XInit
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)VP7_4_CTRL, 1, &regValue);
     regValue = (UInt8)0x00;
     errCode =  tmbslTDA1997XWriteI2C(unit, (UInt16)VP3_0_CTRL, 1, &regValue);
-    
+
 #endif
 
     /* WA enable power switch  - SRAM content is always valid (in case E-MTP is not or bad programmed)*/
@@ -1252,12 +1252,12 @@ tmbslTDA1997XInit
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_READ)
     RETIF(((regValue !=TDA19972A_CORE_ID)&&(regValue !=TDA19972B_CORE_ID)) , TMBSL_ERR_BSLHDMIRX_COMPATIBILITY)
     WriteLn("aft");
-    
+
     /* Get chip configuration */
     errCode = tmbslTDA1997XReadI2C(unit, (UInt16)CMTP_REG10, 1, &regValue);
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_READ)
 
-    
+
     /* Initialization of the common interrupt masks (only VAI_FLAGS6 is different and set above) */
     pTabRegValue[0]     = INTERRUPT_MASK_DEF_TOP;
     pTabRegValue[1]     = INTERRUPT_MASK_DEF_SUS;
@@ -1268,7 +1268,7 @@ tmbslTDA1997XInit
     pTabRegValue[6]     = INTERRUPT_MASK_DEF_AUDIO;
     pTabRegValue[7]     = INTERRUPT_MASK_DEF_HDCP;
     pTabRegValue[8]     = INTERRUPT_MASK_DEF_AFE;
-    
+
     /* Write the INT_MASKs to init the interrupt masks*/
     errCode = tmbslTDA1997XWriteI2C(unit, (UInt16)INT_MASK_TOP, NBR_REG_INT_FLAGS, &(pTabRegValue[0]) );
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_WRITE)
@@ -1284,11 +1284,11 @@ tmbslTDA1997XInit
     pTabRegValue[6]     = INTERRUPT_CLEAR_VAL;
     pTabRegValue[7]     = INTERRUPT_CLEAR_VAL;
     pTabRegValue[8]     = INTERRUPT_CLEAR_VAL;
-    
+
     /* Clear the interrupt flags */
     errCode = tmbslTDA1997XWriteI2C(unit, (UInt16)INT_FLG_CLR_TOP, NBR_REG_INT_FLAGS, &(pTabRegValue[0]) );
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_WRITE)
-    
+
 #ifdef TMFL_HDMI_OUT
     /* enable HPD and RXS interrupts */
     pTabRegValue[0]		= INTERRUPT_ENA_UTILRXSHPD;
@@ -1300,7 +1300,7 @@ tmbslTDA1997XInit
     /* Initialization of the equalizer */
     errCode = bslTDA1997XInitTMDS(unit);
     RETIF(errCode !=TM_OK, errCode)
-    
+
     /* Disable test pattern */
     pTabRegValue[0]		= 0;
     errCode = tmbslTDA1997XWriteI2C(unit, (UInt16)SERVICE_MODE, 1, &(pTabRegValue[0]) );
@@ -1310,7 +1310,7 @@ tmbslTDA1997XInit
     regValue = 0xFF;
     errCode = tmbslTDA1997XWriteI2C(unit, (UInt16)INFO_CTRL, 1, &regValue );
     RETIF(errCode !=TM_OK,TMBSL_ERR_BSLHDMIRX_I2C_WRITE)
-    
+
     /* Write HDMI INFO EXCEED value */
     pTabRegValue[0]		= HDMI_INFO_EXCEED;
     errCode = tmbslTDA1997XWriteI2C(unit, (UInt16)INFO_EXCEED, 1, &(pTabRegValue[0]) );
@@ -1354,7 +1354,7 @@ tmbslTDA1997XInit
         /* End of Clear HDMI mode flag in BCAPS (WA for N1)*/
     }
 
-    
+
     return TM_OK;
 }
 
@@ -1419,15 +1419,15 @@ tmbslTDA1997XGetChipInfo
     tmbslHdmiRxVersion_t  *pVersion
 )
 {
-    
+
     /* Test pVersion <> NULL */
     RETIF(pVersion == Null,TMBSL_ERR_BSLHDMIRX_INCONSISTENT_PARAMS)
 
     /* test the unit number */
     RETIF(unit >= MAX_UNIT,TMBSL_ERR_BSLHDMIRX_BAD_UNIT_NUMBER)
-    
+
     *pVersion = RxHdmiConfig[unit].version;
-    
+
     return TM_OK;
 }
 /*============================================================================*/
@@ -1578,7 +1578,7 @@ tmbslTDA1997XHandleInterrupt
         //WriteLn("No activity");
         RETIF(interrupt_flags_top == 0, TM_OK)
 
-        
+
         //tmbslTDA1997XReadI2C(unit, (UInt16)ACP_UPDATE,1, &regValue);
         //sprintf(Msg,"Rx Beg %x",regValue);
         //WriteLn(Msg);
@@ -1606,7 +1606,7 @@ tmbslTDA1997XHandleInterrupt
         /* Callback for HDCP interrupt source */
         if (interrupt_flags_top & INTERRUPT_HDCP)
         {
-            
+
             //WriteLn("$HDCP");
             /* Read interrupt flags registers*/
             errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_HDCP, 1, &pTabRegValue[INTERRUPT_HDCP_IDX]);
@@ -1642,7 +1642,7 @@ tmbslTDA1997XHandleInterrupt
                             //printf("C5 IT detected at %d\n", regValue);
                             //}
                             /* WA REPEATER: mask AUDIO and IF interrupts to avoid IF during authentication */
-                            
+
                             if (j==6)
                             {
                                 tmbslTDA1997XReadI2C(unit, (UInt16)INT_MASK_TOP,1, &regValue);
@@ -1664,7 +1664,7 @@ tmbslTDA1997XHandleInterrupt
         /* Callback for RATE interrupt source */
         else if (interrupt_flags_top & INTERRUPT_RATE)
         {
-            
+
             //WriteLn("$rate");
             /* Read interrupt flags registers*/
             errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_RATE, 1, &pTabRegValue[INTERRUPT_RATE_IDX]);
@@ -1717,7 +1717,7 @@ tmbslTDA1997XHandleInterrupt
         /* Callback for SUS interrupt source */
         else if (interrupt_flags_top & INTERRUPT_SUS)
         {
-            
+
             //WriteLn("$sus");
             /* Read interrupt flags registers*/
             errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_SUS, 1, &pTabRegValue[INTERRUPT_SUS_IDX]);
@@ -1775,7 +1775,7 @@ tmbslTDA1997XHandleInterrupt
                         if((RxHdmiConfig[unit].callbackFunc != Null) && (tabIrqSource[INTERRUPT_SUS_IDX][j] != BSLHDMIRX_IRQSOURCE_NOT_USED))
                         {
                             /* Callback for all the interrupt sources except "hdmi_lock" and "hdmi_flags" */
-                            
+
                             RxHdmiConfig[unit].callbackFunc(tabIrqSource[INTERRUPT_SUS_IDX][j], 1);
                         }
                     }
@@ -1787,7 +1787,7 @@ tmbslTDA1997XHandleInterrupt
         /* Callback for DDC interrupt source. Currently empty if no Hdmiout as all interrupts are BSLHDMIRX_IRQSOURCE_NOT_USED */
         else if (interrupt_flags_top & INTERRUPT_DDC)
         {
-            
+
             //WriteLn("$ddc");
             /* Read interrupt flags registers*/
             errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_DDC, 1, &pTabRegValue[INTERRUPT_DDC_IDX]);
@@ -1850,7 +1850,7 @@ tmbslTDA1997XHandleInterrupt
         /* Callback for MODE interrupt source, special action for BSLHDMIRX_IRQSOURCE_FLAGS*/
         else if (interrupt_flags_top & INTERRUPT_MODE)
         {
-            
+
             //WriteLn("$Interrupt mode");
             /* Read interrupt flags registers*/
             errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_MODE, 1, &pTabRegValue[INTERRUPT_MODE_IDX]);
@@ -1870,10 +1870,10 @@ tmbslTDA1997XHandleInterrupt
                 {
                     if (pTabRegValue[INTERRUPT_MODE_IDX] & maskBit)
                     {
-                        
+
                         if((RxHdmiConfig[unit].callbackFunc != Null) && (tabIrqSource[INTERRUPT_MODE_IDX][j] != BSLHDMIRX_IRQSOURCE_NOT_USED))
                         {
-                            
+
                             /* Callback for all the interrupt sources except "hdmi_lock" and "hdmi_flags" */
                             RxHdmiConfig[unit].callbackFunc(tabIrqSource[INTERRUPT_MODE_IDX][j], 1);
                         }
@@ -1887,7 +1887,7 @@ tmbslTDA1997XHandleInterrupt
         /* Callback for INFO interrupt source */
         else if (interrupt_flags_top & INTERRUPT_INFO)
         {
-            
+
             //WriteLn("$info");
             /* Read interrupt flags registers*/
             errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_INFO, 1, &pTabRegValue[INTERRUPT_INFO_IDX]);
@@ -1925,7 +1925,7 @@ tmbslTDA1997XHandleInterrupt
         /* Callback for AUDIO interrupt source */
         else if (interrupt_flags_top & INTERRUPT_AUDIO)
         {
-            
+
             //WriteLn("$audio");
             /* Read interrupt flags registers*/
             errCode = tmbslTDA1997XReadI2C(unit, (UInt16)INT_FLG_CLR_AUDIO, 1, &pTabRegValue[INTERRUPT_AUDIO_IDX]);
@@ -1976,7 +1976,7 @@ tmbslTDA1997XHandleInterrupt
         else if (interrupt_flags_top & INTERRUPT_AFE)
         {
             //WriteLn("$AFE");
-            
+
         }
 
     }
@@ -2055,7 +2055,7 @@ tmbslTDA1997XGetInterruptStatus
             break;
 
         case BSLHDMIRX_IRQSOURCE_HDMI_LOCK:
-            
+
             if( (interruptStatusReg & MASK_SUS_STATE_BIT) >> 4 )
             {
                 /* WORKAROUND START: PR1633 */
@@ -2066,7 +2066,7 @@ tmbslTDA1997XGetInterruptStatus
                 /* WORKAROUND END: PR1633 */
             }
             /* WORKAROUND START: PR1633 */
-            
+
 #ifdef TMFL_CALIBRATION_OPT
             if(!RxHdmiConfig[unit].susResetBySW)
             {
@@ -2079,7 +2079,7 @@ tmbslTDA1997XGetInterruptStatus
             }
 #endif
             /* WORKAROUND END: PR1633 */
-            
+
             break;
 
         case BSLHDMIRX_IRQSOURCE_FLAGS:
@@ -4036,9 +4036,9 @@ tmbslTDA1997XDefineVideoPort
     UInt16 vp_ctrl_register = 0;
 
     /* check VideoPortPinGroup against Video port size */
-    if ((((videoPortPinGroup && VP_MASK) == VP36BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_36)) ||
-            (((videoPortPinGroup && VP_MASK) == VP30BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_30)) ||
-            (((videoPortPinGroup && VP_MASK) == VP24BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_24)) )
+    if ((((videoPortPinGroup & VP_MASK) == VP36BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_36)) ||
+            (((videoPortPinGroup & VP_MASK) == VP30BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_30)) ||
+            (((videoPortPinGroup & VP_MASK) == VP24BIT) && (RxHdmiConfig[unit].chipConfiguration.videoPort != BSLHDMIRX_TMDS_VP_24)) )
         errCode =  TMBSL_ERR_BSLHDMIRX_BAD_PARAMETER;
 
     /* select the register to program */

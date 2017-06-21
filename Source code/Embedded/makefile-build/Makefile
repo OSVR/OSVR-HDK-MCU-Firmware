@@ -319,11 +319,6 @@ C_PREPROCS := $(call make_build_dirs,$(BASE_C_PREPROCS)))
 $(call make_build_dirs,src/DeviceDrivers/bno-hostif/src/sensorhub.o): OPTIMIZATION := 1
 $(call make_build_dirs,src/DeviceDrivers/bno-hostif/BNO070_using_hostif.o): OPTIMIZATION := 1
 
-# These files are terribly full of warnings. We really just want to disable the shift overflow ones, but the flag
-# below seems insufficient, thus -w disables all warnings...
-$(call make_build_dirs,src/NXP/tmbslTDA1997X_functions.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
-$(call make_build_dirs,src/NXP/tmdlHdmiRx.o): override CFLAGS := -w $(filter-out -Wall,$(CFLAGS)) -Wno-shift-count-overflow
-
 include git-revision.mk
 #$(info GIT_CFLAGS $(GIT_CFLAGS))
 # Force rebuild of recursive targets if git changes.

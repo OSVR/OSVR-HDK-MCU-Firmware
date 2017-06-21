@@ -1635,6 +1635,10 @@ bslTDA1997XWriteI2C
     UInt8                   *pBuffer
 ); // definition for I2C routine
 
+#define MTP_TIMEOUT_INCREMENT 200
+#define MTP_TIMEOUT_MAX 5000
+_Static_assert(MTP_TIMEOUT_MAX % MTP_TIMEOUT_INCREMENT == 0,
+	"Equality check is used, but MTP_TIMEOUT_MAX is not a multiple of MTP_TIMEOUT_INCREMENT");
 
 void NXP_Program_MTP0(void)
 
@@ -1646,12 +1650,12 @@ void NXP_Program_MTP0(void)
     // clear the interrupt flags
     NewData=0x80;
     tmErrorCode_t result = bslTDA1997XWriteI2C(0, INT_FLG_CLR_DDC, 1, &NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
 
     NewData=0x02;
     result = bslTDA1997XWriteI2C(0,EMTP_CTRL,1,&NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
     _delay_ms(10000);
 
@@ -1665,12 +1669,12 @@ void NXP_Program_MTP0(void)
     {
         errCode = tmbslTDA1997XReadI2C(0, INT_FLG_CLR_DDC, 1, &regVal);
         //if (errCode) return TM_ERR_BAD_PARAMETER;
-        _delay_ms(200);
+        _delay_ms(MTP_TIMEOUT_INCREMENT);
         //RxHdmiConfig[0].sysFuncTimer(200);
-        timeout += 200;
+        timeout += MTP_TIMEOUT_INCREMENT;
     }
-    while ((!(regVal & 0x80)) && (timeout < 5000));
-    if (timeout == 5000)
+    while ((!(regVal & 0x80)) && (timeout != MTP_TIMEOUT_MAX));
+    if (timeout == MTP_TIMEOUT_MAX)
     {
         WriteLn("/!\\Write E-MTP Error: Timeout of waiting E-MTP flag\n");
         //return TM_ERR_BAD_PARAMETER;
@@ -1683,7 +1687,7 @@ void NXP_Program_MTP0(void)
 
 
     result = bslTDA1997XWriteI2C(0,CMTP_CTRL,1,&NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
     _delay_ms(10000);
 
@@ -1695,12 +1699,12 @@ void NXP_Program_MTP0(void)
     {
         errCode = tmbslTDA1997XReadI2C(0, INT_FLG_CLR_SUS, 1, &regVal);
         //if (errCode) return TM_ERR_BAD_PARAMETER;
-        _delay_ms(200);
+        _delay_ms(MTP_TIMEOUT_INCREMENT);
         //RxHdmiConfig[0].sysFuncTimer(200);
-        timeout += 200;
+        timeout += MTP_TIMEOUT_INCREMENT;
     }
-    while ((!(regVal & 0x80)) && (timeout < 5000));
-    if (timeout == 5000)
+    while ((!(regVal & 0x80)) && (timeout != MTP_TIMEOUT_MAX));
+    if (timeout == MTP_TIMEOUT_MAX)
     {
         WriteLn("/!\\Write C-MTP Error: Timeout of waiting C-MTP flag\n");
         //return TM_ERR_BAD_PARAMETER;
@@ -1723,12 +1727,12 @@ void NXP_Program_MTP1(void)
     // clear the interrupt flags
     NewData=0x80;
     tmErrorCode_t result = bslTDA1997XWriteI2C(1, INT_FLG_CLR_DDC, 1, &NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
 
     NewData=0x02;
     result = bslTDA1997XWriteI2C(1,EMTP_CTRL,1,&NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
     _delay_ms(10000);
 
@@ -1743,12 +1747,12 @@ void NXP_Program_MTP1(void)
     {
         errCode = tmbslTDA1997XReadI2C(1, INT_FLG_CLR_DDC, 1, &regVal);
         //if (errCode) return TM_ERR_BAD_PARAMETER;
-        _delay_ms(200);
+        _delay_ms(MTP_TIMEOUT_INCREMENT);
         //RxHdmiConfig[0].sysFuncTimer(200);
-        timeout += 200;
+        timeout += MTP_TIMEOUT_INCREMENT;
     }
-    while ((!(regVal & 0x80)) && (timeout < 5000));
-    if (timeout == 5000)
+    while ((!(regVal & 0x80)) && (timeout != MTP_TIMEOUT_MAX));
+    if (timeout == MTP_TIMEOUT_MAX)
     {
         WriteLn("/!\\Write E-MTP Error: Timeout of waiting E-MTP flag\n");
         //return TM_ERR_BAD_PARAMETER;
@@ -1760,7 +1764,7 @@ void NXP_Program_MTP1(void)
     //if (errCode) return TM_ERR_BAD_PARAMETER;
 
     result = bslTDA1997XWriteI2C(1,CMTP_CTRL,1,&NewData);
-    sprintf(Msg,"Write result: %x",result);
+    sprintf(Msg,"Write result: %" TM_ERROR_CODE_FORMAT, result);
     WriteLn(Msg);
     _delay_ms(10000);
 
@@ -1771,12 +1775,12 @@ void NXP_Program_MTP1(void)
     {
         errCode = tmbslTDA1997XReadI2C(1, INT_FLG_CLR_SUS, 1, &regVal);
         //if (errCode) return TM_ERR_BAD_PARAMETER;
-        _delay_ms(200);
+        _delay_ms(MTP_TIMEOUT_INCREMENT);
         //RxHdmiConfig[0].sysFuncTimer(200);
-        timeout += 200;
+        timeout += MTP_TIMEOUT_INCREMENT;
     }
-    while ((!(regVal & 0x80)) && (timeout < 5000));
-    if (timeout == 5000)
+    while ((!(regVal & 0x80)) && (timeout != MTP_TIMEOUT_MAX));
+    if (timeout == MTP_TIMEOUT_MAX)
     {
         WriteLn("/!\\Write C-MTP Error: Timeout of waiting C-MTP flag\n");
         //return TM_ERR_BAD_PARAMETER;

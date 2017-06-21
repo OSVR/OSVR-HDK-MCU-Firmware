@@ -53,6 +53,8 @@
 //
 #include "tmFlags.h"                    // DVP common build control flags
 #include "stdio.h"
+#include <stdint.h>
+#include <inttypes.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -84,16 +86,16 @@ extern "C"
 //
 //      Standard Types
 //
-typedef signed   char   Int8;   //  8 bit   signed integer
-typedef signed   short  Int16;  // 16 bit   signed integer
-typedef signed   long   Int32;  // 32 bit   signed integer
-typedef unsigned char   UInt8;  //  8 bit unsigned integer
+typedef int8_t   Int8;   //  8 bit   signed integer
+typedef int16_t  Int16;  // 16 bit   signed integer
+typedef int32_t   Int32;  // 32 bit   signed integer
+typedef uint8_t   UInt8;  //  8 bit unsigned integer
 //typedef unsigned char 	uint8_t;  //  8 bit unsigned integer
 //typedef unsigned char 	u8;  //  8 bit unsigned integer
-typedef unsigned short  UInt16; // 16 bit unsigned integer
+typedef uint16_t  UInt16; // 16 bit unsigned integer
 //typedef unsigned short  uint16_t; // 16 bit unsigned integer
 //typedef unsigned short  u16; // 16 bit unsigned integer
-typedef unsigned long   UInt32; // 32 bit unsigned integer
+typedef uint32_t   UInt32; // 32 bit unsigned integer
 typedef float           Float;  // 32 bit floating point
 typedef unsigned char Bool;   // Boolean (True/False)
 typedef char            Char;   // character, character array ptr
@@ -109,7 +111,9 @@ typedef char          *Address;        // Ready for address-arithmetic
 typedef char const    *ConstAddress;
 typedef unsigned char  Byte;           // Raw byte
 typedef float          Float32;        // Single-precision float
+#ifndef __AVR__ // no 64-bit floats on AVR
 typedef double         Float64;        // Double-precision float
+#endif // ndef __AVR__
 typedef void          *Pointer;        // Pointer to anonymous object
 typedef void const    *ConstPointer;
 typedef char const    *ConstString;
@@ -137,8 +141,8 @@ typedef struct tmVersion
 **       to type "int" instead of type "long" (which are the same size on 32
 **       bit CPUs) separate 32bit signed/unsigned bitfield types are defined.
 */
-typedef signed   int    IBits32;    /* 32 bit   signed integer bitfields */
-typedef unsigned int    UBits32;    /* 32 bit unsigned integer bitfields */
+typedef int32_t    IBits32;         /* 32 bit   signed integer bitfields */
+typedef uint32_t   UBits32;         /* 32 bit unsigned integer bitfields */
 typedef IBits32 *pIBits32;          /* 32 bit   signed integer bitfield ptr */
 typedef UBits32 *pUBits32;          /* 32 bit unsigned integer bitfield ptr */
 
@@ -164,8 +168,8 @@ typedef String *pString;          // Null terminated 8 bit char str,
 /*This can be enabled only when all explicit references to the hi and lo
     structure members are eliminated from client code.*/
 #define TMFL_NATIVE_INT64 1
-typedef signed   long long int Int64,  *pInt64;  // 64-bit integer
-typedef unsigned long long int UInt64, *pUInt64; // 64-bit bitmask
+typedef int64_t Int64,  *pInt64;  // 64-bit integer
+typedef uint64_t UInt64, *pUInt64; // 64-bit bitmask
 // #elif defined _MSC_VER && _MSC_VER >= 1200
 // /*This can be enabled only when all explicit references to the hi and lo
 //     structure members are eliminated from client code.*/
@@ -206,6 +210,12 @@ UInt64, *pUInt64; // 64-bit bitmask
 #define HAL_DEVICE_NAME_LENGTH 16
 
 typedef UInt32 tmErrorCode_t;
+/// printf format macro constant for a tmErrorCode_t value
+#define TM_ERROR_CODE_FORMAT PRIx32
+/// expands to integer constant expression having the specified value and tmErrorCode_t type.
+#define TM_ERROR_CODE_C(X) UINT32_C(X)
+#define ERR_C(X) UINT32_C(X)
+
 typedef UInt32 tmProgressCode_t;
 
 /* timestamp definition */
@@ -403,4 +413,3 @@ STRING_TABLE;
 #endif
 
 #endif //ndef TMNXTYPES_H
-

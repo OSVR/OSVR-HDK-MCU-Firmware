@@ -4,9 +4,9 @@ ifeq ($(strip $(GIT)),)
    GIT=git
 endif
 
-GIT_DESCRIBE_OK := $(shell $(GIT) describe --tags --dirty --match *.* && echo GIT_DESCRIBE_OK)
+GIT_DESCRIBE_OK := $(shell $(GIT) describe --tags --dirty --match "*.*" && echo GIT_DESCRIBE_OK)
 #$(info GIT_DESCRIBE_OK $(GIT_DESCRIBE_OK))
-GIT_DESCRIBE_OUTPUT := $(shell $(GIT) describe --tags --dirty --match *.*)
+GIT_DESCRIBE_OUTPUT := $(shell $(GIT) describe --tags --dirty --match "*.*")
 GIT_CFLAGS :=
 GIT_DIRTY := 0
 GIT_AT_TAG := 0

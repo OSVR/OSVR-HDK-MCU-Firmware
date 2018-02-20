@@ -288,6 +288,10 @@ SHORT_NAME := hdk2svr
 VARIANT_NAME := HDK_20_SVR
 include add_variant.mk
 
+SHORT_NAME := hdk2svr60
+VARIANT_NAME := HDK_20_SVR_60
+include add_variant.mk
+
 SHORT_NAME := hdk_oled
 VARIANT_NAME := HDK_OLED
 include add_variant.mk

@@ -1,0 +1,152 @@
+{
+    "Base": {
+        "Basic Display": {
+            "Aspect ratio (landscape)": null,
+            "Aspect ratio (portrait)": null,
+            "Color Bit Depth": null,
+            "Continuous frequency supported": false,
+            "DPM active-off supported": true,
+            "DPM standby supported": true,
+            "DPM suspend supported": true,
+            "Digital Video Interface Standard Support": null,
+            "Display color type": "RGB 4:4:4 + YCrCb 4:4:4",
+            "Display gamma": 2.2,
+            "Maximum dimensions (cm)": {
+                "x": 12,
+                "y": 7
+            },
+            "Preferred timing includes native timing pixel format and refresh rate": true,
+            "Video input type": "Digital",
+            "sRGB Standard is default colour space": true
+        },
+        "Chromaticity": {
+            "Blue": {
+                "x": 133,
+                "y": 67
+            },
+            "Green": {
+                "x": 242,
+                "y": 728
+            },
+            "Red": {
+                "x": 691,
+                "y": 333
+            },
+            "White": {
+                "x": 307,
+                "y": 317
+            }
+        },
+        "Descriptors": [
+            {
+                "Addressable": {
+                    "x": 1080,
+                    "y": 1920
+                },
+                "Blanking": {
+                    "x": 48,
+                    "y": 23
+                },
+                "Border": {
+                    "x": 0,
+                    "y": 0
+                },
+                "Front porch": {
+                    "x": 32,
+                    "y": 12
+                },
+                "Image size (mm)": {
+                    "x": 70,
+                    "y": 120
+                },
+                "Interlace": false,
+                "Pixel clock (MHz)": 131.57,
+                "Stereo viewing": "No stereo",
+                "Sync pulse": {
+                    "x": 5,
+                    "y": 5
+                },
+                "Sync type": {
+                    "Horizontal sync (outside of V-sync)": "Negative",
+                    "Type": "Digital Separate Sync",
+                    "Vertical sync": "Positive"
+                },
+                "Type": "Detailed Timing Descriptor"
+            },
+            {
+                "Data string": "SENSICS",
+                "Type": "Display Product Serial Number"
+            },
+            {
+                "Data string": "OSVR HDK",
+                "Type": "Display Product Name"
+            },
+            {
+                "Horizontal rate (kHz)": {
+                    "Maximum": 120,
+                    "Minimum": 100
+                },
+                "Pixel clock (MHz)": 170,
+                "Subtype": "Default GTF supported",
+                "Type": "Display Range Limits Descriptor",
+                "Vertical rate (Hz)": {
+                    "Maximum": 60,
+                    "Minimum": 59
+                }
+            }
+        ],
+        "Established Timing": {
+            "1024x768 @ 60 Hz": false,
+            "1024x768 @ 72 Hz": false,
+            "1024x768 @ 75 Hz": false,
+            "1024x768 @ 87 Hz, interlaced (1024x768i)": false,
+            "1152x870 @ 75 Hz (Apple Macintosh II)": false,
+            "1280x1024 @ 75 Hz": false,
+            "640x480 @ 60 Hz": false,
+            "640x480 @ 67 Hz": false,
+            "640x480 @ 72 Hz": false,
+            "640x480 @ 75 Hz": false,
+            "720x400 @ 70 Hz": false,
+            "720x400 @ 88 Hz": false,
+            "800x600 @ 56 Hz": false,
+            "800x600 @ 60 Hz": false,
+            "800x600 @ 72 Hz": false,
+            "800x600 @ 75 Hz": false,
+            "832x624 @ 75 Hz": false,
+            "Manufacturer specific display mode 1": false,
+            "Manufacturer specific display mode 2": false,
+            "Manufacturer specific display mode 3": false,
+            "Manufacturer specific display mode 4": false,
+            "Manufacturer specific display mode 5": false,
+            "Manufacturer specific display mode 6": false,
+            "Manufacturer specific display mode 7": false
+        },
+        "Manufacturer Info": {
+            "ID Product Code": 4121,
+            "Manufacturer ID": "SVR",
+            "Model year": null,
+            "Serial number": 31082010,
+            "Week of manufacture": 12,
+            "Year of manufacture": 2015
+        },
+        "Standard Timing": [
+            {
+                "Frequency": 60,
+                "Ratio": "16:9",
+                "X resolution": 1920
+            },
+            {
+                "Frequency": 60,
+                "Ratio": "16:10",
+                "X resolution": 256
+            },
+            {
+                "Frequency": 60,
+                "Ratio": "16:10",
+                "X resolution": 256
+            }
+        ]
+    },
+    "Extensions": [],
+    "Version": "1.3"
+}

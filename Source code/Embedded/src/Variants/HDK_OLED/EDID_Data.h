@@ -28,7 +28,7 @@ const char svrEdidInfoString[] =
 #else
     "SVR1019, "
 #endif
-    "EDID spec v1.4, for AUO 5.46\" OLED panel (HDK 1.2/1.3/1.4)";
+    "EDID spec v1.3, for AUO 5.46\" OLED panel (HDK 1.2/1.3/1.4)";
 
 #ifdef WirelessOnly
 #define EDID_BYTES                                                                                                    \

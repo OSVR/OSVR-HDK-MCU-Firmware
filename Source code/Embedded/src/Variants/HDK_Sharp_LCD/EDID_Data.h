@@ -22,7 +22,7 @@
 #include <stdint.h>
 
 // info for #?f
-const char svrEdidInfoString[] = "SVR1019, EDID spec v1.4, for Sharp LCD panel (HDK 0.9/1.1)";
+const char svrEdidInfoString[] = "SVR1019, EDID spec v1.3, for Sharp LCD panel (HDK 0.9/1.1)";
 
 #define EDID_BYTES                                                                                                    \
 	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x4C, 0xAE, 0x19, 0x10, 0x1A, 0x46, 0xDA, 0x01, 0x23, 0x18, 0x01, \

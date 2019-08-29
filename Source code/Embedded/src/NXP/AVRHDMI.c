@@ -227,11 +227,6 @@ tmdlHdmiRxColorMatrixCoefs_t TMEX_APPLI_CONVERSIONMATRIX_YCbCr709_RGBLimited = {
 const UInt8 edid1080p6050xvYCC[256] =
 {
     EDID_BYTES
-
-#ifdef EDID_BYTES2
-	// optional timing extension, not used (??)
-    EDID_BYTES2
-#endif
 };
 
 #endif

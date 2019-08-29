@@ -56,10 +56,6 @@ OUTPUT_LSS := $(OUTPUT_STEM).lss
 # Relative path from makefile to source root
 REL_ROOT := ..
 
-MCU:=atxmega256a3bu
-# Used for compilation databases, for code analysis tools
-MIXED_CASE_MCU:=ATxmega256A3BU
-
 C_SRCS :=  \
 src/Boot.c \
 src/Console.c \
@@ -178,9 +174,9 @@ BASE_DEFINES := CONFIG_NVM_IGNORE_XMEGA_A3_D3_REVB_ERRATA \
 
 ALL_DEFINES := $(BASE_DEFINES) $(DEFINES)
 
-COMMON_FLAGS := -mmcu=$(MCU) -mrelax $(patsubst %, -D%,$(ALL_DEFINES))
+COMMON_FLAGS = -mmcu=$(MCU) -mrelax $(patsubst %, -D%,$(ALL_DEFINES))
 
-BASE_LDFLAGS := $(COMMON_FLAGS) -Wl,--relax -Wl,--gc-sections
+BASE_LDFLAGS = $(COMMON_FLAGS) -Wl,--relax -Wl,--gc-sections
 
 #LDFLAGS := -Wl,--section-start=.BOOT=0x40000
 
@@ -189,13 +185,13 @@ BASE_LDFLAGS := $(COMMON_FLAGS) -Wl,--relax -Wl,--gc-sections
 # bootloader.
 LDFLAGS :=
 
-ALL_LDFLAGS := $(BASE_LDFLAGS) $(LDFLAGS)
+ALL_LDFLAGS = $(BASE_LDFLAGS) $(LDFLAGS)
 
 ALL_CFLAGS = $(COMMON_FLAGS) -c -std=gnu99 \
               -ffunction-sections -fdata-sections \
               -fpack-struct -fshort-enums -fno-strict-aliasing \
               $(CFLAGS) $(EXTRA_CFLAGS)
-ALL_ASFLAGS := -Wa,-gdwarf2 -x assembler-with-cpp -c $(COMMON_FLAGS) $(ASFLAGS) $(EXTRA_ASFLAGS)
+ALL_ASFLAGS = -Wa,-gdwarf2 -x assembler-with-cpp -c $(COMMON_FLAGS) $(ASFLAGS) $(EXTRA_ASFLAGS)
 
 ifeq (,$(strip $(DEFINES)))
     # no separator if no special defines
@@ -280,6 +276,10 @@ CONFIG_REALCLEAN_TARGET = $(CONFIG)_realclean
 ###
 # The Variants
 ###
+MCU:=atxmega256a3bu
+# Used for compilation databases, for code analysis tools
+MIXED_CASE_MCU:=ATxmega256A3BU
+
 SHORT_NAME := hdk2
 VARIANT_NAME := HDK_20
 include add_variant.mk
@@ -298,6 +298,8 @@ include add_variant.mk
 
 SHORT_NAME := dsight
 VARIANT_NAME := dSight_Sharp_LCD
+MCU:=atxmega256a3u
+MIXED_CASE_MCU:=ATxmega256A3U
 include add_variant.mk
 
 # Done with variants.

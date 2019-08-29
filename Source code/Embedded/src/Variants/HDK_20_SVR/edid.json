@@ -160,6 +160,31 @@
                             "Type": "Auxiliary Video Information"
                         }
                     ]
+                },
+                {
+                    "#": "HMD extension - see https://docs.microsoft.com/en-us/windows-hardware/drivers/display/specialized-monitors-edid-extension",
+                    "Type": "Vendor-Specific Data Block",
+                    "IEEE OUI": "ca-12-5c",
+                    "Data payload": [
+                        2,
+                        7,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
                 }
             ],
             "Descriptors": [

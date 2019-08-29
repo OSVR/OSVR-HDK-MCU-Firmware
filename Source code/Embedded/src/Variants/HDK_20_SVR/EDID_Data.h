@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 // info for #?f
-const char svrEdidInfoString[] = "SVR1019, EDID spec v1.4, with updated 90Hz timings";
+const char svrEdidInfoString[] = "SVR1019, EDID spec v1.4, HMD extension flag, with updated 90Hz timings";
 
 #if 0
 // do not enforce the core key pass system - it's "accepted" by default

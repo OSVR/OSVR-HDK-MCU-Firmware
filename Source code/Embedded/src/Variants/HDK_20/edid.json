@@ -1,0 +1,237 @@
+{
+    "Base": {
+        "Basic Display": {
+            "Aspect ratio (landscape)": null,
+            "Aspect ratio (portrait)": null,
+            "Color Bit Depth": null,
+            "Continuous frequency supported": false,
+            "DPM active-off supported": true,
+            "DPM standby supported": true,
+            "DPM suspend supported": true,
+            "Digital Video Interface Standard Support": null,
+            "Display color type": "RGB 4:4:4 + YCrCb 4:4:4",
+            "Display gamma": 2.2,
+            "Maximum dimensions (cm)": {
+                "x": 13,
+                "y": 15
+            },
+            "Preferred timing includes native timing pixel format and refresh rate": true,
+            "Video input type": "Digital",
+            "sRGB Standard is default colour space": false
+        },
+        "Chromaticity": {
+            "Blue": {
+                "x": 133,
+                "y": 67
+            },
+            "Green": {
+                "x": 242,
+                "y": 728
+            },
+            "Red": {
+                "x": 686,
+                "y": 338
+            },
+            "White": {
+                "x": 307,
+                "y": 317
+            }
+        },
+        "Descriptors": [
+            {
+                "Addressable": {
+                    "x": 2160,
+                    "y": 1200
+                },
+                "Blanking": {
+                    "x": 342,
+                    "y": 12
+                },
+                "Border": {
+                    "x": 0,
+                    "y": 0
+                },
+                "Front porch": {
+                    "x": 92,
+                    "y": 6
+                },
+                "Image size (mm)": {
+                    "x": 130,
+                    "y": 150
+                },
+                "Interlace": false,
+                "Pixel clock (MHz)": 273.0,
+                "Stereo viewing": "No stereo",
+                "Sync pulse": {
+                    "x": 5,
+                    "y": 3
+                },
+                "Sync type": {
+                    "Horizontal sync (outside of V-sync)": "Negative",
+                    "Type": "Digital Separate Sync",
+                    "Vertical sync": "Negative"
+                },
+                "Type": "Detailed Timing Descriptor"
+            },
+            {
+                "Data string": "V001",
+                "Type": "Display Product Serial Number"
+            },
+            {
+                "Data string": "OSVR HDK2",
+                "Type": "Display Product Name"
+            },
+            {
+                "Horizontal rate (kHz)": {
+                    "Maximum": 255,
+                    "Minimum": 1
+                },
+                "Pixel clock (MHz)": 290,
+                "Subtype": "Default GTF supported",
+                "Type": "Display Range Limits Descriptor",
+                "Vertical rate (Hz)": {
+                    "Maximum": 120,
+                    "Minimum": 20
+                }
+            }
+        ],
+        "Established Timing": {
+            "1024x768 @ 60 Hz": false,
+            "1024x768 @ 72 Hz": false,
+            "1024x768 @ 75 Hz": false,
+            "1024x768 @ 87 Hz, interlaced (1024x768i)": false,
+            "1152x870 @ 75 Hz (Apple Macintosh II)": false,
+            "1280x1024 @ 75 Hz": false,
+            "640x480 @ 60 Hz": false,
+            "640x480 @ 67 Hz": false,
+            "640x480 @ 72 Hz": false,
+            "640x480 @ 75 Hz": false,
+            "720x400 @ 70 Hz": false,
+            "720x400 @ 88 Hz": false,
+            "800x600 @ 56 Hz": false,
+            "800x600 @ 60 Hz": false,
+            "800x600 @ 72 Hz": false,
+            "800x600 @ 75 Hz": false,
+            "832x624 @ 75 Hz": false,
+            "Manufacturer specific display mode 1": false,
+            "Manufacturer specific display mode 2": false,
+            "Manufacturer specific display mode 3": false,
+            "Manufacturer specific display mode 4": false,
+            "Manufacturer specific display mode 5": false,
+            "Manufacturer specific display mode 6": false,
+            "Manufacturer specific display mode 7": false
+        },
+        "Manufacturer Info": {
+            "ID Product Code": 4369,
+            "Manufacturer ID": "AUO",
+            "Model year": null,
+            "Serial number": null,
+            "Week of manufacture": null,
+            "Year of manufacture": 1990
+        },
+        "Standard Timing": []
+    },
+    "Extensions": [
+        {
+            "Basic audio": false,
+            "Data blocks": [
+                {
+                    "Short video descriptors": [
+                        {
+                            "Nativity": "Unspecified",
+                            "VIC": 0
+                        }
+                    ],
+                    "Type": "Video Data Block"
+                },
+                {
+                    "Data payload": [
+                        16,
+                        0
+                    ],
+                    "IEEE OUI": "00-0c-03",
+                    "Type": "Vendor-Specific Data Block"
+                }
+            ],
+            "Descriptors": [
+                {
+                    "Addressable": {
+                        "x": 2160,
+                        "y": 1200
+                    },
+                    "Blanking": {
+                        "x": 342,
+                        "y": 12
+                    },
+                    "Border": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Front porch": {
+                        "x": 92,
+                        "y": 6
+                    },
+                    "Image size (mm)": {
+                        "x": 130,
+                        "y": 150
+                    },
+                    "Interlace": false,
+                    "Pixel clock (MHz)": 273.0,
+                    "Stereo viewing": "No stereo",
+                    "Sync pulse": {
+                        "x": 5,
+                        "y": 3
+                    },
+                    "Sync type": {
+                        "Horizontal sync (outside of V-sync)": "Negative",
+                        "Type": "Digital Separate Sync",
+                        "Vertical sync": "Negative"
+                    },
+                    "Type": "Detailed Timing Descriptor"
+                },
+                {
+                    "Addressable": {
+                        "x": 2160,
+                        "y": 1200
+                    },
+                    "Blanking": {
+                        "x": 342,
+                        "y": 12
+                    },
+                    "Border": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Front porch": {
+                        "x": 92,
+                        "y": 6
+                    },
+                    "Image size (mm)": {
+                        "x": 130,
+                        "y": 150
+                    },
+                    "Interlace": false,
+                    "Pixel clock (MHz)": 273.0,
+                    "Stereo viewing": "No stereo",
+                    "Sync pulse": {
+                        "x": 5,
+                        "y": 3
+                    },
+                    "Sync type": {
+                        "Horizontal sync (outside of V-sync)": "Negative",
+                        "Type": "Digital Separate Sync",
+                        "Vertical sync": "Negative"
+                    },
+                    "Type": "Detailed Timing Descriptor"
+                }
+            ],
+            "Native DTD count": 0,
+            "Type": "CEA-861 Series Timing Extension",
+            "Underscan": false,
+            "Version": 3,
+            "YCbCr 4:2:2": true,
+            "YCbCr 4:4:4": true
+        }
+    ],
+    "Version": "1.3"
+}

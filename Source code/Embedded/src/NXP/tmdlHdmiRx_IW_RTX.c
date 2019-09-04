@@ -46,7 +46,7 @@
 #include "tmdlHdmiRx_cfg.h"
 #include "tmNxCompId.h"
 #include "tmdlHdmiRx_IW.h"
-#include "LPC214x.H"
+#include "LPC214x.h"
 
 #ifndef TMFL_NO_RTOS
     #include <RTL.h>

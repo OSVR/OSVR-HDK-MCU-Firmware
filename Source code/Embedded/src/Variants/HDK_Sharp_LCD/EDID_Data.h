@@ -1,6 +1,6 @@
 /*
  * Copyright 2016 OSVR and contributors.
- * Copyright 2016 Dennis Yeh.
+ * Copyright 2016 Sensics, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,9 @@
 #include <stdint.h>
 
 // info for #?f
-const char svrEdidInfoString[] = "AUO1111 - identical to 1.01";
+const char svrEdidInfoString[] = "SVR1019, EDID spec v1.3, for Sharp LCD panel (HDK 0.9/1.1)";
 
-// enforce the core key pass system
-static uint8_t core_key_pass = 0;
-
-#define CORE_KEY_PASS_FAIL_VALUE 0
-#define CORE_KEY_PASS_SUCCESS_VALUE 1
-
-/// AUO1111
+#define HAVE_EDID
 #include "edid.h"
 
 #endif  // INCLUDED_EDID_Data_h_GUID_F2172D68_7DD2_46A7_D06B_38CF0AACB921

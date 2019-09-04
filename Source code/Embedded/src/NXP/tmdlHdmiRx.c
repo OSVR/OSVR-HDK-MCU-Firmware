@@ -35,7 +35,7 @@
 #include  "Console.h" // for WriteLn
 #include "inttypes.h"
 #include <stdio.h>
-#include "avrhdmi.h"
+#include "AVRHDMI.h"
 
 
 

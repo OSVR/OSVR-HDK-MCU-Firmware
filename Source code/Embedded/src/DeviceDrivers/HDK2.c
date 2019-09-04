@@ -288,7 +288,7 @@ void OSVR_HDK_EDID(void)
 				else
 				{
 					/// if bad SN read, just use the default.
-					currentByte = EDID_LUT[idx];
+					currentByte = edid_bin[idx];
 				}
 				break;
 
@@ -302,7 +302,7 @@ void OSVR_HDK_EDID(void)
 				break;
 
 			default:
-				currentByte = EDID_LUT[idx];
+				currentByte = edid_bin[idx];
 				break;
 			}
 			cs += currentByte;

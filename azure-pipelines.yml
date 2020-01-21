@@ -1,0 +1,20 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: sudo apt-get update && sudo apt-get install -yy git gcc-avr avr-libc make 
+  displayName: 'install packages'
+
+- script: |
+    cd "Source code/Embedded/makefile-build"
+    make clean
+    make complete
+  displayName: 'Build'
+
+- publish: $(System.DefaultWorkingDirectory)/Source code/Embedded/makefile-build
+  artifact: firmware-hex-files

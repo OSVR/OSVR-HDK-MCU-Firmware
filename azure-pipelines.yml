@@ -7,7 +7,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: apt-get update && apt-get install -yy git gcc-avr avr-libc make 
+- script: sudo apt-get update && sudo apt-get install -yy git gcc-avr avr-libc make 
   displayName: 'install packages'
 
 - script: |

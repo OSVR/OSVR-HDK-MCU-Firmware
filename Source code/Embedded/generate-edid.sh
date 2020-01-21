@@ -25,6 +25,6 @@ for variant in HDK_20 HDK_20_SVR HDK_OLED HDK_Sharp_LCD; do
             echo "/* Edit the edid.json file and run generate-edid.sh instead. */"
             echo -n "static const "
             xxd -i edid.bin
-        ) | sed 's/unsigned int edid_bin_len =/#define EDID_LEN/' > edid.h
+        ) | sed -r 's/unsigned int edid_bin_len = ([0-9]+);/#define EDID_LEN \1/' > edid.h
     )
 done

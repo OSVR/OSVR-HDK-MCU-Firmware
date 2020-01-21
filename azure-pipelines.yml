@@ -15,3 +15,6 @@ steps:
     make clean
     make complete
   displayName: 'Build'
+
+- publish: $(System.DefaultWorkingDirectory)/Source code/Embedded/makefile-build
+  artifact: firmware-hex-files

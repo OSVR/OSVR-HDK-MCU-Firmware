@@ -1,0 +1,10 @@
+**/*
+!dsight-HDMI_VERBOSE.hex
+!dsight.hex
+!hdk_lcd-HDMI_VERBOSE.hex
+!hdk_lcd.hex
+!hdk_oled-HDMI_VERBOSE.hex
+!hdk_oled-WirelessOnly.hex
+!hdk_oled.hex
+!hdk2svr-HDMI_VERBOSE.hex
+!hdk2svr.hex

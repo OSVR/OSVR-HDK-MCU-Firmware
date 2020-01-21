@@ -1,5 +1,10 @@
 # OSVR HDK Microcontroller Firmware
+
 > Maintained at <https://github.com/OSVR/OSVR-HDK-MCU-Firmware>
+>
+> [![Build Status](https://dev.azure.com/osvr/OSVR-HDK-MCU-Firmware/_apis/build/status/OSVR.OSVR-HDK-MCU-Firmware?branchName=master)](https://dev.azure.com/osvr/OSVR-HDK-MCU-Firmware/_build/latest?definitionId=1&branchName=master)
+>
+> See that link for CI snapshot builds - use the hex file in combination with an upgrade bundle from one of the releases.
 
 This repository contains the source code to the main microcontroller firmware for a family of HMDs related to the OSVR HDKs, originally and primarily developed by [Sensics](http://sensics.com).
 
@@ -10,19 +15,22 @@ The variants primarily supported in this repository, listed by their Atmel Studi
 - `HDK_Sharp_LCD` - OSVR HDK 1.1 and derived custom devices containing a 5.5" Sharp LCD. (Makefile target: `hdk_lcd`)
 - `HDK_OLED` - OSVR HDK 1.2, 1.3/1.4 and derived custom devices containing a single AUO low-persistence OLED panel. (Makefile target: `hdk_oled`)
 - `HDK_20_SVR` - OSVR HDK 2 and derived custom devices containing dual AUO OLED panels and the Toshiba TC358870 HDMI-dual MIPI converter. (Makefile target: `hdk2svr` for the Sensics-defined EDID)
-    - `HDK_20` (Makefile target `hdk2`) is similar but uses legacy Razer-dictated EDID data.
+  - `HDK_20` (Makefile target `hdk2`) is similar but uses legacy Razer-dictated EDID data.
 
 **Other variants are present**, but this repository is not necessarily the authoritative source for those variants. Any changes **must not break other variants** present in this codebase.
 
 ## Building
-The canonical build environment is a fully-updated install of Atmel Studio 7.0 on Windows, though the build is portable to non-Windows.
+
+The canonical build environment was originally a fully-updated install of Atmel Studio 7.0 on Windows, though the build is portable to non-Windows.
 There are two methods of building, both of which must work and must be updated for new code.
 **Releases are built with the Makefile method, along with any other builds that may be distributed** - inconsistent/faulty support for pre/post build steps in Atmel Studio means that Atmel Studio IDE builds cannot carry detailed git commit version metadata accessible via `#?v` and `#?f`, and Makefile builds of the variants are easier to maintain in sync with one another with regards to build flags, etc.
 
 ### Atmel Studio project
+
 Open the solution file in the `Source Code` folder, and build one of the variants, selected using the configuration menu (where you might see "Release" or "Debug" in Visual Studio).
 
 ### Makefile
+
 Open a command prompt: to make it easier (to avoid needing to provide a full path to `make` in the `shelltools` subdirectory of the Atmel Studio install directory or install your own copy of `make` using [chocolatey](https://chocolatey.org) ) you can choose Tools, Command Prompt in Atmel Studio to open one with the PATH already extended. You also need git on your path, for automatic version stamping of builds based on tags - you may instead pass `GIT=c:/path/to/git.exe` as an argument to `make` if git isn't on your PATH.
 
 Change directory to the source tree, subdirectory `Source Code/Embedded/makefile-build`. Here, you can run `make` (or `make all`) to build all variants (not just the main variants listed above) and copy their hex files, renamed after their Makefile target, to the current directory. Of course, `make hdk2svr` or any other single target name will just make that one target. `make help` will list some information - but open the Makefile in a text editor for more help.
@@ -38,6 +46,7 @@ gcc version 4.9.2 (AVR_8_bit_GNU_Toolchain_3.5.3_1700)
 ## Development/Contribution
 
 ### Code Formatting
+
 A clang-format file is present, and `/Source code/Embedded/format-code.sh` is a script (usable both on Unix-like systems as well as under "git bash") to automatically apply clang-format to a subset of the source tree (the "non-vendor" portions).
 *Changes shall have clang-format applied to "non-vendor" code at every commit* (not in one commit at the end of a branch) for clarity and ease of review, so that diffs are minimal and contain just the "meat" of the changes, not frivolous whitespace changes due to badly-behaving editors.
 The ["git clang-format" utility](https://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/git-clang-format), which formats just patched/staged code, can be a useful assistant in this.
@@ -45,6 +54,7 @@ The ["git clang-format" utility](https://llvm.org/svn/llvm-project/cfe/trunk/too
 Use a recent version of clang/clang-format: [LLVM Windows snapshots](http://llvm.org/builds/) are the canonical source for Windows clang-format for this project.
 
 ### Build System and Atmel Studio Project/Files
+
 Atmel Studio frequently modifies the `.cproj`, `.componentinfo.xml`, and `.atsln` file but with no substantial cross-developer content.
 Until this upstream design flaw is fixed by Atmel and user preferences (such as debug tool and component versions) are split out from project description files, be very cautious before staging and committing any changes to those files - *do not commit changes to this file unless required, in which case stage only the portions required for your update.*
 Typically, the only time to do so would be if you add a new file to the build, or need to change the build flags for a variant or add a variant, and then you can stage just the part of the `.cproj` file diff that matters.
@@ -56,6 +66,7 @@ This can also be used as a test: if you didn't need to modify the Makefile, unle
 If you modified only one of the two build systems, please say why in your pull request - and if it's just "I'm not good at Makefiles", that's OK, we can suggest what to do, but this information is important.
 
 ### Code review and testing
+
 Pull requests are used for code review. Fork or branch from the latest master, and make a branch with just a single logical set of changes.
 
 The minimal testing required is that you run a Makefile build of all variants in all supported flag sets - `make clean` followed by `make complete` - and that it complete successfully, however, this is just an initial smoketest and not comprehensive.

@@ -7,8 +7,14 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: sudo apt-get update && sudo apt-get install -yy git gcc-avr avr-libc make 
+- script: sudo apt-get update && sudo apt-get install -yy gcc-avr avr-libc binutils-avr make jq
   displayName: 'install packages'
+
+- script: |
+    pushd "Source code/Embedded"
+    ./generate-edid.sh
+    git diff --quiet
+  displayName: 'Check for edid changes that require running ./generate-edid.sh'
 
 - script: |
     cd "Source code/Embedded/makefile-build"
@@ -18,3 +24,4 @@ steps:
 
 - publish: $(System.DefaultWorkingDirectory)/Source code/Embedded/makefile-build
   artifact: firmware-hex-files
+  displayName: 'Archive hex files'

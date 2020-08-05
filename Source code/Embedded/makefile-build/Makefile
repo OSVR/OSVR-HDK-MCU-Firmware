@@ -311,10 +311,10 @@ BASE_C_DEPS := $(C_SRCS:%.c=%.d)
 BASE_C_PREPROCS := $(C_SRCS:c=i)
 
 # The above lists, multiplied by the variants.
-OBJS := $(call make_build_dirs,$(BASE_OBJS)))
-C_OBJS := $(call make_build_dirs,$(BASE_C_OBJS)))
-C_DEPS := $(call make_build_dirs,$(BASE_C_DEPS)))
-C_PREPROCS := $(call make_build_dirs,$(BASE_C_PREPROCS)))
+OBJS := $(call make_build_dirs,$(BASE_OBJS))
+C_OBJS := $(call make_build_dirs,$(BASE_C_OBJS))
+C_DEPS := $(call make_build_dirs,$(BASE_C_DEPS))
+C_PREPROCS := $(call make_build_dirs,$(BASE_C_PREPROCS))
 
 # These files had optimization turned off before for some reason, turning it down now.
 # TODO why does optimization need to be reduced for this BNO code?

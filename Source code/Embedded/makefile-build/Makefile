@@ -405,19 +405,19 @@ complete: all $(SPECIAL_CONFIG_TARGETS)
 help:
 	@echo make clean will delete build intermediate files.
 	@echo make realclean includes make clean, and also deletes the final output hex files
-	@echo ($(strip $(FINAL_GENERATED)))
+	@echo $(strip $(FINAL_GENERATED))
 	@echo make distclean is make realclean for both "standard" configuration and the special configurations listed below.
 	@echo Build targets:
 	@echo These targets exist to build variants:
-	$(call FUNC_PRINT_LIST,CONVENIENCE_TARGETS, - )
-	@echo By default (or by make all), this subset is built:
-	$(call FUNC_PRINT_LIST,BUILT_BY_ALL, - )
+	@$(call FUNC_PRINT_LIST,CONVENIENCE_TARGETS, - )
+	@echo By default, or by make all, this subset is built:
+	@$(call FUNC_PRINT_LIST,BUILT_BY_ALL, - )
 	@echo make hdmi_verbose will build targets with DEFINES=HDMI_VERBOSE - make hdmi_verbose_clean is its clean counterpart.
 	@echo make disable_video will build targets with DEFINES=SVR_DISABLE_VIDEO_INPUT - make disable_video_clean is its clean counterpart.
 	@echo Special config targets:
-	$(call FUNC_PRINT_LIST,SPECIAL_CONFIG_TARGETS, - )
+	@$(call FUNC_PRINT_LIST,SPECIAL_CONFIG_TARGETS, - )
 	@echo The extreme target "complete" will build a normal make all, as well as all those special config targets.
-	@echo make compiledb will generate compile_commands.json in each variant directory for use with Clang-related tools (libtooling-based).
+	@echo make compiledb will generate compile_commands.json in each variant directory for use with various, often Clang-related, tools.
 	@echo make release when at a release tag in a clean souce tree will distclean then build a subdirectory containing all the files, named appropriately, needed for release.
 	@echo make snapshot is like make release, except that it functions at any commit in a clean source tree and does not distclean first.
 .PHONY: help

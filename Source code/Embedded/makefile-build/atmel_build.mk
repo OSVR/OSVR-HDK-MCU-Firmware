@@ -62,7 +62,7 @@ CAT := cat
 FUNC_CP = cp "$1" "$2"
 FUNC_MKDIR_P = mkdir -p "$1"
 
-FUNC_PRINT_LIST = foreach elt in $($1); do echo $2 $$elt; done
+FUNC_PRINT_LIST = for elt in $($1); do echo $2 $$elt; done
 endif
 
 CC := "$(TOOLCHAIN_ROOT)/bin/avr-gcc$(TOOL_EXTENSION)"

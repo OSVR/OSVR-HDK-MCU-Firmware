@@ -34,9 +34,37 @@ SUBTYPE_DISPLAY_RANGE_2ND_GTF = 'Secondary GTF supported - requires default too'
 SUBTYPE_DISPLAY_RANGE_CVT = 'CVT supported'
 SUBTYPE_DISPLAY_RANGE_UNKNOWN = 'Unknown'
 
+DESCRIPTOR_MAP = {
+    0xFF: TYPE_PRODUCT_SERIAL_NUMBER,
+    0xFE: TYPE_ALPHANUM_DATA_STRING,
+    0xFD: TYPE_DISPLAY_RANGE_LIMITS,
+    0xFC: TYPE_DISPLAY_PRODUCT_NAME,
+    0xFB: TYPE_COLOR_POINT_DATA,
+    0xFA: TYPE_STANDARD_TIMING,
+    0xF9: TYPE_DISPLAY_COLOR_MANAGEMENT,
+    0xF8: TYPE_CVT_TIMING,
+    0xF7: TYPE_ESTABLISHED_TIMINGS_III,
+    0x10: TYPE_DUMMY,
+    # 0x0F: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x0E: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x0D: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x0C: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x0B: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x0A: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x09: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x08: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x07: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x06: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x05: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x04: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x03: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x02: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x01: TYPE_MANUFACTURER_SPECIFIED,
+    # 0x00: TYPE_MANUFACTURER_SPECIFIED,
+}
 
 def GetDescriptor(edid, start, version):
-  """Fetches a descriptor object.
+  """Fetch a descriptor object.
 
   Args:
     edid: The list of bytes that make up the EDID.
@@ -76,7 +104,7 @@ def GetDescriptor(edid, start, version):
 
 
 def GetDisplayRangeDescriptor(block):
-  """Fetches some type of Display Range Descriptor.
+  """Fetch some type of Display Range Descriptor.
 
   Args:
     block: The list of bytes that make up this descriptor.
@@ -101,7 +129,7 @@ class Descriptor(object):
   """Defines a single descriptor and its properties."""
 
   def __init__(self, block, my_type):
-    """Creates a Descriptor object.
+    """Create a Descriptor object.
 
     Args:
       block: A list of 18-bytes that make up the descriptor.
@@ -112,7 +140,7 @@ class Descriptor(object):
 
   @property
   def type(self):
-    """Fetches the type of the descriptor.
+    """Fetch the type of the descriptor.
 
     Returns:
       A string that indicates the type of the descriptor.
@@ -120,7 +148,7 @@ class Descriptor(object):
     return self._type
 
   def GetBlock(self):
-    """Fetches the data block.
+    """Fetch the data block.
 
     Returns:
       A list of bytes that make up this descriptor.
@@ -128,7 +156,7 @@ class Descriptor(object):
     return self._block
 
   def CheckErrors(self, index=None):
-    """Checks the validity of this descriptor.
+    """Check the validity of this descriptor.
 
     Args:
       index: The integer index of the descriptor being checked.
@@ -143,7 +171,7 @@ class StringDescriptor(Descriptor):
   """Analyzes a String Descriptor."""
 
   def __init__(self, block, my_type):
-    """Creates a StringDescriptor object.
+    """Create a StringDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -154,7 +182,7 @@ class StringDescriptor(Descriptor):
 
   @property
   def string(self):
-    """Fetches the alphanumeric string.
+    """Fetch the alphanumeric string.
 
     Returns:
       A string of alphanumeric characters that this descriptor encoded.
@@ -170,7 +198,7 @@ class StringDescriptor(Descriptor):
     return alphanum_data
 
   def CheckErrors(self, index=None):
-    """Checks the StringDescriptor for errors.
+    """Check the StringDescriptor for errors.
 
     Args:
       index: The integer index of the descriptor.
@@ -189,7 +217,7 @@ class ProductSerialNumberDescriptor(StringDescriptor):
   """Analyzes a Product Serial Number Descriptor."""
 
   def __init__(self, block):
-    """Creates a ProductSerialNumberDescriptor object.
+    """Create a ProductSerialNumberDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -201,7 +229,7 @@ class AlphanumDataStringDescriptor(StringDescriptor):
   """Analyzes an Alphanumerical Data String Descriptor."""
 
   def __init__(self, block):
-    """Creates an AlphanumDataStringDescriptor object.
+    """Create an AlphanumDataStringDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -213,7 +241,7 @@ class DisplayProductNameDescriptor(StringDescriptor):
   """Analyzes a Display Product Name Descriptor."""
 
   def __init__(self, block):
-    """Creates a DisplayProductNameDescriptor object.
+    """Create a DisplayProductNameDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -225,7 +253,7 @@ class DisplayRangeDescriptor(Descriptor):
   """Analyzes a Display Range Descriptor."""
 
   def __init__(self, block, subtype):
-    """Creates a DisplayRangeDescriptor object.
+    """Create a DisplayRangeDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -237,7 +265,7 @@ class DisplayRangeDescriptor(Descriptor):
 
   @property
   def subtype(self):
-    """Fetches the subtype.
+    """Fetch the subtype.
 
     Returns:
       A string specifying the subtype of the DisplayRangeDescriptor.
@@ -245,7 +273,7 @@ class DisplayRangeDescriptor(Descriptor):
     return self._subtype
 
   def _GetMaxVerticalRateOffset(self):
-    """Fetches the maximum vertical rate offset.
+    """Fetch the maximum vertical rate offset.
 
     Returns:
       An integer specifying the maximum vertical rate offset (in Hz).
@@ -256,7 +284,7 @@ class DisplayRangeDescriptor(Descriptor):
       return 0
 
   def _GetMinVerticalRateOffset(self):
-    """Fetches the minimum vertical rate offset.
+    """Fetch the minimum vertical rate offset.
 
     Returns:
       An integer specifying the minimum vertical rate offset (in Hz).
@@ -267,7 +295,7 @@ class DisplayRangeDescriptor(Descriptor):
       return 0
 
   def _GetMaxHorizontalRateOffset(self):
-    """Fetches the maximum horizontal rate offset.
+    """Fetch the maximum horizontal rate offset.
 
     Returns:
       An integer specifying the maximum horizontal rate offset (in kHz).
@@ -278,7 +306,7 @@ class DisplayRangeDescriptor(Descriptor):
       return 0
 
   def _GetMinHorizontalRateOffset(self):
-    """Fetches the minimum horizontal rate offset.
+    """Fetch the minimum horizontal rate offset.
 
     Returns:
       An integer specifying the minimum horizontal rate offset (in kHz).
@@ -290,7 +318,7 @@ class DisplayRangeDescriptor(Descriptor):
 
   @property
   def min_vertical_rate(self):
-    """Fetches the minimum vertical rate.
+    """Fetch the minimum vertical rate.
 
     Returns:
       An integer specifying the minimum vertical rate (in Hz).
@@ -299,7 +327,7 @@ class DisplayRangeDescriptor(Descriptor):
 
   @property
   def max_vertical_rate(self):
-    """Fetches the maximum vertical rate.
+    """Fetch the maximum vertical rate.
 
     Returns:
       An integer specifying the maximum vertical rate (in Hz).
@@ -308,7 +336,7 @@ class DisplayRangeDescriptor(Descriptor):
 
   @property
   def min_horizontal_rate(self):
-    """Fetches the minimum horizontal rate.
+    """Fetch the minimum horizontal rate.
 
     Returns:
       An integer specifying the minimum horizontal rate (in kHz).
@@ -317,7 +345,7 @@ class DisplayRangeDescriptor(Descriptor):
 
   @property
   def max_horizontal_rate(self):
-    """Fetches the maximum horizontal rate.
+    """Fetch the maximum horizontal rate.
 
     Returns:
       An integer specifying the maximum horizontal rate (in kHz).
@@ -326,7 +354,7 @@ class DisplayRangeDescriptor(Descriptor):
 
   @property
   def pixel_clock(self):
-    """Fetches the pixel clock.
+    """Fetch the pixel clock.
 
     Returns:
       An integer specifying the pixel clock (MHz).
@@ -334,7 +362,7 @@ class DisplayRangeDescriptor(Descriptor):
     return self._block[9] * 10
 
   def CheckErrors(self, index=None):
-    """Checks for errors.
+    """Check for errors.
 
     Errors may include maximum values being less than minimum values, or
     invalid support flag values.
@@ -386,7 +414,7 @@ class DisplayRangeGTF(DisplayRangeDescriptor):
   """Analyzes a Display Range GTF Descriptor (subtype of Display Range)."""
 
   def __init__(self, block):
-    """Creates a DisplayRangeGTF object.
+    """Create a DisplayRangeGTF object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -395,16 +423,16 @@ class DisplayRangeGTF(DisplayRangeDescriptor):
 
   @property
   def start_break_freq(self):
-    """Fetches start break frequency.
+    """Fetch start break frequency.
 
     Returns:
       A string that indicates start break frequency.
     """
-    return '%s kHz' % (self._block[12]*2)
+    return '%s kHz' % (self._block[12] * 2)
 
   @property
   def c(self):
-    """Fetches the value c for the Generalized Timing Formula (GTF).
+    """Fetch the value c for the Generalized Timing Formula (GTF).
 
     Returns:
       An integer that is the value of c.
@@ -413,7 +441,7 @@ class DisplayRangeGTF(DisplayRangeDescriptor):
 
   @property
   def m(self):
-    """Fetches the value m for the Generalized Timing Formula (GTF).
+    """Fetch the value m for the Generalized Timing Formula (GTF).
 
     Returns:
       An integer that is the value of m.
@@ -422,7 +450,7 @@ class DisplayRangeGTF(DisplayRangeDescriptor):
 
   @property
   def k(self):
-    """Fetches the value k for the Generalized Timing Formula (GTF).
+    """Fetch the value k for the Generalized Timing Formula (GTF).
 
     Returns:
       An integer that is the value of k.
@@ -431,7 +459,7 @@ class DisplayRangeGTF(DisplayRangeDescriptor):
 
   @property
   def j(self):
-    """Fetches the value j for the Generalized Timing Formula (GTF).
+    """Fetch the value j for the Generalized Timing Formula (GTF).
 
     Returns:
       An integer that is the value of j.
@@ -451,7 +479,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
   ]
 
   def __init__(self, block):
-    """Creates a DisplayRangeDescriptor object.
+    """Create a DisplayRangeDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -460,7 +488,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def cvt_version(self):
-    """Fetches CVT version - i.e., Version 1.1.
+    """Fetch CVT version - i.e., Version 1.1.
 
     Returns:
       A string that indicates the version.
@@ -471,7 +499,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def pixel_clock(self):
-    """Fetches the pixel clock, overriding the general method.
+    """Fetch the pixel clock, overriding the general method.
 
     Since CVT Display Range descriptors have an addtional pixel clock field,
     this additional value is subtracted from the original method.
@@ -483,7 +511,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def additional_pixel_clock(self):
-    """Fetches additional pixel clock value.
+    """Fetch additional pixel clock value.
 
     Returns:
       A float indicating additional pixel clock value (in MHz).
@@ -492,7 +520,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def max_active_pixels(self):
-    """Fetches maximum active pixels.
+    """Fetch maximum active pixels.
 
     Returns:
       An int describing the limit on horizontal active pixels, or None if no
@@ -506,7 +534,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def supported_aspect_ratios(self):
-    """Fetches supported aspect ratios.
+    """Fetch supported aspect ratios.
 
     Returns:
       A dict of strings and bools specifying supported aspect ratios.
@@ -515,7 +543,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def preferred_aspect_ratio(self):
-    """Fetches the preferred aspect ratio.
+    """Fetch the preferred aspect ratio.
 
     Returns:
       A string indicating the preferred aspect ratio.
@@ -527,7 +555,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def cvt_blanking_support(self):
-    """Fetches the CVT blanking support.
+    """Fetch the CVT blanking support.
 
     Returns:
       A collections.OrderedDict of string keys and boolean values indicating
@@ -542,7 +570,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def display_scaling_support(self):
-    """Fetches the types of display scaling support.
+    """Fetch the types of display scaling support.
 
     Returns:
       A collections.OrderedDict of string keys and boolean values indicating the
@@ -559,7 +587,7 @@ class DisplayRangeCVT(DisplayRangeDescriptor):
 
   @property
   def preferred_vert_refresh(self):
-    """Fetches preferred vertical refresh rate.
+    """Fetch preferred vertical refresh rate.
 
     Returns:
       An int indicating preferred vertical refresh rate in Hz.
@@ -572,7 +600,7 @@ class ColorPointDescriptor(Descriptor):
   """Analyzes a Color Point Descriptor."""
 
   def __init__(self, block):
-    """Creates a ColorPointDescriptor object.
+    """Create a ColorPointDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -581,7 +609,7 @@ class ColorPointDescriptor(Descriptor):
 
   @property
   def first_color_point(self):
-    """Fetches the first color point in the descriptor.
+    """Fetch the first color point in the descriptor.
 
     Returns:
       A ColorPoint object.
@@ -590,7 +618,7 @@ class ColorPointDescriptor(Descriptor):
 
   @property
   def second_color_point(self):
-    """Fetches the second color point in the descriptor.
+    """Fetch the second color point in the descriptor.
 
     Returns:
       A ColorPoint object.
@@ -598,7 +626,7 @@ class ColorPointDescriptor(Descriptor):
     return ColorPoint(self._block, 10)
 
   def CheckErrors(self, index=None):
-    """Checks the ColorPointDescriptor for errors.
+    """Check the ColorPointDescriptor for errors.
 
     Args:
       index: The integer index of the descriptor.
@@ -619,17 +647,17 @@ class ColorPoint(object):
   """Analyzes a single Color Point within a Color Point Descriptor."""
 
   def __init__(self, block, start):
-    """Creates a ColorPoint object.
+    """Create a ColorPoint object.
 
     Args:
       block: A list of bytes that make up this descriptor.
       start: The start index of the ColorPoint.
     """
-    self._block = block[start : (start + 5)]
+    self._block = block[start:(start + 5)]
 
   @property
   def index_number(self):
-    """Fetches the index number.
+    """Fetch the index number.
 
     Returns:
       An integer that indicates the index number of the Color Point.
@@ -638,27 +666,25 @@ class ColorPoint(object):
 
   @property
   def white_x(self):
-    """Fetches the White X coordinate in the Color Point.
+    """Fetch the White X coordinate in the Color Point.
 
     Returns:
       An integer that indicates the White X coordinate in the Color Point.
     """
-    return ((self._block[2] << 2)
-            + ((self._block[1] >> 2) & 0x03))
+    return ((self._block[2] << 2) + ((self._block[1] >> 2) & 0x03))
 
   @property
   def white_y(self):
-    """Fetches the White Y coordinate in the Color Point.
+    """Fetch the White Y coordinate in the Color Point.
 
     Returns:
       An integer that indicates the White Y coordinate in the Color Point.
     """
-    return ((self._block[3] << 2)
-            + (self._block[1] & 0x03))
+    return ((self._block[3] << 2) + (self._block[1] & 0x03))
 
   @property
   def gamma(self):
-    """Fetches the gamma value (range 1.00-3.54).
+    """Fetch the gamma value (range 1.00-3.54).
 
     Returns:
       A float describing the gamma value, or None if unspecified.
@@ -673,7 +699,7 @@ class StandardTimingDescriptor(Descriptor):
   """Analyzes a Standard Timing Descriptor."""
 
   def __init__(self, block, version):
-    """Creates a StandardTimingDescriptor object.
+    """Create a StandardTimingDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -684,7 +710,7 @@ class StandardTimingDescriptor(Descriptor):
 
   @property
   def standard_timings(self):
-    """Fetches the standard timings indicated in this descriptor.
+    """Fetch the standard timings indicated in this descriptor.
 
     Returns:
       A list of StandardTiming objects.
@@ -692,7 +718,7 @@ class StandardTimingDescriptor(Descriptor):
     sts = []
 
     for x in range(0, 7):
-      st = standard_timings.GetStandardTiming(self._block, 5 + (x*2),
+      st = standard_timings.GetStandardTiming(self._block, 5 + (x * 2),
                                               self._version)
       if st:
         sts.append(st)
@@ -704,7 +730,7 @@ class DisplayColorDescriptor(Descriptor):
   """Analyzes a Display Color Descriptor."""
 
   def __init__(self, block):
-    """Creates a DisplayColorDescriptor object.
+    """Create a DisplayColorDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -713,7 +739,7 @@ class DisplayColorDescriptor(Descriptor):
 
   @property
   def red_a3(self):
-    """Fetches the red a3 value for color management.
+    """Fetch the red a3 value for color management.
 
     Returns:
       An integer denoting the red a3 value for color management.
@@ -722,7 +748,7 @@ class DisplayColorDescriptor(Descriptor):
 
   @property
   def red_a2(self):
-    """Fetches the red a2 value for color management.
+    """Fetch the red a2 value for color management.
 
     Returns:
       An integer denoting the red a2 value for color management.
@@ -731,7 +757,7 @@ class DisplayColorDescriptor(Descriptor):
 
   @property
   def green_a3(self):
-    """Fetches the green a3 value for color management.
+    """Fetch the green a3 value for color management.
 
     Returns:
       An integer denoting the green a3 value for color management.
@@ -740,7 +766,7 @@ class DisplayColorDescriptor(Descriptor):
 
   @property
   def green_a2(self):
-    """Fetches the green a2 value for color management.
+    """Fetch the green a2 value for color management.
 
     Returns:
       An integer denoting the green a2 value for color management.
@@ -749,7 +775,7 @@ class DisplayColorDescriptor(Descriptor):
 
   @property
   def blue_a3(self):
-    """Fetches the blue a3 value for color management.
+    """Fetch the blue a3 value for color management.
 
     Returns:
       An integer denoting the blue a3 value for color management.
@@ -758,7 +784,7 @@ class DisplayColorDescriptor(Descriptor):
 
   @property
   def blue_a2(self):
-    """Fetches the blue a2 value for color management.
+    """Fetch the blue a2 value for color management.
 
     Returns:
       An integer denoting the blue a2 value for color management.
@@ -770,7 +796,7 @@ class CoordinatedVideoTimingsDescriptor(Descriptor):
   """Analyzes a Coordinated Video Timings Descriptor."""
 
   def __init__(self, block):
-    """Creates a CoordinatedVideoTimingsDescriptor object.
+    """Create a CoordinatedVideoTimingsDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -779,7 +805,7 @@ class CoordinatedVideoTimingsDescriptor(Descriptor):
 
   @property
   def coordinated_video_timings(self):
-    """Fetches the coordinated video timings.
+    """Fetch the coordinated video timings.
 
     Returns:
       A list of coordinated_video_timings.CoordinatedVideoTiming objects.
@@ -787,14 +813,14 @@ class CoordinatedVideoTimingsDescriptor(Descriptor):
     cvts = []
 
     for x in range(0, 4):
-      cvt = cvt_module.GetCoordinatedVideoTiming(self._block, 6 + (x*3))
+      cvt = cvt_module.GetCoordinatedVideoTiming(self._block, 6 + (x * 3))
       if cvt:
         cvts.append(cvt)
 
     return cvts
 
   def CheckErrors(self, index=None):
-    """Checks the CoordinatedVideoTimingsDescriptor for errors.
+    """Check the CoordinatedVideoTimingsDescriptor for errors.
 
     Args:
       index: The integer index of the descriptor.
@@ -817,7 +843,7 @@ class EstablishedTimingsIIIDescriptor(Descriptor):
   """Analyzes an Established Timings III Descriptor."""
 
   def __init__(self, block):
-    """Creates an EstablishedTimingsIIIDescriptor object.
+    """Create an EstablishedTimingsIIIDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -872,15 +898,19 @@ class EstablishedTimingsIIIDescriptor(Descriptor):
 
   @property
   def established_timings(self):
-    """Fetches the supported established timings.
+    """Fetch the supported established timings.
 
     Returns:
       A dict of strings and bools denoting the supported established timings.
     """
     # Bytes 6-10 plus first half of 11
-    timing_byte = ((self._block[6] << 36) + (self._block[7] << 28) +
-                   (self._block[8] << 20) + (self._block[9] << 12) +
-                   (self._block[10] << 4) + (self._block[11] >> 4))
+    timing_byte = 0
+    timing_byte += self._block[6] << 36
+    timing_byte += self._block[7] << 28
+    timing_byte += self._block[8] << 20
+    timing_byte += self._block[9] << 12
+    timing_byte += self._block[10] << 4
+    timing_byte += self._block[11] >> 4
     return tools.DictFilter(self._timings, timing_byte)
 
 
@@ -889,7 +919,7 @@ class ReservedDescriptor(Descriptor):
   """Defines a ReservedDescriptor (which should not yet appear in EDID)."""
 
   def __init__(self, block):
-    """Creates a ReservedDescriptor object.
+    """Create a ReservedDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -902,7 +932,7 @@ class DummyDescriptor(Descriptor):
   """Defines a Dummy (placeholder) Descriptor."""
 
   def __init__(self, block):
-    """Creates a DummyDescriptor object.
+    """Create a DummyDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -911,7 +941,7 @@ class DummyDescriptor(Descriptor):
 
   # First 5 bytes of Dummy Descriptor should be 0x00
   def CheckErrors(self, index=None):
-    """Checks the DummyDescriptor for errors.
+    """Check the DummyDescriptor for errors.
 
     Args:
       index: The integer index of this descriptor (1-4).
@@ -938,7 +968,7 @@ class ManuSpecifiedDescriptor(Descriptor):
   """Defines a Manufacturer Specified Descriptor."""
 
   def __init__(self, block):
-    """Creates a ManuSpecifiedDescriptor object.
+    """Create a ManuSpecifiedDescriptor object.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -946,7 +976,7 @@ class ManuSpecifiedDescriptor(Descriptor):
     Descriptor.__init__(self, block, TYPE_MANUFACTURER_SPECIFIED)
 
   def GetBlob(self):
-    """Fetches the data blob (13-byte manufacturer specified data).
+    """Fetch the data blob (13-byte manufacturer specified data).
 
     Returns:
       A list of bytes that make up the data blob.
@@ -958,7 +988,7 @@ class DetailedTimingDescriptor(Descriptor):
   """Defines a Detailed Timing Descriptor, perhaps the most common type."""
 
   def __init__(self, block):
-    """Creates a DetailedTiming Descriptorobject.
+    """Create a DetailedTiming Descriptorobject.
 
     Args:
       block: A list of 18-bytes that make up this descriptor.
@@ -967,7 +997,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def pixel_clock(self):
-    """Fetches pixel clock measurements.
+    """Fetch pixel clock measurements.
 
     Returns:
       A float denoting the pixel clock measurement (in MHz).
@@ -977,7 +1007,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def h_active_pixels(self):
-    """Fetches the number of horizontal active pixels.
+    """Fetch the number of horizontal active pixels.
 
     Returns:
       An integer denoting the number of horizontal active pixels.
@@ -987,7 +1017,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def h_blanking_pixels(self):
-    """Fetches the number of horizontal blanking pixels.
+    """Fetch the number of horizontal blanking pixels.
 
     Returns:
       An integer denoting the number of horizontal blanking pixels.
@@ -997,7 +1027,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def v_active_lines(self):
-    """Fetches the number of vertical active lines.
+    """Fetch the number of vertical active lines.
 
     Returns:
       An integer denoting the number of vertical active lines
@@ -1007,7 +1037,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def v_blanking_lines(self):
-    """Fetches the number of vertical blanking lines.
+    """Fetch the number of vertical blanking lines.
 
     Returns:
       An integer denoting the number of vertical blanking lines.
@@ -1017,7 +1047,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def h_sync_offset(self):
-    """Fetches the number of horizontal sync offset pixels.
+    """Fetch the number of horizontal sync offset pixels.
 
     Returns:
       An integer denoting the number of horizontal sync offset pixels.
@@ -1027,7 +1057,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def h_sync_pulse(self):
-    """Fetches the horizontal sync pulse.
+    """Fetch the horizontal sync pulse.
 
     Returns:
       An integer denoting the horizontal sync pulse.
@@ -1037,7 +1067,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def v_sync_offset(self):
-    """Fetches the number of vertical sync offset pixels.
+    """Fetch the number of vertical sync offset pixels.
 
     Returns:
       An integer denoting the number of vertical sync offset pixels.
@@ -1047,7 +1077,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def v_sync_pulse(self):
-    """Fetches the vertical sync pulse.
+    """Fetch the vertical sync pulse.
 
     Returns:
       An integer denoting the vertical sync pulse.
@@ -1057,7 +1087,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def h_display_size(self):
-    """Fetches the horizontal display size.
+    """Fetch the horizontal display size.
 
     Returns:
       An integer denoting the horizontal display size.
@@ -1067,7 +1097,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def v_display_size(self):
-    """Fetches the vertical display size.
+    """Fetch the vertical display size.
 
     Returns:
       An integer denoting the vertical display size.
@@ -1077,7 +1107,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def h_border_pixels(self):
-    """Fetches the number of horizontal border pixels.
+    """Fetch the number of horizontal border pixels.
 
     Returns:
       An integer denoting the number of horizontal border pixels.
@@ -1087,7 +1117,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def v_border_lines(self):
-    """Fetches the number of vertical border lines.
+    """Fetch the number of vertical border lines.
 
     Returns:
       An integer denoting the number of vertical border lines.
@@ -1097,7 +1127,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def interlaced(self):
-    """Fetches the interlace setting.
+    """Fetch the interlace setting.
 
     Returns:
       A boolean indicating whether the setting is interlaced or not.
@@ -1108,7 +1138,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def stereo_mode(self):
-    """Fetches the stereo mode.
+    """Fetch the stereo mode.
 
     Returns:
       A string indicating the stereo mode.
@@ -1130,7 +1160,7 @@ class DetailedTimingDescriptor(Descriptor):
 
   @property
   def sync_type(self):
-    """Fetches the sync signal definition type.
+    """Fetch the sync signal definition type.
 
     Returns:
       A dict of strings and bools indicating sync signal definition types.
@@ -1162,4 +1192,3 @@ class DetailedTimingDescriptor(Descriptor):
                                                   else 'Negative')
 
     return s
-

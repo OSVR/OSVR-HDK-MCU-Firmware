@@ -18,7 +18,6 @@
 """Parses EDID and establishes command line options for EDID analysis."""
 
 
-
 import argparse
 import re
 
@@ -28,7 +27,7 @@ import edid.edid as edid
 import edid.extensions as extensions
 import edid.tools as tools
 import edid.video_block as video_block
-
+from edid.tools import BytesFromFile, PrintHexData
 
 LAYOUT_MODE = 0
 NORMAL_MODE = 1
@@ -71,23 +70,8 @@ type_help_string = ('Types of information to print, listed as a single '
 #   FUNCTIONS  #
 ###################
 
-
-def BytesFromFile(filename):
-  """Reads the EDID from binary blob form into list form.
-
-  Args:
-    filename: The name of the binary blob.
-
-  Returns:
-    The list of bytes that make up the EDID.
-  """
-  with open(filename, 'rb') as f:
-    chunk = f.read()
-    return [int(x) for x in bytes(chunk)]
-
-
 def PrintSpace(num=1):
-  """Formats print out nicely by adding space between sections.
+  """Format print out nicely by adding space between sections.
 
   Args:
     num: Denotes a smaller space (num = 0) or regular 3-line space (num = 1).
@@ -99,7 +83,7 @@ def PrintSpace(num=1):
 
 
 def PrintList(alist, mode, print_format):
-  """Prints out a list of properties and their values in specified format.
+  """Print out a list of properties and their values in specified format.
 
   Args:
     alist: The list of tuples to print.
@@ -113,7 +97,7 @@ def PrintList(alist, mode, print_format):
 
 
 def GetManufacturerInfo(e, mode, raw_mode):
-  """Prints and interprets the manufacturer information of an EDID.
+  """Print and interpret the manufacturer information of an EDID.
 
   Args:
     e: The EDID being parsed.
@@ -141,7 +125,7 @@ def GetManufacturerInfo(e, mode, raw_mode):
 
 
 def GetBasicDisplay(e, mode, raw_mode):
-  """Prints and interprets the basic display information of an EDID.
+  """Print and interpret the basic display information of an EDID.
 
   Args:
     e: The EDID being parsed.
@@ -217,7 +201,7 @@ def GetBasicDisplay(e, mode, raw_mode):
 
 
 def GetChromaticity(e, mode, raw_mode):
-  """Prints and interprets the chromaticity information of an EDID.
+  """Print and interpret the chromaticity information of an EDID.
 
   Args:
     e: The EDID being parsed.
@@ -246,7 +230,7 @@ def GetChromaticity(e, mode, raw_mode):
 
 
 def GetEstablishedTiming(e, mode, raw_mode):
-  """Prints and interprets the established timing information of an EDID.
+  """Print and interpret the established timing information of an EDID.
 
   Args:
     e: The EDID being parsed.
@@ -278,7 +262,7 @@ def GetEstablishedTiming(e, mode, raw_mode):
 
 
 def GetBaseStandardTiming(e, mode, raw_mode):
-  """Prints and interprets the standard timing information of an EDID.
+  """Print and interpret the standard timing information of an EDID.
 
   Args:
     e: The EDID being parsed.
@@ -302,7 +286,7 @@ def GetBaseStandardTiming(e, mode, raw_mode):
 
 
 def PrintSt(st):
-  """Prints out information in a single standard_timings.StandardTiming object.
+  """Print out information in a single standard_timings.StandardTiming object.
 
   Args:
     st: A standard_timings.StandardTiming object.
@@ -320,7 +304,7 @@ def PrintSt(st):
 
 
 def GetDescriptorBlocks(e, mode, raw_mode):
-  """Prints and interprets the descriptor blocks information of an EDID.
+  """Print and interpret the descriptor blocks information of an EDID.
 
   Calls PrintBlockAnalysis on each block for detailed print out.
 
@@ -335,13 +319,13 @@ def GetDescriptorBlocks(e, mode, raw_mode):
 
   for x in range(0, len(descs)):
 
-    prefix = 'Block #%d: ' % (x+1)
+    prefix = 'Block #%d: ' % (x + 1)
     PrintBlockAnalysis(e, descs[x], mode, raw_mode, x, prefix)
     PrintSpace(mode)
 
 
 def PrintBlockAnalysis(e, desc, mode, raw_mode, start, prefix=None):
-  """Prints and interprets a single 18-byte descriptor's information.
+  """Print and interpret a single 18-byte descriptor's information.
 
   Called up to 4 times in a base EDID.
   Uses descriptor module to determine descriptor type.
@@ -370,9 +354,9 @@ def PrintBlockAnalysis(e, desc, mode, raw_mode, start, prefix=None):
   if mode == LAYOUT_MODE:
     return
 
-  if (desc.type == descriptor.TYPE_PRODUCT_SERIAL_NUMBER or
-      desc.type == descriptor.TYPE_ALPHANUM_DATA_STRING or
-      desc.type == descriptor.TYPE_DISPLAY_PRODUCT_NAME):
+  if desc.type in (descriptor.TYPE_PRODUCT_SERIAL_NUMBER,
+                   descriptor.TYPE_ALPHANUM_DATA_STRING,
+                   descriptor.TYPE_DISPLAY_PRODUCT_NAME):
 
     print('  Data string:\t%s' % desc.string)
 
@@ -481,7 +465,7 @@ def PrintBlockAnalysis(e, desc, mode, raw_mode, start, prefix=None):
 
 
 def PrintCp(cp, num):
-  """Prints out information about a single descriptor.ColorPoint object.
+  """Print out information about a single descriptor.ColorPoint object.
 
   Args:
     cp: A descriptor.ColorPoint object.
@@ -501,7 +485,7 @@ def PrintCp(cp, num):
 
 
 def PrintDtd(desc):
-  """Prints out information about a single descriptor.DetailedTimingDescriptor.
+  """Print out information about a single descriptor.DetailedTimingDescriptor.
 
   Used in the base EDID analysis as well as certain extensions (i.e., VTB).
 
@@ -538,7 +522,7 @@ def PrintDtd(desc):
 
 
 def AnalyzeExtension(e, mode, raw_mode, block_num=1):
-  """Prints and interprets an extension of an EDID.
+  """Print and interpret an extension of an EDID.
 
   Args:
     e: The EDID being parsed.
@@ -560,7 +544,7 @@ def AnalyzeExtension(e, mode, raw_mode, block_num=1):
     if mode == LAYOUT_MODE:
       print('Number of data blocks: %d' % len(dbs))
       for x in range(0, len(dbs)):
-        print('%d. %s' % (x+1, dbs[x].type))
+        print('%d. %s' % (x + 1, dbs[x].type))
 
         # Calls PrintRawRange, but it'll only print if raw_mode on
         PrintRawRange(dbs[x].GetBlock(), raw_mode)
@@ -569,7 +553,7 @@ def AnalyzeExtension(e, mode, raw_mode, block_num=1):
 
       print('Number of detailed timing descriptors: %d' % len(dtds))
       for x in range(0, len(dtds)):
-        print('%d. %s' % (x+1, dtds[x].type))
+        print('%d. %s' % (x + 1, dtds[x].type))
 
         # Calls PrintRawRange, but it'll only print if raw_mode on
         PrintRawRange(dtds[x].GetBlock(), raw_mode)
@@ -616,8 +600,8 @@ def AnalyzeExtension(e, mode, raw_mode, block_num=1):
         PrintList(db_basic, mode, '  %-19s %s')
         print('\n')
 
-      if (db.type == data_block.DB_TYPE_VIDEO or
-          db.type == data_block.DB_TYPE_YCBCR420_VIDEO):
+      if db.type in (data_block.DB_TYPE_VIDEO,
+                     data_block.DB_TYPE_YCBCR420_VIDEO):
         svds = db.short_video_descriptors
         for svd in svds:
           print('  %-20s%s' % (svd.nativity, video_block.GetSvd(svd.vic)))
@@ -664,9 +648,9 @@ def AnalyzeExtension(e, mode, raw_mode, block_num=1):
         for a in tools.ListTrueOnly(db.allocation):
           print('    %s' % a)
 
-      elif (db.type == data_block.DB_TYPE_VENDOR_SPECIFIC or
-            db.type == data_block.DB_TYPE_VENDOR_SPECIFIC_AUDIO or
-            db.type == data_block.DB_TYPE_VENDOR_SPECIFIC_VIDEO):
+      elif db.type in (data_block.DB_TYPE_VENDOR_SPECIFIC,
+                       data_block.DB_TYPE_VENDOR_SPECIFIC_AUDIO,
+                       data_block.DB_TYPE_VENDOR_SPECIFIC_VIDEO):
         print('  %-20s %s' % ('IEEE:', db.ieee_oui))
         print('  %-20s %s' % ('Data payload:', db.payload))
 
@@ -759,7 +743,7 @@ def AnalyzeExtension(e, mode, raw_mode, block_num=1):
     if mode == LAYOUT_MODE:
       print('Number of detailed timing descriptors: %d' % len(dtbs))
       for x in range(0, len(dtbs)):
-        print('%d. %s' % (x+1, dtbs[x].type))
+        print('%d. %s' % (x + 1, dtbs[x].type))
         this_dtb = dtbs[x].GetBlock()
         PrintRawRange(this_dtb, raw_mode)
 
@@ -825,7 +809,7 @@ def AnalyzeExtension(e, mode, raw_mode, block_num=1):
 
 
 def PrintCvt(cvt):
-  """Prints out information about a single CoordinatedVideoTiming object.
+  """Print out information about a single CoordinatedVideoTiming object.
 
   Full object name: coordinated_video_timings.CoordinatedVideoTiming.
 
@@ -848,7 +832,7 @@ def PrintCvt(cvt):
 
 
 def PrintBase(e, mode, raw_mode, types):
-  """Prints and interprets all information of the base EDID.
+  """Print and interpret all information of the base EDID.
 
   Args:
     e: The EDID being parsed.
@@ -883,7 +867,7 @@ def PrintBase(e, mode, raw_mode, types):
 
 
 def PrintExtensions(e, mode, raw_mode, exts):
-  """Prints and interprets all information of one or more extensions.
+  """Print and interpret all information of one or more extensions.
 
   Args:
     e: The EDID being parsed.
@@ -902,7 +886,7 @@ def PrintExtensions(e, mode, raw_mode, exts):
 
 
 def GetXall(e, mode, raw_mode):
-  """Prints and interprets the information of all extensions to an EDID.
+  """Print and interpret the information of all extensions to an EDID.
 
   Args:
     e: The EDID being parsed.
@@ -917,7 +901,7 @@ def GetXall(e, mode, raw_mode):
 
 
 def PrintRawRange(e, raw_mode, start=0, end=None):
-  """Prints the raw data of a section of an EDID.
+  """Print the raw data of a section of an EDID.
 
   If no arguments given for start and end, the whole list is printed.
 
@@ -942,25 +926,16 @@ def PrintRawRange(e, raw_mode, start=0, end=None):
 
 
 def PrintHexEdid(e):
-  """Prints the entire EDID in hexadecimal form.
+  """Print the entire EDID in hexadecimal form.
 
   Args:
     e: The EDID to be printed.
   """
-  data = e.GetData()
-  hex_rows = len(data) // 16
-
-  print('\t\t 0 1  2 3  4 5  6 7  8 9  A B  C D  E F')
-
-  for x in range(0, hex_rows):
-
-    start = 0x10 * x
-    row = '%02X%02X ' * 8 % tuple(data[start : start + 16])
-    print('0x%04X:\t\t%s' % (x, row))
+  PrintHexData(e.GetData())
 
 
 def PrintDecEdid(e):
-  """Prints the entire EDID in decimal form.
+  """Print the entire EDID in decimal form.
 
   Args:
     e: The EDID to be printed.
@@ -971,7 +946,7 @@ def PrintDecEdid(e):
   for x in range(0, dec_rows):
 
     start = 8 * x
-    row = '%04d %04d  ' * 4 % tuple(data[start : start + 8])
+    row = '%04d %04d  ' * 4 % tuple(data[start: start + 8])
     line_range = '%d-%d:' % (start, start + 7)
     print('%9s\t%s' % (line_range, row))
 
@@ -1001,7 +976,7 @@ def Verify(e):
 
 
 def Version(e):
-  """Prints the EDID version.
+  """Print the EDID version.
 
   Args:
     e: The EDID being analyzed.
@@ -1010,7 +985,7 @@ def Version(e):
 
 
 def Xc(e):
-  """Prints the number of extensions (extension count).
+  """Print the number of extensions (extension count).
 
   Args:
     e: The EDID being analyzed.
@@ -1019,7 +994,7 @@ def Xc(e):
 
 
 def CheckInvalidTypes(types, exts):
-  """Checks the types listed for the parse subcommand for validity.
+  """Check the types listed for the parse subcommand for validity.
 
   Args:
     types: The list of strings indicating sections of base EDID to parse.
@@ -1033,9 +1008,7 @@ def CheckInvalidTypes(types, exts):
 
 
 def ParseEdid():
-
-  """Parses an EDID and prints its info according to commands and flags."""
-
+  """Parse an EDID and print its info according to commands and flags."""
   p = argparse.ArgumentParser(description='Select sections of EDID to parse.')
 
   sp = p.add_subparsers(title='subcommands', description='valid subcommands',

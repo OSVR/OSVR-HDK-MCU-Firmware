@@ -131,16 +131,6 @@
                 "Frequency": 60,
                 "Ratio": "16:9",
                 "X resolution": 1920
-            },
-            {
-                "Frequency": 60,
-                "Ratio": "16:10",
-                "X resolution": 256
-            },
-            {
-                "Frequency": 60,
-                "Ratio": "16:10",
-                "X resolution": 256
             }
         ]
     },

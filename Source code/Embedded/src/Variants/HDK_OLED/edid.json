@@ -181,36 +181,36 @@
             "Descriptors": [
                 {
                     "Addressable": {
-                        "x": 2160,
-                        "y": 1200
+                        "x": 1080,
+                        "y": 1920
                     },
                     "Blanking": {
-                        "x": 552,
-                        "y": 12
+                        "x": 48,
+                        "y": 23
                     },
                     "Border": {
                         "x": 0,
                         "y": 0
                     },
                     "Front porch": {
-                        "x": 420,
-                        "y": 6
+                        "x": 32,
+                        "y": 12
                     },
                     "Image size (mm)": {
-                        "x": 260,
-                        "y": 150
+                        "x": 70,
+                        "y": 120
                     },
                     "Interlace": false,
-                    "Pixel clock (MHz)": 295.82,
+                    "Pixel clock (MHz)": 131.57,
                     "Stereo viewing": "No stereo",
                     "Sync pulse": {
-                        "x": 32,
-                        "y": 3
+                        "x": 5,
+                        "y": 5
                     },
                     "Sync type": {
                         "Horizontal sync (outside of V-sync)": "Negative",
                         "Type": "Digital Separate Sync",
-                        "Vertical sync": "Negative"
+                        "Vertical sync": "Positive"
                     },
                     "Type": "Detailed Timing Descriptor"
                 }

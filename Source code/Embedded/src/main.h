@@ -47,7 +47,7 @@
 #include "usb_protocol_cdc.h"
 
 // status of the various periodic tasks
-bool HDMI_task;
-bool HDMISwitch_task;
+extern bool HDMI_task;
+extern bool HDMISwitch_task;
 
 #endif  // _MAIN_H_

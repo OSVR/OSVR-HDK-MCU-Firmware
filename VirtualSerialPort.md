@@ -1,17 +1,21 @@
 # Virtual COM Port
+
 The OSVR unit provides a com port on the USB interface.  Commands begin with # and are terminated with \n.
 All command parsing is performed in SerialStateMachine.c  Parsing functions generally work on one character, then pass control to a sub-parser.
 
-# Command Set
+## Command Set
+
 Commands can be given in upper or lower case.  For the descriptions below, however, I've used upper case for the literal command and lower case to denote parameters of commands.
 
-## Parameters:
-n - single numeric digit
-aa - two character hex address
-xx, yy, zz, ww - two character hex value.
+### Parameters
 
-## Info commands
-```
+- n - single numeric digit
+- aa - two character hex address
+- xx, yy, zz, ww - two character hex value.
+
+### Info commands
+
+```none
 #?V - display version info
 #?C - display clock
 #?B1948 - enter bootloader
@@ -19,7 +23,7 @@ xx, yy, zz, ww - two character hex value.
 
 ## BNO070 Commands
 
-```
+```none
 #BDExx - Set DCD Cal enable flags to hex xx.
 #BDS   - Save the current DCD values in non-volatile storage.
 #BMExx - Enable/disable Mag sensor (xx=00 disable, anything else = enable)
@@ -33,7 +37,7 @@ xx, yy, zz, ww - two character hex value.
 
 ## SPI Commands
 
-```
+```none
 #SIn -
 #SWnaammcc
 #SRn
@@ -47,34 +51,38 @@ xx, yy, zz, ww - two character hex value.
 ```
 
 ## I2C Commands
-```
+
+```none
 #I...
 ```
 
 ## FPGA Commands
 
-```
+```none
 #F...
 ```
+
 ## TMDS Commands
 
-```
+```none
 #T...
 ```
+
 ## HDMI Commands
 
-```
+```none
 #H...
 ```
+
 ## PWM Settings
 
-```
+```none
 #Pxx
 ```
 
 ## Echo on/off and EEProm Functions
 
-```
+```none
 #EI
 #EWaaxxyyzzww
 #EV
@@ -82,6 +90,7 @@ xx, yy, zz, ww - two character hex value.
 ```
 
 ## Debug Commands
-```
+
+```none
 #Dxx - set debug level to xx
 ```

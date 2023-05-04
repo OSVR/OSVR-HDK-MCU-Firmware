@@ -91,6 +91,15 @@
 
 #include <avr/io.h>
 
+#ifdef NEED_BOD
+typedef enum BOD_enum
+{
+	BOD_SAMPLED_gc = (0x01 << 0),    /* BOD enabled in sampled mode */
+	BOD_CONTINUOUS_gc = (0x02 << 0), /* BOD enabled continuously */
+	BOD_DISABLED_gc = (0x03 << 0),   /* BOD Disabled */
+} BOD_t;
+#endif
+
 #include <limits.h>  // for CHAR_BIT
 
 #define USBNotConnected 0

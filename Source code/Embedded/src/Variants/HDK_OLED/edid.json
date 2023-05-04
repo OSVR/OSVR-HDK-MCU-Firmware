@@ -131,16 +131,6 @@
                 "Frequency": 60,
                 "Ratio": "16:9",
                 "X resolution": 1920
-            },
-            {
-                "Frequency": 60,
-                "Ratio": "16:10",
-                "X resolution": 256
-            },
-            {
-                "Frequency": 60,
-                "Ratio": "16:10",
-                "X resolution": 256
             }
         ]
     },
@@ -215,7 +205,7 @@
                     "Type": "Detailed Timing Descriptor"
                 }
             ],
-            "Native DTD count": 0,
+            "Native DTD count": 1,
             "Type": "CEA-861 Series Timing Extension",
             "Underscan": false,
             "Version": 3,

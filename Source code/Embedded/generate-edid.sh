@@ -19,7 +19,7 @@ ROOT="$(cd $(dirname $0) && pwd)"
 for variant in HDK_20 HDK_20_SVR HDK_OLED HDK_Sharp_LCD; do
     (
         cd "$(dirname $0)/src/Variants/$variant"
-        "$ROOT/vendor/cros-chameleon/json2edid.py" edid.json edid.bin
+        "$ROOT/vendor/edid-json-tools/json2edid.py" edid.json edid.bin
         (
             echo "/* THIS IS A GENERATED FILE - DO NOT EDIT */"
             echo "/* Edit the edid.json file and run generate-edid.sh instead. */"

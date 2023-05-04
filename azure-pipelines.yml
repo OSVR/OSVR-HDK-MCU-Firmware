@@ -19,7 +19,7 @@ steps:
 - script: |
     cd "Source code/Embedded/makefile-build"
     make clean
-    make complete EXTRA_CFLAGS=-DNEED_BOD
+    make complete
   displayName: 'Build'
 
 - publish: $(System.DefaultWorkingDirectory)/Source code/Embedded/makefile-build

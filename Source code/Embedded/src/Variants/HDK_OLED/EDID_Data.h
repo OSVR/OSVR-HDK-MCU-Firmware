@@ -26,7 +26,7 @@ const char svrEdidInfoString[] =
 #ifdef WirelessOnly  // generates SVR 1021 which does NOT have 1080x1920 mode
     "SVR1021, excludes portrait mode, EDID spec v1.3, "
 #else
-    "SVR1019, EDID spec v1.4, "
+    "SVR1019, HMD extension flag, EDID spec v1.4, "
 #endif
     "for AUO 5.46\" OLED panel (HDK 1.2/1.3/1.4)";
 
